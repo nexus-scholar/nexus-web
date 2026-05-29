@@ -1,6 +1,9 @@
 import { Head, useForm } from '@inertiajs/react';
+import { ShieldCheck, UserRoundX, UsersRound } from 'lucide-react';
 import type { FormEvent } from 'react';
 import InputError from '@/components/input-error';
+import { MetricCard } from '@/components/metric-card';
+import { PageHeader, PageShell } from '@/components/page-shell';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -42,46 +45,83 @@ function UserStatusForm({ user }: { user: OperatorUser }) {
     };
 
     return (
-        <form onSubmit={submit} className="flex flex-col gap-2 sm:flex-row">
-            <Input
-                value={form.data.reason}
-                onChange={(event) => form.setData('reason', event.target.value)}
-                placeholder="Audit reason"
-                className="sm:w-64"
-            />
+        <form
+            onSubmit={submit}
+            className="grid gap-2 sm:grid-cols-[16rem_auto]"
+        >
+            <div>
+                <Input
+                    value={form.data.reason}
+                    onChange={(event) =>
+                        form.setData('reason', event.target.value)
+                    }
+                    placeholder="Audit reason"
+                />
+                <InputError message={form.errors.reason} className="mt-2" />
+            </div>
             <Button
                 type="submit"
                 variant={user.disabled_at ? 'outline' : 'default'}
+                disabled={form.processing}
             >
                 {user.disabled_at ? 'Enable' : 'Disable'}
             </Button>
-            <InputError message={form.errors.reason} />
         </form>
     );
 }
 
 export default function OperatorUsers({ users }: Props) {
+    const disabledUsers = users.filter((user) => user.disabled_at).length;
+    const operators = users.filter((user) => user.is_operator).length;
+
     return (
         <>
             <Head title="Operator users" />
 
-            <div className="space-y-4 p-4">
+            <PageShell>
+                <PageHeader
+                    eyebrow="Operations"
+                    title="User controls"
+                    description="Account status controls with audit reasons for every operator action."
+                />
+
+                <div className="grid gap-4 md:grid-cols-3">
+                    <MetricCard
+                        label="Users"
+                        value={users.length}
+                        description="Accounts visible to operators."
+                        icon={UsersRound}
+                    />
+                    <MetricCard
+                        label="Disabled"
+                        value={disabledUsers}
+                        description="Accounts blocked from app access."
+                        icon={UserRoundX}
+                    />
+                    <MetricCard
+                        label="Operators"
+                        value={operators}
+                        description="Accounts with platform controls."
+                        icon={ShieldCheck}
+                    />
+                </div>
+
                 <Card>
                     <CardHeader>
-                        <CardTitle>Users</CardTitle>
+                        <CardTitle>Platform users</CardTitle>
                         <CardDescription>
-                            Operator view for account status controls.
+                            Disable or restore access with a recorded reason.
                         </CardDescription>
                     </CardHeader>
                     <CardContent className="divide-y">
                         {users.map((user) => (
                             <div
                                 key={user.id}
-                                className="grid gap-3 py-4 lg:grid-cols-[1fr_auto]"
+                                className="grid gap-3 py-3 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center"
                             >
                                 <div className="min-w-0">
                                     <div className="flex flex-wrap items-center gap-2">
-                                        <span className="font-medium">
+                                        <span className="text-sm font-medium">
                                             {user.name}
                                         </span>
                                         {user.is_operator && (
@@ -95,11 +135,11 @@ export default function OperatorUsers({ users }: Props) {
                                             </Badge>
                                         )}
                                     </div>
-                                    <div className="text-sm text-muted-foreground">
+                                    <div className="text-xs text-muted-foreground">
                                         {user.email}
                                     </div>
                                     {user.disabled_reason && (
-                                        <div className="mt-1 text-sm text-muted-foreground">
+                                        <div className="mt-1 text-xs text-muted-foreground">
                                             {user.disabled_reason}
                                         </div>
                                     )}
@@ -109,7 +149,7 @@ export default function OperatorUsers({ users }: Props) {
                         ))}
                     </CardContent>
                 </Card>
-            </div>
+            </PageShell>
         </>
     );
 }

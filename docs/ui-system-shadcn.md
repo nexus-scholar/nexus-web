@@ -8,6 +8,7 @@ verification workflow. Update it before large UI changes.
 Checked on 2026-05-29.
 
 - shadcn CLI: `4.8.2`
+- Rhea reference preset: `b27GcrRo`
 - Framework detected by shadcn: `Laravel`
 - Style: `new-york`
 - Base: `radix`
@@ -76,6 +77,7 @@ Official docs checked on 2026-05-29:
 - Changelog: `https://ui.shadcn.com/docs/changelog`
 - Blocks docs: `https://ui.shadcn.com/docs/blocks`
 - Login blocks: `https://ui.shadcn.com/blocks/login`
+- Rhea changelog: `https://ui.shadcn.com/docs/changelog/2026-05-rhea`
 
 Relevant takeaways:
 
@@ -85,6 +87,9 @@ Relevant takeaways:
   search, and install guidance.
 - Nexus web already uses Tailwind v4, React, TypeScript, lucide icons, and the
   `new-york` shadcn style, so new components should follow that baseline.
+- Rhea preset `b27GcrRo` decodes to `style=rhea`, `baseColor=neutral`,
+  `theme=neutral`, `font=inter`, `iconLibrary=lucide`, `radius=default`,
+  `menuAccent=subtle`, and `menuColor=default`.
 - New registry examples may use dependency patterns that differ from this app's
   current installed Radix packages. Do not run broad migrations during feature
   work unless the migration itself is the task.

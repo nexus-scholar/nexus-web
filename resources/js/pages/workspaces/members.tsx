@@ -1,6 +1,9 @@
 import { Head, router, useForm } from '@inertiajs/react';
+import { MailPlus, ShieldCheck, UsersRound } from 'lucide-react';
 import type { FormEvent } from 'react';
 import InputError from '@/components/input-error';
+import { MetricCard } from '@/components/metric-card';
+import { PageHeader, PageShell } from '@/components/page-shell';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -12,6 +15,13 @@ import {
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
 import type { WorkspaceSummary } from '@/types';
 
 type WorkspaceMember = {
@@ -88,23 +98,23 @@ function InviteMemberForm({
             </div>
             <div className="grid gap-2">
                 <Label htmlFor="invite-role">Role</Label>
-                <select
-                    id="invite-role"
+                <Select
                     value={form.data.role}
-                    onChange={(event) =>
-                        form.setData(
-                            'role',
-                            event.target.value as 'admin' | 'member',
-                        )
+                    onValueChange={(role: 'admin' | 'member') =>
+                        form.setData('role', role)
                     }
-                    className="h-9 rounded-md border border-input bg-background px-3 text-sm"
                 >
-                    {availableRoles.map((role) => (
-                        <option key={role} value={role}>
-                            {role}
-                        </option>
-                    ))}
-                </select>
+                    <SelectTrigger id="invite-role" className="w-full">
+                        <SelectValue placeholder="Select role" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        {availableRoles.map((role) => (
+                            <SelectItem key={role} value={role}>
+                                {role}
+                            </SelectItem>
+                        ))}
+                    </SelectContent>
+                </Select>
                 <InputError message={form.errors.role} />
             </div>
             <div className="flex items-end">
@@ -113,6 +123,31 @@ function InviteMemberForm({
                 </Button>
             </div>
         </form>
+    );
+}
+
+function MemberRoleSelect({
+    member,
+    onUpdateRole,
+}: {
+    member: WorkspaceMember;
+    onUpdateRole: (userId: number, role: 'admin' | 'member') => void;
+}) {
+    return (
+        <Select
+            value={member.role}
+            onValueChange={(role: 'admin' | 'member') =>
+                onUpdateRole(member.user.id, role)
+            }
+        >
+            <SelectTrigger className="w-32">
+                <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+                <SelectItem value="admin">admin</SelectItem>
+                <SelectItem value="member">member</SelectItem>
+            </SelectContent>
+        </Select>
     );
 }
 
@@ -141,24 +176,50 @@ export default function WorkspaceMembers({
         <>
             <Head title={`${selectedWorkspace.name} members`} />
 
-            <div className="space-y-4 p-4">
-                <Card>
-                    <CardHeader>
-                        <CardTitle>{selectedWorkspace.name}</CardTitle>
-                        <CardDescription>
-                            Manage workspace membership and pending invitations.
-                        </CardDescription>
-                    </CardHeader>
-                    {can.manage_members &&
-                        selectedWorkspace.type === 'shared' && (
-                            <CardContent>
-                                <InviteMemberForm
-                                    selectedWorkspace={selectedWorkspace}
-                                    availableRoles={available_roles}
-                                />
-                            </CardContent>
-                        )}
-                </Card>
+            <PageShell>
+                <PageHeader
+                    eyebrow="Workspace access"
+                    title={`${selectedWorkspace.name} members`}
+                    description="Active members, roles, and pending invitations for this workspace."
+                />
+
+                <div className="grid gap-4 md:grid-cols-3">
+                    <MetricCard
+                        label="Members"
+                        value={members.length}
+                        description="Active users with workspace access."
+                        icon={UsersRound}
+                    />
+                    <MetricCard
+                        label="Pending invitations"
+                        value={invitations.length}
+                        description="Invites waiting for acceptance."
+                        icon={MailPlus}
+                    />
+                    <MetricCard
+                        label="Management"
+                        value={can.manage_members ? 'enabled' : 'locked'}
+                        description="Role controls for the active user."
+                        icon={ShieldCheck}
+                    />
+                </div>
+
+                {can.manage_members && selectedWorkspace.type === 'shared' && (
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Invite member</CardTitle>
+                            <CardDescription>
+                                Add a reviewer or workspace administrator.
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <InviteMemberForm
+                                selectedWorkspace={selectedWorkspace}
+                                availableRoles={available_roles}
+                            />
+                        </CardContent>
+                    </Card>
+                )}
 
                 <Card>
                     <CardHeader>
@@ -171,44 +232,35 @@ export default function WorkspaceMembers({
                         {members.map((member) => (
                             <div
                                 key={member.id}
-                                className="grid gap-3 py-4 lg:grid-cols-[1fr_auto]"
+                                className="grid gap-3 py-3 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center"
                             >
                                 <div className="min-w-0">
                                     <div className="flex flex-wrap items-center gap-2">
-                                        <span className="font-medium">
+                                        <span className="text-sm font-medium">
                                             {member.user.name}
                                         </span>
-                                        <Badge variant="secondary">
+                                        <Badge
+                                            variant="secondary"
+                                            className="capitalize"
+                                        >
                                             {member.role_label}
                                         </Badge>
                                     </div>
-                                    <div className="text-sm text-muted-foreground">
+                                    <div className="text-xs text-muted-foreground">
                                         {member.user.email}
                                     </div>
                                 </div>
                                 <div className="flex flex-wrap gap-2">
                                     {member.can_update_role && (
-                                        <select
-                                            value={member.role}
-                                            onChange={(event) =>
-                                                updateRole(
-                                                    member.user.id,
-                                                    event.target.value as
-                                                        | 'admin'
-                                                        | 'member',
-                                                )
-                                            }
-                                            className="h-9 rounded-md border border-input bg-background px-3 text-sm"
-                                        >
-                                            <option value="admin">admin</option>
-                                            <option value="member">
-                                                member
-                                            </option>
-                                        </select>
+                                        <MemberRoleSelect
+                                            member={member}
+                                            onUpdateRole={updateRole}
+                                        />
                                     )}
                                     {member.can_remove && (
                                         <Button
                                             variant="outline"
+                                            size="sm"
                                             onClick={() =>
                                                 removeMember(member.user.id)
                                             }
@@ -226,18 +278,21 @@ export default function WorkspaceMembers({
                     <Card>
                         <CardHeader>
                             <CardTitle>Pending invitations</CardTitle>
+                            <CardDescription>
+                                Invites already issued for this workspace.
+                            </CardDescription>
                         </CardHeader>
                         <CardContent className="divide-y">
                             {invitations.map((invitation) => (
                                 <div
                                     key={invitation.id}
-                                    className="flex items-center justify-between gap-4 py-3"
+                                    className="grid gap-3 py-3 sm:grid-cols-[1fr_auto] sm:items-center"
                                 >
-                                    <div>
-                                        <div className="font-medium">
+                                    <div className="min-w-0">
+                                        <div className="truncate text-sm font-medium">
                                             {invitation.email}
                                         </div>
-                                        <div className="text-sm text-muted-foreground">
+                                        <div className="text-xs text-muted-foreground">
                                             {invitation.role_label}
                                         </div>
                                     </div>
@@ -247,7 +302,7 @@ export default function WorkspaceMembers({
                         </CardContent>
                     </Card>
                 )}
-            </div>
+            </PageShell>
         </>
     );
 }

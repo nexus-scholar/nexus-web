@@ -74,11 +74,11 @@ Expose these through Tailwind v4 `@theme` as `--color-brand`,
 
     --destructive: oklch(0.56 0.18 25);
     --destructive-foreground: oklch(0.985 0.003 247);
-    --border: oklch(0.90 0.008 247);
-    --input: oklch(0.90 0.008 247);
-    --ring: oklch(0.56 0.10 205);
+    --border: oklch(0.9 0.008 247);
+    --input: oklch(0.9 0.008 247);
+    --ring: oklch(0.56 0.1 205);
 
-    --brand: oklch(0.50 0.115 205);
+    --brand: oklch(0.5 0.115 205);
     --brand-foreground: oklch(0.985 0.003 247);
     --brand-muted: oklch(0.94 0.03 205);
     --brand-muted-foreground: oklch(0.34 0.07 205);
@@ -105,11 +105,11 @@ Expose these through Tailwind v4 `@theme` as `--color-brand`,
     --accent: oklch(0.27 0.055 205);
     --accent-foreground: oklch(0.93 0.035 205);
 
-    --destructive: oklch(0.70 0.16 25);
+    --destructive: oklch(0.7 0.16 25);
     --destructive-foreground: oklch(0.15 0.012 250);
     --border: oklch(1 0 0 / 10%);
     --input: oklch(1 0 0 / 15%);
-    --ring: oklch(0.63 0.10 205);
+    --ring: oklch(0.63 0.1 205);
 
     --brand: oklch(0.72 0.11 205);
     --brand-foreground: oklch(0.14 0.012 250);
@@ -129,7 +129,7 @@ Use these in domain components such as `DecisionBadge`, `AuditEventRow`,
     --status-include-bg: oklch(0.96 0.035 151);
     --status-exclude: oklch(0.56 0.18 25);
     --status-exclude-bg: oklch(0.96 0.04 25);
-    --status-conflict: oklch(0.50 0.14 290);
+    --status-conflict: oklch(0.5 0.14 290);
     --status-conflict-bg: oklch(0.95 0.035 290);
     --status-audit: oklch(0.62 0.14 75);
     --status-audit-bg: oklch(0.96 0.04 75);
@@ -144,7 +144,7 @@ Use these in domain components such as `DecisionBadge`, `AuditEventRow`,
     --status-include-bg: oklch(0.25 0.06 151);
     --status-exclude: oklch(0.82 0.12 25);
     --status-exclude-bg: oklch(0.25 0.07 25);
-    --status-conflict: oklch(0.83 0.10 290);
+    --status-conflict: oklch(0.83 0.1 290);
     --status-conflict-bg: oklch(0.26 0.07 290);
     --status-audit: oklch(0.86 0.12 75);
     --status-audit-bg: oklch(0.26 0.07 75);
@@ -184,8 +184,8 @@ Do not make the full sidebar teal or blue.
 
 ## Radius And Surfaces
 
-Keep `--radius: 0.625rem` for now. It aligns with the current shadcn baseline
-and keeps controls familiar.
+Keep `--radius: 0.5rem` for now. It moves the app closer to the compact Rhea
+reference while staying inside the familiar shadcn default-radius range.
 
 Use:
 
@@ -195,8 +195,9 @@ Use:
 
 ## Typography
 
-Keep `Instrument Sans` for MVP. Switching fonts should be a separate task
-because it affects screenshots, density, and perceived brand.
+Use Inter for MVP. It matches the decoded Rhea preset and improves the dense
+dashboard feel without introducing a custom display typeface. Instrument Sans
+remains in the fallback stack.
 
 Rules:
 
@@ -212,16 +213,21 @@ Implemented:
 - Nexus token exports in the Tailwind v4 `@theme` block.
 - Light and dark shadcn token values.
 - Semantic status token values.
+- Inter as the primary sans font through the Laravel Vite font pipeline.
+- Compact card radius and spacing closer to Rhea.
 - Welcome screen token usage for brand, import, include, and audit colors.
 - `WorkspaceStatusBadge` as the first token-backed domain component.
 - Dashboard usage of `WorkspaceStatusBadge`.
+- Shared `PageShell`, `PageHeader`, and `MetricCard` primitives for access
+  pages.
+- Shared `SettingsSection` panels for account and security surfaces.
 
 Next:
 
 1. Add `DecisionBadge` when the review workflow lands.
 2. Add `AuditEventRow` when audit history becomes visible in the product UI.
-3. Rework dashboard content into a research workspace overview once workflow
-   data exists.
+3. Add `DataTable` or table wrappers once imports, records, and screening lists
+   land.
 4. Replace remaining generic shell visuals only after the brand mark is final.
 
 ## Acceptance Check

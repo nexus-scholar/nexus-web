@@ -63,6 +63,7 @@ Use shadcn components as local source-owned primitives. Build Nexus-specific
 components when they encode product meaning, for example:
 
 - `WorkspaceStatusBadge`
+- `SettingsSection`
 - `DecisionBadge`
 - `AuditEventRow`
 - `ReviewerAssignment`
@@ -87,12 +88,13 @@ Use the narrowest test that catches the failure:
 - Browser checks for full workflows, layout regressions, actor-based access, and
   visual trust.
 
-The next frontend test slice should add Vitest and Testing Library, then cover:
+Current UI test coverage includes:
 
 - `WorkspaceStatusBadge`,
+- `SettingsSection`,
 - `useCurrentUrl`,
-- workspace switcher rendering,
 - auth layout variant selection.
+- workspace switcher rendering and context switching.
 
 Do not build a broad snapshot suite. It will slow the team down and catch the
 wrong failures.

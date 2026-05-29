@@ -1,7 +1,9 @@
 import { Head, Link, useForm } from '@inertiajs/react';
+import { Building2, ShieldCheck, UsersRound } from 'lucide-react';
 import type { FormEvent } from 'react';
 import InputError from '@/components/input-error';
-import { Badge } from '@/components/ui/badge';
+import { MetricCard } from '@/components/metric-card';
+import { PageHeader, PageShell } from '@/components/page-shell';
 import { Button } from '@/components/ui/button';
 import {
     Card,
@@ -12,6 +14,7 @@ import {
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { WorkspaceStatusBadge } from '@/components/workspace-status-badge';
 import type { WorkspaceSummary } from '@/types';
 
 type Props = {
@@ -39,56 +42,68 @@ export default function WorkspaceSettings({ can, selectedWorkspace }: Props) {
         <>
             <Head title={`${selectedWorkspace.name} settings`} />
 
-            <div className="space-y-4 p-4">
-                <Card>
-                    <CardHeader>
-                        <CardTitle>{selectedWorkspace.name}</CardTitle>
-                        <CardDescription>
-                            Workspace identity and access controls.
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent className="grid gap-4 sm:grid-cols-3">
-                        <div>
-                            <div className="text-sm text-muted-foreground">
-                                Type
-                            </div>
-                            <Badge variant="secondary">
-                                {selectedWorkspace.type}
-                            </Badge>
-                        </div>
-                        <div>
-                            <div className="text-sm text-muted-foreground">
-                                Role
-                            </div>
-                            <Badge variant="outline">
-                                {selectedWorkspace.role ?? 'member'}
-                            </Badge>
-                        </div>
-                        <div>
-                            <div className="text-sm text-muted-foreground">
-                                Status
-                            </div>
-                            <Badge
-                                variant={
-                                    selectedWorkspace.suspended_at
-                                        ? 'destructive'
-                                        : 'outline'
-                                }
-                            >
-                                {selectedWorkspace.suspended_at
-                                    ? 'suspended'
-                                    : 'active'}
-                            </Badge>
-                        </div>
-                    </CardContent>
-                </Card>
+            <PageShell>
+                <PageHeader
+                    eyebrow="Workspace settings"
+                    title={selectedWorkspace.name}
+                    description="Workspace identity, role context, and member entry points."
+                    actions={
+                        can.manage_members && (
+                            <Button variant="outline" size="sm" asChild>
+                                <Link
+                                    href={`/workspaces/${selectedWorkspace.id}/members`}
+                                >
+                                    Manage members
+                                </Link>
+                            </Button>
+                        )
+                    }
+                />
+
+                <div className="grid gap-4 md:grid-cols-3">
+                    <MetricCard
+                        label="Type"
+                        value={selectedWorkspace.type}
+                        description="Workspace ownership model."
+                        icon={Building2}
+                    />
+                    <MetricCard
+                        label="Role"
+                        value={selectedWorkspace.role ?? 'member'}
+                        description="Your permission level here."
+                        icon={ShieldCheck}
+                    />
+                    <MetricCard
+                        label="Status"
+                        value={
+                            selectedWorkspace.suspended_at
+                                ? 'suspended'
+                                : 'active'
+                        }
+                        description="Operator-controlled access state."
+                        icon={UsersRound}
+                    />
+                </div>
 
                 <Card>
-                    <CardHeader>
-                        <CardTitle>Settings</CardTitle>
-                        <CardDescription>
-                            Owners can rename the workspace.
-                        </CardDescription>
+                    <CardHeader className="flex-row items-start justify-between gap-4">
+                        <div className="space-y-1">
+                            <CardTitle>Workspace profile</CardTitle>
+                            <CardDescription>
+                                Owners can rename the workspace.
+                            </CardDescription>
+                        </div>
+                        <WorkspaceStatusBadge
+                            status={
+                                selectedWorkspace.suspended_at
+                                    ? 'disabled'
+                                    : selectedWorkspace.type
+                            }
+                        >
+                            {selectedWorkspace.suspended_at
+                                ? 'Suspended'
+                                : selectedWorkspace.type}
+                        </WorkspaceStatusBadge>
                     </CardHeader>
                     <CardContent>
                         <form onSubmit={submit} className="max-w-xl space-y-4">
@@ -108,11 +123,12 @@ export default function WorkspaceSettings({ can, selectedWorkspace }: Props) {
                                 <Button
                                     type="submit"
                                     disabled={!can.update || form.processing}
+                                    size="sm"
                                 >
                                     Save
                                 </Button>
                                 {can.manage_members && (
-                                    <Button variant="outline" asChild>
+                                    <Button variant="outline" size="sm" asChild>
                                         <Link
                                             href={`/workspaces/${selectedWorkspace.id}/members`}
                                         >
@@ -124,7 +140,7 @@ export default function WorkspaceSettings({ can, selectedWorkspace }: Props) {
                         </form>
                     </CardContent>
                 </Card>
-            </div>
+            </PageShell>
         </>
     );
 }

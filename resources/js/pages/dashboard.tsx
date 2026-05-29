@@ -1,6 +1,9 @@
 import { Head, Link, useForm, usePage } from '@inertiajs/react';
+import { Building2, ShieldCheck, UsersRound } from 'lucide-react';
 import type { FormEvent } from 'react';
 import InputError from '@/components/input-error';
+import { MetricCard } from '@/components/metric-card';
+import { PageHeader, PageShell } from '@/components/page-shell';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -32,49 +35,98 @@ export default function Dashboard() {
         <>
             <Head title="Dashboard" />
 
-            <div className="flex h-full flex-1 flex-col gap-4 p-4">
-                <div className="grid gap-4 lg:grid-cols-[1fr_360px]">
+            <PageShell>
+                <PageHeader
+                    eyebrow="Workspace"
+                    title={workspace.current?.name ?? 'Dashboard'}
+                    description="Workspace access, membership context, and the next shared lab setup."
+                    actions={
+                        workspace.current && (
+                            <Button variant="outline" asChild>
+                                <Link href={workspace.current.settings_url}>
+                                    Workspace settings
+                                </Link>
+                            </Button>
+                        )
+                    }
+                />
+
+                <div className="grid gap-4 md:grid-cols-3">
+                    <MetricCard
+                        label="Current role"
+                        value={workspace.current?.role ?? 'member'}
+                        description="Permission scope for the active workspace."
+                        icon={ShieldCheck}
+                    />
+                    <MetricCard
+                        label="Accessible workspaces"
+                        value={workspace.memberships.length}
+                        description="Personal and shared contexts available to you."
+                        icon={Building2}
+                    />
+                    <MetricCard
+                        label="Workspace type"
+                        value={workspace.current?.type ?? 'none'}
+                        description={
+                            workspace.current?.suspended_at
+                                ? 'Suspended by an operator.'
+                                : 'Ready for review work.'
+                        }
+                        icon={UsersRound}
+                    />
+                </div>
+
+                <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_22rem]">
                     <section className="space-y-4">
                         <Card>
-                            <CardHeader>
-                                <CardTitle>
-                                    {workspace.current?.name ?? 'Workspace'}
-                                </CardTitle>
-                                <CardDescription>
-                                    Your active workspace and collaboration
-                                    context.
-                                </CardDescription>
-                            </CardHeader>
-                            <CardContent className="grid gap-4 sm:grid-cols-3">
-                                <div>
-                                    <div className="text-sm text-muted-foreground">
-                                        Type
-                                    </div>
-                                    <WorkspaceStatusBadge
-                                        status={
-                                            workspace.current?.suspended_at
-                                                ? 'disabled'
-                                                : (workspace.current?.type ??
-                                                  'disabled')
-                                        }
-                                    >
-                                        {workspace.current?.type ?? 'None'}
-                                    </WorkspaceStatusBadge>
+                            <CardHeader className="flex-row items-start justify-between gap-4">
+                                <div className="space-y-1">
+                                    <CardTitle>Active workspace</CardTitle>
+                                    <CardDescription>
+                                        Collaboration context for this session.
+                                    </CardDescription>
                                 </div>
-                                <div>
-                                    <div className="text-sm text-muted-foreground">
+                                <WorkspaceStatusBadge
+                                    status={
+                                        workspace.current?.suspended_at
+                                            ? 'disabled'
+                                            : (workspace.current?.type ??
+                                              'disabled')
+                                    }
+                                >
+                                    {workspace.current?.suspended_at
+                                        ? 'Suspended'
+                                        : (workspace.current?.type ?? 'None')}
+                                </WorkspaceStatusBadge>
+                            </CardHeader>
+                            <CardContent className="grid gap-3 sm:grid-cols-3">
+                                <div className="rounded-md border bg-muted/30 p-3">
+                                    <div className="text-xs text-muted-foreground">
+                                        Name
+                                    </div>
+                                    <div className="mt-1 truncate text-sm font-medium">
+                                        {workspace.current?.name ?? 'None'}
+                                    </div>
+                                </div>
+                                <div className="rounded-md border bg-muted/30 p-3">
+                                    <div className="text-xs text-muted-foreground">
                                         Role
                                     </div>
-                                    <Badge variant="outline">
+                                    <Badge
+                                        variant="outline"
+                                        className="mt-1 capitalize"
+                                    >
                                         {workspace.current?.role ?? 'member'}
                                     </Badge>
                                 </div>
-                                <div>
-                                    <div className="text-sm text-muted-foreground">
-                                        Accessible workspaces
+                                <div className="rounded-md border bg-muted/30 p-3">
+                                    <div className="text-xs text-muted-foreground">
+                                        Status
                                     </div>
-                                    <div className="text-lg font-semibold">
-                                        {workspace.memberships.length}
+                                    <div className="mt-1 text-sm font-medium">
+                                        {workspace.current?.suspended_at
+                                            ? 'Operator suspended'
+                                            : 'Active'}
                                     </div>
                                 </div>
                             </CardContent>
@@ -84,25 +136,29 @@ export default function Dashboard() {
                             <CardHeader>
                                 <CardTitle>Workspace access</CardTitle>
                                 <CardDescription>
-                                    Switch between your personal and shared
-                                    workspaces from the sidebar.
+                                    Personal and shared workspaces available in
+                                    the sidebar.
                                 </CardDescription>
                             </CardHeader>
                             <CardContent className="divide-y">
                                 {workspace.memberships.map((membership) => (
                                     <div
                                         key={membership.id}
-                                        className="flex items-center justify-between gap-4 py-3"
+                                        className="grid gap-3 py-3 sm:grid-cols-[1fr_auto] sm:items-center"
                                     >
                                         <div className="min-w-0">
-                                            <div className="truncate font-medium">
+                                            <div className="truncate text-sm font-medium">
                                                 {membership.workspace.name}
                                             </div>
-                                            <div className="text-sm text-muted-foreground">
+                                            <div className="text-xs text-muted-foreground">
                                                 {membership.role_label}
                                             </div>
                                         </div>
-                                        <Button variant="outline" asChild>
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            asChild
+                                        >
                                             <Link
                                                 href={
                                                     membership.workspace
@@ -123,8 +179,7 @@ export default function Dashboard() {
                             <CardHeader>
                                 <CardTitle>Create shared workspace</CardTitle>
                                 <CardDescription>
-                                    Use a shared workspace for a lab, research
-                                    group, or university team.
+                                    Start a lab or research group workspace.
                                 </CardDescription>
                             </CardHeader>
                             <CardContent>
@@ -156,6 +211,7 @@ export default function Dashboard() {
                                     <Button
                                         type="submit"
                                         disabled={createWorkspace.processing}
+                                        className="w-full"
                                     >
                                         Create workspace
                                     </Button>
@@ -164,7 +220,7 @@ export default function Dashboard() {
                         </Card>
                     </aside>
                 </div>
-            </div>
+            </PageShell>
         </>
     );
 }

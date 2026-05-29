@@ -44,9 +44,9 @@ export function WorkspaceSwitcher() {
                     <DropdownMenuTrigger asChild>
                         <SidebarMenuButton
                             size="lg"
-                            className="text-sidebar-accent-foreground data-[state=open]:bg-sidebar-accent"
+                            className="h-11 text-sidebar-accent-foreground data-[state=open]:bg-sidebar-accent"
                         >
-                            <div className="flex aspect-square size-8 items-center justify-center rounded-md bg-sidebar-primary text-sidebar-primary-foreground">
+                            <div className="flex aspect-square size-8 items-center justify-center rounded-md bg-brand-muted text-brand-muted-foreground">
                                 {workspace.current.type === 'shared' ? (
                                     <Users className="size-4" />
                                 ) : (

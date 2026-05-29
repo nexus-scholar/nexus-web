@@ -73,10 +73,9 @@ meaningful and consistent, not decorative.
 
 ## Typography
 
-The app currently uses Instrument Sans through the Laravel starter kit. It is
-acceptable for the MVP. If we switch later, Inter is the most conservative
-candidate because it matches the Rhea reference and works well in dense
-operational UIs.
+The app now uses Inter through the Laravel Vite font pipeline, with Instrument
+Sans kept as a fallback in the CSS stack. Inter matches the Rhea reference and
+works well in dense operational UIs.
 
 Rules:
 
@@ -175,9 +174,8 @@ The current welcome screen is close to the desired tone:
 - grounded in audit and collaboration.
 
 The next UI pass should refine it rather than replace it. The authenticated
-dashboard should become more distinct by adopting Nexus-specific status
-components and a stronger visual hierarchy for workspaces, roles, audit events,
-and workflow progress.
+dashboard and access pages now use compact Rhea-inspired surfaces, shared page
+headers, metric cards, and Nexus-specific status components.
 
 ## First Implementation Targets
 

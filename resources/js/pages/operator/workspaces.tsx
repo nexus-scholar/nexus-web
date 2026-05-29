@@ -1,6 +1,9 @@
 import { Head, useForm } from '@inertiajs/react';
+import { Building2, CirclePause, UsersRound } from 'lucide-react';
 import type { FormEvent } from 'react';
 import InputError from '@/components/input-error';
+import { MetricCard } from '@/components/metric-card';
+import { PageHeader, PageShell } from '@/components/page-shell';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -48,46 +51,89 @@ function WorkspaceStatusForm({ workspace }: { workspace: OperatorWorkspace }) {
     };
 
     return (
-        <form onSubmit={submit} className="flex flex-col gap-2 sm:flex-row">
-            <Input
-                value={form.data.reason}
-                onChange={(event) => form.setData('reason', event.target.value)}
-                placeholder="Audit reason"
-                className="sm:w-64"
-            />
+        <form
+            onSubmit={submit}
+            className="grid gap-2 sm:grid-cols-[16rem_auto]"
+        >
+            <div>
+                <Input
+                    value={form.data.reason}
+                    onChange={(event) =>
+                        form.setData('reason', event.target.value)
+                    }
+                    placeholder="Audit reason"
+                />
+                <InputError message={form.errors.reason} className="mt-2" />
+            </div>
             <Button
                 type="submit"
                 variant={workspace.suspended_at ? 'outline' : 'default'}
+                disabled={form.processing}
             >
                 {workspace.suspended_at ? 'Unsuspend' : 'Suspend'}
             </Button>
-            <InputError message={form.errors.reason} />
         </form>
     );
 }
 
 export default function OperatorWorkspaces({ workspaces }: Props) {
+    const suspendedWorkspaces = workspaces.filter(
+        (workspace) => workspace.suspended_at,
+    ).length;
+    const activeMemberships = workspaces.reduce(
+        (total, workspace) => total + workspace.active_memberships_count,
+        0,
+    );
+
     return (
         <>
             <Head title="Operator workspaces" />
 
-            <div className="space-y-4 p-4">
+            <PageShell>
+                <PageHeader
+                    eyebrow="Operations"
+                    title="Workspace controls"
+                    description="Workspace status review with audit reasons for suspend and restore actions."
+                />
+
+                <div className="grid gap-4 md:grid-cols-3">
+                    <MetricCard
+                        label="Workspaces"
+                        value={workspaces.length}
+                        description="Personal and shared workspaces."
+                        icon={Building2}
+                    />
+                    <MetricCard
+                        label="Suspended"
+                        value={suspendedWorkspaces}
+                        description="Workspaces blocked by operators."
+                        icon={CirclePause}
+                    />
+                    <MetricCard
+                        label="Active memberships"
+                        value={activeMemberships}
+                        description="Current active workspace seats."
+                        icon={UsersRound}
+                    />
+                </div>
+
                 <Card>
                     <CardHeader>
-                        <CardTitle>Workspaces</CardTitle>
+                        <CardTitle>Platform workspaces</CardTitle>
                         <CardDescription>
-                            Operator view for workspace status controls.
+                            Suspend or restore workspace access with a recorded
+                            reason.
                         </CardDescription>
                     </CardHeader>
                     <CardContent className="divide-y">
                         {workspaces.map((workspace) => (
                             <div
                                 key={workspace.id}
-                                className="grid gap-3 py-4 lg:grid-cols-[1fr_auto]"
+                                className="grid gap-3 py-3 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center"
                             >
                                 <div className="min-w-0">
                                     <div className="flex flex-wrap items-center gap-2">
-                                        <span className="font-medium">
+                                        <span className="text-sm font-medium">
                                             {workspace.name}
                                         </span>
                                         <Badge variant="secondary">
@@ -99,13 +145,13 @@ export default function OperatorWorkspaces({ workspaces }: Props) {
                                             </Badge>
                                         )}
                                     </div>
-                                    <div className="text-sm text-muted-foreground">
+                                    <div className="text-xs text-muted-foreground">
                                         Owner: {workspace.owner.name} -{' '}
                                         {workspace.active_memberships_count}{' '}
                                         active members
                                     </div>
                                     {workspace.suspended_reason && (
-                                        <div className="mt-1 text-sm text-muted-foreground">
+                                        <div className="mt-1 text-xs text-muted-foreground">
                                             {workspace.suspended_reason}
                                         </div>
                                     )}
@@ -115,7 +161,7 @@ export default function OperatorWorkspaces({ workspaces }: Props) {
                         ))}
                     </CardContent>
                 </Card>
-            </div>
+            </PageShell>
         </>
     );
 }

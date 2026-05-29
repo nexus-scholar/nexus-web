@@ -42,7 +42,7 @@ export function AppSidebar() {
     const { auth, workspace } = usePage().props;
     const isOperator = Boolean(auth.user?.is_operator);
 
-    const mainNavItems: NavItem[] = [
+    const workspaceNavItems: NavItem[] = [
         {
             title: 'Dashboard',
             href: dashboard(),
@@ -51,7 +51,7 @@ export function AppSidebar() {
     ];
 
     if (workspace.current) {
-        mainNavItems.push(
+        workspaceNavItems.push(
             {
                 title: 'Workspace settings',
                 href: workspace.current.settings_url,
@@ -65,8 +65,10 @@ export function AppSidebar() {
         );
     }
 
+    const operatorNavItems: NavItem[] = [];
+
     if (isOperator) {
-        mainNavItems.push(
+        operatorNavItems.push(
             {
                 title: 'Operator users',
                 href: '/operator/users',
@@ -96,7 +98,10 @@ export function AppSidebar() {
             </SidebarHeader>
 
             <SidebarContent>
-                <NavMain items={mainNavItems} />
+                <NavMain items={workspaceNavItems} label="Workspace" />
+                {operatorNavItems.length > 0 && (
+                    <NavMain items={operatorNavItems} label="Operations" />
+                )}
             </SidebarContent>
 
             <SidebarFooter>
