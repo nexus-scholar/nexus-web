@@ -25,8 +25,8 @@ Installed shadcn components reported by `npx shadcn@latest info --json`:
 ```text
 alert, avatar, badge, breadcrumb, button, card, checkbox, collapsible,
 dialog, dropdown-menu, input-otp, input, label, navigation-menu, select,
-separator, sheet, sidebar, skeleton, sonner, spinner, toggle-group, toggle,
-tooltip
+separator, sheet, sidebar, skeleton, sonner, spinner, textarea, toggle-group,
+toggle, tooltip
 ```
 
 ## Codex MCP Configuration
@@ -62,6 +62,7 @@ npx shadcn@latest --version
 npx shadcn@latest info --json
 npx shadcn@latest docs button --json
 npx shadcn@latest docs card --json
+npx shadcn@latest docs textarea --json
 npx shadcn@latest search "@shadcn" -q form -l 5
 ```
 
@@ -99,6 +100,12 @@ Relevant takeaways:
   layout instead of installing a Next.js block wholesale.
 - Login blocks `login-03` and `login-05` remain useful references for compact
   centered auth screens such as registration and password reset.
+- Workflow 2 registry review found `dashboard-01` useful as a dense dashboard
+  reference but too dependency-heavy to install wholesale for project/protocol
+  pages. Prefer local Nexus workflow components over importing the full block.
+- `textarea` is installed for protocol editor fields. Add `tabs` when project
+  overview sections exist, and add `table` or a DataTable wrapper only when real
+  imports, audit rows, or screening queues need it.
 
 Note: `npx shadcn@latest info --json` can fail when local DNS cannot resolve
 `ui.shadcn.com`. If that happens, use the official docs above and retry the CLI
@@ -139,6 +146,8 @@ Use `docs/design-tokens.md` as the implementation-ready token plan for global
 CSS variables and Nexus-specific semantic colors.
 Use `docs/frontend-quality.md` for React state, hook, and frontend test
 standards.
+Use `docs/workflow-2-project-protocol-ui.md` for current project/protocol UI
+preparation notes.
 
 Short version:
 
