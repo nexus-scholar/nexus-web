@@ -1,6 +1,6 @@
 import { Head } from '@inertiajs/react';
 import AppearanceTabs from '@/components/appearance-tabs';
-import Heading from '@/components/heading';
+import { SettingsSection } from '@/components/settings-section';
 import { edit as editAppearance } from '@/routes/appearance';
 
 export default function Appearance() {
@@ -10,13 +10,13 @@ export default function Appearance() {
 
             <h1 className="sr-only">Appearance settings</h1>
 
-            <div className="space-y-6">
-                <Heading
-                    variant="small"
-                    title="Appearance settings"
-                    description="Update the appearance settings for your account"
-                />
-                <AppearanceTabs />
+            <div className="space-y-5">
+                <SettingsSection
+                    title="Appearance"
+                    description="Choose how Nexus Scholar renders on this device."
+                >
+                    <AppearanceTabs />
+                </SettingsSection>
             </div>
         </>
     );

@@ -103,7 +103,7 @@ export default function Login({ status, canResetPassword }: Props) {
             </Form>
 
             {status && (
-                <div className="mb-4 text-center text-sm font-medium text-green-600">
+                <div className="mb-4 text-center text-sm font-medium text-status-include">
                     {status}
                 </div>
             )}
@@ -112,6 +112,7 @@ export default function Login({ status, canResetPassword }: Props) {
 }
 
 Login.layout = {
-    title: 'Log in to your account',
-    description: 'Enter your email and password below to log in',
+    title: 'Log in to Nexus Scholar',
+    description: 'Continue to your research workspace.',
+    variant: 'split',
 };

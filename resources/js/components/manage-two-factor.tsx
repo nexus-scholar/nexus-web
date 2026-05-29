@@ -1,7 +1,7 @@
 import { Form } from '@inertiajs/react';
 import { ShieldCheck } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
-import Heading from '@/components/heading';
+import { SettingsSection } from '@/components/settings-section';
 import TwoFactorRecoveryCodes from '@/components/two-factor-recovery-codes';
 import TwoFactorSetupModal from '@/components/two-factor-setup-modal';
 import { Button } from '@/components/ui/button';
@@ -45,25 +45,23 @@ export default function ManageTwoFactor(props: Props) {
     }
 
     return (
-        <div className="space-y-6">
-            <Heading
-                variant="small"
-                title="Two-factor authentication"
-                description="Manage your two-factor authentication settings"
-            />
-            {twoFactorEnabled ? (
-                <div className="flex flex-col items-start justify-start space-y-4">
-                    <p className="text-sm text-muted-foreground">
-                        You will be prompted for a secure, random pin during
-                        login, which you can retrieve from the TOTP-supported
-                        application on your phone.
-                    </p>
+        <SettingsSection
+            title="Two-factor authentication"
+            description="Protect sign-in with a one-time code from your authenticator app."
+        >
+            <div className="space-y-4">
+                {twoFactorEnabled ? (
+                    <div className="flex flex-col items-start gap-4">
+                        <p className="text-sm text-muted-foreground">
+                            Two-factor authentication is active for this
+                            account.
+                        </p>
 
-                    <div className="relative inline">
                         <Form {...disable.form()}>
                             {({ processing }) => (
                                 <Button
                                     variant="destructive"
+                                    size="sm"
                                     type="submit"
                                     disabled={processing}
                                 >
@@ -71,26 +69,25 @@ export default function ManageTwoFactor(props: Props) {
                                 </Button>
                             )}
                         </Form>
+
+                        <TwoFactorRecoveryCodes
+                            recoveryCodesList={recoveryCodesList}
+                            fetchRecoveryCodes={fetchRecoveryCodes}
+                            errors={errors}
+                        />
                     </div>
+                ) : (
+                    <div className="flex flex-col items-start gap-4">
+                        <p className="text-sm text-muted-foreground">
+                            Require a time-based code when signing in to Nexus
+                            Scholar.
+                        </p>
 
-                    <TwoFactorRecoveryCodes
-                        recoveryCodesList={recoveryCodesList}
-                        fetchRecoveryCodes={fetchRecoveryCodes}
-                        errors={errors}
-                    />
-                </div>
-            ) : (
-                <div className="flex flex-col items-start justify-start space-y-4">
-                    <p className="text-sm text-muted-foreground">
-                        When you enable two-factor authentication, you will be
-                        prompted for a secure pin during login. This pin can be
-                        retrieved from a TOTP-supported application on your
-                        phone.
-                    </p>
-
-                    <div>
                         {hasSetupData ? (
-                            <Button onClick={() => setShowSetupModal(true)}>
+                            <Button
+                                size="sm"
+                                onClick={() => setShowSetupModal(true)}
+                            >
                                 <ShieldCheck />
                                 Continue setup
                             </Button>
@@ -100,15 +97,19 @@ export default function ManageTwoFactor(props: Props) {
                                 onSuccess={() => setShowSetupModal(true)}
                             >
                                 {({ processing }) => (
-                                    <Button type="submit" disabled={processing}>
+                                    <Button
+                                        size="sm"
+                                        type="submit"
+                                        disabled={processing}
+                                    >
                                         Enable 2FA
                                     </Button>
                                 )}
                             </Form>
                         )}
                     </div>
-                </div>
-            )}
+                )}
+            </div>
 
             <TwoFactorSetupModal
                 isOpen={showSetupModal}
@@ -121,6 +122,6 @@ export default function ManageTwoFactor(props: Props) {
                 fetchSetupData={fetchSetupData}
                 errors={errors}
             />
-        </div>
+        </SettingsSection>
     );
 }

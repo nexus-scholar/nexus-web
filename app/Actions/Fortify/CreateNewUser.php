@@ -2,6 +2,8 @@
 
 namespace App\Actions\Fortify;
 
+use App\Actions\Audit\RecordAuditEvent;
+use App\Actions\Workspaces\CreatePersonalWorkspace;
 use App\Concerns\PasswordValidationRules;
 use App\Concerns\ProfileValidationRules;
 use App\Models\User;
@@ -11,6 +13,11 @@ use Laravel\Fortify\Contracts\CreatesNewUsers;
 class CreateNewUser implements CreatesNewUsers
 {
     use PasswordValidationRules, ProfileValidationRules;
+
+    public function __construct(
+        private readonly CreatePersonalWorkspace $createPersonalWorkspace,
+        private readonly RecordAuditEvent $audit,
+    ) {}
 
     /**
      * Validate and create a newly registered user.
@@ -24,10 +31,15 @@ class CreateNewUser implements CreatesNewUsers
             'password' => $this->passwordRules(),
         ])->validate();
 
-        return User::create([
+        $user = User::create([
             'name' => $input['name'],
             'email' => $input['email'],
             'password' => $input['password'],
         ]);
+
+        $this->audit->handle('user.registered', $user, $user);
+        $this->createPersonalWorkspace->handle($user);
+
+        return $user->fresh();
     }
 }

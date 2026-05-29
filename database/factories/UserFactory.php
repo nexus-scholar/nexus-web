@@ -30,6 +30,11 @@ class UserFactory extends Factory
             'email_verified_at' => now(),
             'password' => static::$password ??= Hash::make('password'),
             'remember_token' => Str::random(10),
+            'current_workspace_id' => null,
+            'is_operator' => false,
+            'disabled_at' => null,
+            'disabled_by' => null,
+            'disabled_reason' => null,
             'two_factor_secret' => null,
             'two_factor_recovery_codes' => null,
             'two_factor_confirmed_at' => null,
@@ -55,6 +60,22 @@ class UserFactory extends Factory
             'two_factor_secret' => encrypt('secret'),
             'two_factor_recovery_codes' => encrypt(json_encode(['recovery-code-1'])),
             'two_factor_confirmed_at' => now(),
+        ]);
+    }
+
+    public function operator(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'is_operator' => true,
+        ]);
+    }
+
+    public function disabled(?User $operator = null, string $reason = 'Operator disabled'): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'disabled_at' => now(),
+            'disabled_by' => $operator?->id,
+            'disabled_reason' => $reason,
         ]);
     }
 }
