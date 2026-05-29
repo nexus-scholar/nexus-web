@@ -75,12 +75,13 @@ item into `SearchAcrossProviders`.
 
 ## First Slice
 
-1. Add host-owned search-plan draft persistence.
-2. Add a project search-plan page reachable from the project overview after the
+Implemented:
+
+1. Host-owned search-plan draft persistence.
+2. Project search-plan page reachable from the project overview after the
    protocol is complete.
-3. Seed one demo project with a completed protocol and a ready search-plan
-   draft.
-4. Build a guided search-plan form:
+3. Seeded demo project with a completed protocol and draft search plan.
+4. Guided search-plan form:
    - query id,
    - label,
    - query text,
@@ -88,7 +89,7 @@ item into `SearchAcrossProviders`.
    - year range from protocol defaults,
    - per-query result limit,
    - include raw provider payload policy.
-5. Validate providers against the known core aliases:
+5. Provider validation against the known core aliases:
    - `openalex`
    - `crossref`
    - `semantic_scholar`
@@ -96,9 +97,12 @@ item into `SearchAcrossProviders`.
    - `pubmed`
    - `doaj`
    - `ieee`
-6. Add a background job that runs a selected plan item or all draft items
+
+Next:
+
+1. Add a background job that runs a selected plan item or all draft items
    through `SearchExecutorPort`.
-7. Add a search-run overview page that reads persisted core rows and job
+2. Add a search-run overview page that reads persisted core rows and job
    lifecycle state.
 
 ## Initial Routes
@@ -135,9 +139,10 @@ only when the protocol is complete or ready for search.
 
 Automated coverage:
 
-- Pest route, policy, validation, background dispatch, and locked-project tests.
-- Vitest tests for plan form, provider reuse, read-only state, and run status
-  components.
+- Pest route, policy, validation, and locked-project tests for the draft slice.
+- Vitest tests for plan form, provider reuse, and read-only state.
+- Add background dispatch and run-status component tests with the execution
+  slice.
 - Build, lint, type, format, and `git diff --check` gates.
 
 Browser scenarios:
@@ -164,12 +169,11 @@ Browser scenarios:
 
 ## Next Action
 
-Start with the data model and route shell:
+Wire the background execution slice:
 
-1. Add host-owned search-plan draft tables and factories.
-2. Add project policy methods for `viewSearchPlan`, `updateSearchPlan`, and
-   `runSearch`.
-3. Add a minimal Inertia search-plan page with provider tags and query draft
-   rows.
-4. Protect the first slice with Pest and Vitest before wiring the background
-   search job.
+1. Add host-owned search-run records if core lifecycle IDs are not enough for a
+   stable browser URL.
+2. Dispatch search-plan items through `SearchExecutorPort`.
+3. Render provider progress, raw counts, unique counts, and provider failures.
+4. Keep owner/admin run authorization and locked-project blocking in policy and
+   tests.

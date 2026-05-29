@@ -36,6 +36,7 @@ type DashboardProject = {
     members_count: number;
     overview_url: string;
     protocol_url: string;
+    search_plan_url: string;
 };
 
 type DashboardProps = {
@@ -177,6 +178,21 @@ export default function Dashboard() {
                                                 </div>
                                             </div>
                                             <div className="flex flex-wrap gap-2">
+                                                {project.status !== 'draft' && (
+                                                    <Button
+                                                        variant="outline"
+                                                        size="sm"
+                                                        asChild
+                                                    >
+                                                        <Link
+                                                            href={
+                                                                project.search_plan_url
+                                                            }
+                                                        >
+                                                            Search plan
+                                                        </Link>
+                                                    </Button>
+                                                )}
                                                 <Button
                                                     variant="outline"
                                                     size="sm"

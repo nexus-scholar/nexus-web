@@ -85,6 +85,11 @@ class Project extends Model
         return $this->hasMany(ProjectProtocolVersion::class);
     }
 
+    public function searchPlan(): HasOne
+    {
+        return $this->hasOne(ProjectSearchPlan::class);
+    }
+
     public function auditEvents(): HasMany
     {
         return $this->hasMany(AuditEvent::class);

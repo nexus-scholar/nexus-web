@@ -1,5 +1,11 @@
 import { Head, Link } from '@inertiajs/react';
-import { Activity, FileText, LockKeyhole, UsersRound } from 'lucide-react';
+import {
+    Activity,
+    FileText,
+    LockKeyhole,
+    SearchCheck,
+    UsersRound,
+} from 'lucide-react';
 import { MetricCard } from '@/components/metric-card';
 import { PageHeader, PageShell } from '@/components/page-shell';
 import {
@@ -45,6 +51,7 @@ type ProjectPayload = {
     urls: {
         overview: string;
         protocol: string;
+        search_plan: string;
         activity: string;
     };
     protocol: {
@@ -74,6 +81,9 @@ type Props = {
     can: {
         update_protocol: boolean;
         complete_protocol: boolean;
+        view_search_plan: boolean;
+        update_search_plan: boolean;
+        run_search: boolean;
         view_activity: boolean;
     };
 };
@@ -112,6 +122,13 @@ export default function ProjectOverview({
                                     </Link>
                                 </Button>
                             )}
+                            {can.view_search_plan && protocolReady && (
+                                <Button variant="outline" size="sm" asChild>
+                                    <Link href={project.urls.search_plan}>
+                                        Search plan
+                                    </Link>
+                                </Button>
+                            )}
                             {can.view_activity && (
                                 <Button variant="outline" size="sm" asChild>
                                     <Link href={project.urls.activity}>
@@ -123,7 +140,7 @@ export default function ProjectOverview({
                     }
                 />
 
-                <div className="grid gap-4 md:grid-cols-3">
+                <div className="grid gap-4 md:grid-cols-4">
                     <MetricCard
                         label="Project status"
                         value={project.status_label}
@@ -135,6 +152,12 @@ export default function ProjectOverview({
                         value={project.protocol?.version ?? 0}
                         description={project.protocol?.status_label ?? 'Draft'}
                         icon={FileText}
+                    />
+                    <MetricCard
+                        label="Search readiness"
+                        value={protocolReady ? 'Ready' : 'Blocked'}
+                        description="Protocol gate for search planning."
+                        icon={SearchCheck}
                     />
                     <MetricCard
                         label="Members"
@@ -232,9 +255,19 @@ export default function ProjectOverview({
                         />
                         <WorkflowStepCard
                             step={3}
-                            title="Search"
-                            description="Provider search starts in the next workflow."
+                            title="Search plan"
+                            description="Draft provider-ready queries for the search run."
                             status={protocolReady ? 'current' : 'pending'}
+                            action={
+                                can.view_search_plan &&
+                                protocolReady && (
+                                    <Button size="sm" variant="outline" asChild>
+                                        <Link href={project.urls.search_plan}>
+                                            Open search plan
+                                        </Link>
+                                    </Button>
+                                )
+                            }
                         />
 
                         <Card>

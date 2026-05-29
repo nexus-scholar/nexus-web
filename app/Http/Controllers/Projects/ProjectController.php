@@ -85,6 +85,9 @@ class ProjectController extends Controller
             'can' => [
                 'update_protocol' => $request->user()->can('updateProtocol', $project),
                 'complete_protocol' => $request->user()->can('completeProtocol', $project),
+                'view_search_plan' => $request->user()->can('viewSearchPlan', $project),
+                'update_search_plan' => $request->user()->can('updateSearchPlan', $project),
+                'run_search' => $request->user()->can('runSearch', $project),
                 'view_activity' => $request->user()->can('viewActivity', $project),
             ],
         ]);
@@ -112,6 +115,7 @@ class ProjectController extends Controller
             'urls' => [
                 'overview' => route('projects.show', $project, absolute: false),
                 'protocol' => route('projects.protocol.edit', $project, absolute: false),
+                'search_plan' => route('projects.search-plan.edit', $project, absolute: false),
                 'activity' => route('projects.activity.index', $project, absolute: false),
             ],
             'protocol' => $project->protocol ? [

@@ -7,6 +7,7 @@ use App\Actions\Projects\UpdateProjectProtocol;
 use App\Enums\ReviewType;
 use App\Http\Controllers\Controller;
 use App\Models\Project;
+use App\Support\SearchProviderCatalog;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -15,16 +16,6 @@ use Inertia\Response;
 
 class ProjectProtocolController extends Controller
 {
-    private const PROVIDER_ALIASES = [
-        'openalex',
-        'crossref',
-        'semantic_scholar',
-        'arxiv',
-        'pubmed',
-        'doaj',
-        'ieee',
-    ];
-
     public function edit(Request $request, Project $project): Response
     {
         $project->load(['workspace', 'protocol']);
@@ -120,16 +111,11 @@ class ProjectProtocolController extends Controller
                 'string',
                 'max:1000',
                 function (string $attribute, mixed $value, \Closure $fail): void {
-                    $invalid = collect(explode(',', (string) $value))
-                        ->map(fn (string $provider): string => $this->normalizeProviderAlias($provider))
-                        ->filter()
-                        ->reject(fn (string $provider): bool => in_array($provider, self::PROVIDER_ALIASES, true))
-                        ->unique()
-                        ->values();
+                    $invalid = SearchProviderCatalog::unsupportedFromText((string) $value);
 
-                    if ($invalid->isNotEmpty()) {
+                    if ($invalid !== []) {
                         $fail(__('Unsupported providers: :providers.', [
-                            'providers' => $invalid->implode(', '),
+                            'providers' => implode(', ', $invalid),
                         ]));
                     }
                 },
@@ -147,17 +133,7 @@ class ProjectProtocolController extends Controller
 
     private function providersFromText(string $value): array
     {
-        return collect(explode(',', $value))
-            ->map(fn (string $provider): string => $this->normalizeProviderAlias($provider))
-            ->filter()
-            ->unique()
-            ->values()
-            ->all();
-    }
-
-    private function normalizeProviderAlias(string $provider): string
-    {
-        return str_replace('-', '_', strtolower(trim($provider)));
+        return SearchProviderCatalog::fromText($value);
     }
 
     private function reviewTypeOptions(): array

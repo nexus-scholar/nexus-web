@@ -21,6 +21,8 @@ export type ProjectStatus =
 
 export type ProtocolStatus = 'draft' | 'complete' | 'locked' | 'amended';
 
+export type SearchPlanStatus = 'draft' | 'ready';
+
 export type ProjectRole = 'owner' | 'reviewer' | 'adjudicator' | 'viewer';
 
 export type ProtocolReadinessItem = {

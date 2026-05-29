@@ -36,6 +36,7 @@ class DashboardController extends Controller
                         'members_count' => $project->activeMemberships->count(),
                         'overview_url' => route('projects.show', $project, absolute: false),
                         'protocol_url' => route('projects.protocol.edit', $project, absolute: false),
+                        'search_plan_url' => route('projects.search-plan.edit', $project, absolute: false),
                     ])
                     ->all()
                 : [],

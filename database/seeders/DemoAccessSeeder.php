@@ -17,6 +17,7 @@ use App\Models\Project;
 use App\Models\ProjectMembership;
 use App\Models\ProjectProtocol;
 use App\Models\ProjectProtocolVersion;
+use App\Models\ProjectSearchPlan;
 use App\Models\User;
 use App\Models\Workspace;
 use App\Models\WorkspaceInvitation;
@@ -56,6 +57,13 @@ class DemoAccessSeeder extends Seeder
         $this->projectMembership($demoProject, $reviewer, ProjectRole::Reviewer);
         $this->projectMembership($demoProject, $viewer, ProjectRole::Viewer);
         $this->projectProtocol($demoProject, $owner);
+
+        $searchProject = $this->searchReadyProject($lab, $owner);
+        $this->projectMembership($searchProject, $owner, ProjectRole::Owner);
+        $this->projectMembership($searchProject, $reviewer, ProjectRole::Reviewer);
+        $this->projectMembership($searchProject, $viewer, ProjectRole::Viewer);
+        $this->completedProjectProtocol($searchProject, $owner);
+        $this->searchPlan($searchProject, $owner);
 
         $suspended = $this->workspace('Suspended Review Group', 'suspended-review-group', $owner);
         $suspended->forceFill([
@@ -98,6 +106,7 @@ class DemoAccessSeeder extends Seeder
         $this->audit('user.disabled', $disabled, $operator, null, 'Demo disabled account.');
         $this->audit('workspace.suspended', $suspended, $operator, $suspended, 'Demo suspended workspace.');
         $this->audit('project.created', $demoProject, $owner, $lab, 'Demo project created.', $demoProject);
+        $this->audit('project.created', $searchProject, $owner, $lab, 'Demo search-ready project created.', $searchProject);
     }
 
     private function user(
@@ -186,6 +195,24 @@ class DemoAccessSeeder extends Seeder
         );
     }
 
+    private function searchReadyProject(Workspace $workspace, User $owner): Project
+    {
+        return Project::updateOrCreate(
+            [
+                'workspace_id' => $workspace->id,
+                'slug' => 'cardiometabolic-review-search-ready',
+            ],
+            [
+                'name' => 'Cardiometabolic Review Search Strategy',
+                'owner_user_id' => $owner->id,
+                'description' => 'Demo project with a completed protocol and editable search plan.',
+                'review_type' => ReviewType::SystematicReview,
+                'status' => ProjectStatus::ReadyForSearch,
+                'metadata' => ['source' => 'demo-seeder'],
+            ],
+        );
+    }
+
     private function projectMembership(Project $project, User $user, ProjectRole $role): ProjectMembership
     {
         return ProjectMembership::updateOrCreate(
@@ -242,6 +269,101 @@ class DemoAccessSeeder extends Seeder
         );
 
         return $protocol;
+    }
+
+    private function completedProjectProtocol(Project $project, User $owner): ProjectProtocol
+    {
+        $protocol = ProjectProtocol::updateOrCreate(
+            ['project_id' => $project->id],
+            [
+                'status' => ProtocolStatus::Complete,
+                'version' => 2,
+                'title' => $project->name,
+                'research_question' => 'What digital interventions improve cardiometabolic risk among adults in primary care?',
+                'background' => 'The demo lab has completed the protocol and is ready to draft provider-specific searches.',
+                'inclusion_criteria' => 'Randomized and observational studies of digital cardiometabolic interventions in adult primary care populations.',
+                'exclusion_criteria' => 'Editorials, pediatric-only cohorts, and studies without patient-level outcomes.',
+                'target_providers' => ['openalex', 'crossref', 'pubmed'],
+                'date_range_start' => '2020-01-01',
+                'date_range_end' => '2026-05-29',
+                'no_date_limit' => false,
+                'language_policy' => 'English-language records; translate non-English abstracts manually when needed.',
+                'min_reviewer_count' => 2,
+                'ai_screening_policy' => 'human_only',
+                'full_text_policy' => 'optional',
+                'created_by' => $owner->id,
+                'updated_by' => $owner->id,
+                'completed_at' => now(),
+            ],
+        );
+
+        ProjectProtocolVersion::updateOrCreate(
+            [
+                'project_protocol_id' => $protocol->id,
+                'version' => $protocol->version,
+            ],
+            [
+                'project_id' => $project->id,
+                'status' => $protocol->status,
+                'snapshot' => $protocol->load('project')->snapshot(),
+                'reason' => 'Demo protocol completed for search planning.',
+                'created_by' => $owner->id,
+            ],
+        );
+
+        return $protocol;
+    }
+
+    private function searchPlan(Project $project, User $owner): ProjectSearchPlan
+    {
+        $plan = ProjectSearchPlan::updateOrCreate(
+            ['project_id' => $project->id],
+            [
+                'status' => 'draft',
+                'version' => 1,
+                'default_providers' => ['openalex', 'crossref', 'pubmed'],
+                'default_year_from' => 2020,
+                'default_year_to' => 2026,
+                'default_result_limit' => 75,
+                'include_raw_data' => false,
+                'created_by' => $owner->id,
+                'updated_by' => $owner->id,
+            ],
+        );
+
+        $plan->queries()
+            ->whereNotIn('query_key', ['primary-search', 'implementation-search'])
+            ->delete();
+
+        $plan->queries()->updateOrCreate(
+            ['query_key' => 'primary-search'],
+            [
+                'sort_order' => 1,
+                'label' => 'Primary intervention search',
+                'query' => '(digital OR mobile OR telehealth) AND cardiometabolic AND "primary care"',
+                'providers' => ['openalex', 'crossref', 'pubmed'],
+                'year_from' => 2020,
+                'year_to' => 2026,
+                'result_limit' => 75,
+                'include_raw_data' => false,
+            ],
+        );
+
+        $plan->queries()->updateOrCreate(
+            ['query_key' => 'implementation-search'],
+            [
+                'sort_order' => 2,
+                'label' => 'Implementation and adherence search',
+                'query' => '(implementation OR adherence OR engagement) AND cardiometabolic AND digital',
+                'providers' => ['openalex', 'pubmed'],
+                'year_from' => 2020,
+                'year_to' => 2026,
+                'result_limit' => 50,
+                'include_raw_data' => false,
+            ],
+        );
+
+        return $plan->refresh()->load('queries');
     }
 
     private function audit(

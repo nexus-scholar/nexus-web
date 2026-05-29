@@ -52,6 +52,8 @@ Seeded project states:
 
 - `AI Screening in Primary Care Reviews`: draft project in Evidence Synthesis
   Lab with a draft protocol.
+- `Cardiometabolic Review Search Strategy`: ready-for-search project in
+  Evidence Synthesis Lab with a completed protocol and draft search plan.
 - Owner has the project `owner` role.
 - Reviewer has the project `reviewer` role.
 - Viewer has the project `viewer` role.
@@ -220,13 +222,15 @@ Expected signals:
 
 ## Workflow 3: Search Plan And Search Run
 
-Prepare these scenarios with the first search-plan implementation.
+The first implemented slice covers host-owned search-plan drafting and
+role-scoped read-only review. Background search dispatch is intentionally left
+for the next slice.
 
 ### Owner Search Plan Draft
 
 1. Clear sessions.
 2. Log in as `owner@nexusscholar.test`.
-3. Open the completed demo project.
+3. Open `Cardiometabolic Review Search Strategy`.
 4. Open the `Search plan` action.
 5. Add or edit query rows, providers, year range, result limit, and raw-payload
    policy.
@@ -238,8 +242,12 @@ Expected signals:
 - Provider selection uses known provider tags.
 - Protocol defaults are visible without hiding per-query overrides.
 - Validation errors identify the specific query row and field.
+- `Run all queries` is visible but disabled until the background search-run
+  slice is implemented.
 
 ### Owner Search Run Dispatch
+
+This scenario is planned for the next implementation slice.
 
 1. As the owner, run all draft search-plan items.
 2. Open the search-run overview page after dispatch.
@@ -256,7 +264,7 @@ Expected signals:
 
 1. Clear sessions.
 2. Log in as `reviewer@nexusscholar.test`.
-3. Open the demo project search-plan page.
+3. Open the `Cardiometabolic Review Search Strategy` search-plan page.
 4. Capture `output/playwright/workflow-3-reviewer-search-plan-readonly.png`.
 5. Repeat as `viewer@nexusscholar.test`.
 

@@ -6,6 +6,7 @@ use App\Http\Controllers\Operator\WorkspacesController as OperatorWorkspacesCont
 use App\Http\Controllers\Projects\ProjectActivityController;
 use App\Http\Controllers\Projects\ProjectController;
 use App\Http\Controllers\Projects\ProjectProtocolController;
+use App\Http\Controllers\Projects\ProjectSearchPlanController;
 use App\Http\Controllers\Workspaces\WorkspaceController;
 use App\Http\Controllers\Workspaces\WorkspaceInvitationController;
 use App\Http\Controllers\Workspaces\WorkspaceMembersController;
@@ -32,6 +33,8 @@ Route::middleware(['auth', 'verified', 'not_disabled', 'workspace.ready'])->grou
     Route::get('projects/{project}', [ProjectController::class, 'show'])->name('projects.show');
     Route::get('projects/{project}/protocol', [ProjectProtocolController::class, 'edit'])->name('projects.protocol.edit');
     Route::patch('projects/{project}/protocol', [ProjectProtocolController::class, 'update'])->name('projects.protocol.update');
+    Route::get('projects/{project}/search-plan', [ProjectSearchPlanController::class, 'edit'])->name('projects.search-plan.edit');
+    Route::patch('projects/{project}/search-plan', [ProjectSearchPlanController::class, 'update'])->name('projects.search-plan.update');
     Route::get('projects/{project}/activity', [ProjectActivityController::class, 'index'])->name('projects.activity.index');
 });
 

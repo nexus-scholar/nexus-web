@@ -15,6 +15,7 @@ class CompleteProjectProtocol
 {
     public function __construct(
         private readonly RecordAuditEvent $audit,
+        private readonly EnsureProjectSearchPlan $ensureSearchPlan,
         private readonly RecordProjectProtocolVersion $recordVersion,
     ) {}
 
@@ -42,6 +43,7 @@ class CompleteProjectProtocol
 
             $protocol->refresh()->load('project');
             $this->recordVersion->handle($protocol, $actor, 'Protocol marked complete.');
+            $this->ensureSearchPlan->handle($project->refresh()->load('protocol'), $actor);
             $this->audit->handle('project.protocol.completed', $protocol, $actor, $project->workspace, project: $project);
 
             return $protocol;
