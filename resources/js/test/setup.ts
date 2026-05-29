@@ -23,3 +23,12 @@ Object.defineProperty(window, 'matchMedia', {
         removeListener: vi.fn(),
     })),
 });
+
+vi.stubGlobal(
+    'ResizeObserver',
+    class ResizeObserver {
+        disconnect() {}
+        observe() {}
+        unobserve() {}
+    },
+);

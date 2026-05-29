@@ -3,6 +3,7 @@ import userEvent from '@testing-library/user-event';
 import type { ReactNode } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { SidebarProvider } from '@/components/ui/sidebar';
+import { TooltipProvider } from '@/components/ui/tooltip';
 import { WorkspaceSwitcher } from '@/components/workspace-switcher';
 
 const postMock = vi.hoisted(() => vi.fn());
@@ -22,6 +23,7 @@ const mockPage = vi.hoisted(() => ({
                     workspace: {
                         id: 'shared-workspace',
                         name: 'Evidence Synthesis Lab',
+                        type: 'shared',
                     },
                 },
                 {
@@ -30,6 +32,7 @@ const mockPage = vi.hoisted(() => ({
                     workspace: {
                         id: 'personal-workspace',
                         name: 'Personal Workspace',
+                        type: 'personal',
                     },
                 },
             ],
@@ -45,7 +48,11 @@ vi.mock('@inertiajs/react', () => ({
 }));
 
 function renderWithSidebar(children: ReactNode) {
-    return render(<SidebarProvider>{children}</SidebarProvider>);
+    return render(
+        <TooltipProvider>
+            <SidebarProvider>{children}</SidebarProvider>
+        </TooltipProvider>,
+    );
 }
 
 describe('WorkspaceSwitcher', () => {
@@ -53,7 +60,7 @@ describe('WorkspaceSwitcher', () => {
         renderWithSidebar(<WorkspaceSwitcher />);
 
         expect(screen.getByText('Evidence Synthesis Lab')).toBeInTheDocument();
-        expect(screen.getByText('admin')).toBeInTheDocument();
+        expect(screen.getByText('Admin')).toBeInTheDocument();
     });
 
     it('posts the selected workspace when the user switches context', async () => {
@@ -61,8 +68,9 @@ describe('WorkspaceSwitcher', () => {
 
         renderWithSidebar(<WorkspaceSwitcher />);
 
-        await user.click(screen.getByRole('button'));
-        await user.click(await screen.findByText('Personal Workspace'));
+        await user.click(
+            screen.getByRole('button', { name: /Personal Workspace/i }),
+        );
 
         expect(postMock).toHaveBeenCalledWith(
             '/workspaces/switch',

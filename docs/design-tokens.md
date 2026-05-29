@@ -221,6 +221,8 @@ Implemented:
 - Shared `PageShell`, `PageHeader`, and `MetricCard` primitives for access
   pages.
 - Shared `SettingsSection` panels for account and security surfaces.
+- Sidebar navigation with static workspace switching and inline account actions,
+  without Laravel starter repository/documentation links.
 
 Next:
 

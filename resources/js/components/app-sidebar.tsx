@@ -1,15 +1,12 @@
 import { Link, usePage } from '@inertiajs/react';
 import {
-    BookOpen,
     Building2,
-    FolderGit2,
     LayoutGrid,
     Settings,
     ShieldCheck,
     Users,
 } from 'lucide-react';
 import AppLogo from '@/components/app-logo';
-import { NavFooter } from '@/components/nav-footer';
 import { NavMain } from '@/components/nav-main';
 import { NavUser } from '@/components/nav-user';
 import {
@@ -24,19 +21,6 @@ import {
 import { WorkspaceSwitcher } from '@/components/workspace-switcher';
 import { dashboard } from '@/routes';
 import type { NavItem } from '@/types';
-
-const footerNavItems: NavItem[] = [
-    {
-        title: 'Repository',
-        href: 'https://github.com/nexus-scholar/nexus-web',
-        icon: FolderGit2,
-    },
-    {
-        title: 'Documentation',
-        href: 'https://github.com/nexus-scholar/core',
-        icon: BookOpen,
-    },
-];
 
 export function AppSidebar() {
     const { auth, workspace } = usePage().props;
@@ -94,18 +78,17 @@ export function AppSidebar() {
                         </SidebarMenuButton>
                     </SidebarMenuItem>
                 </SidebarMenu>
-                <WorkspaceSwitcher />
             </SidebarHeader>
 
             <SidebarContent>
+                <WorkspaceSwitcher />
                 <NavMain items={workspaceNavItems} label="Workspace" />
                 {operatorNavItems.length > 0 && (
                     <NavMain items={operatorNavItems} label="Operations" />
                 )}
             </SidebarContent>
 
-            <SidebarFooter>
-                <NavFooter items={footerNavItems} className="mt-auto" />
+            <SidebarFooter className="border-t border-sidebar-border/70">
                 <NavUser />
             </SidebarFooter>
         </Sidebar>
