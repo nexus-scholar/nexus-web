@@ -276,6 +276,96 @@ Expected signals:
 - Reviewer and viewer cannot edit the plan or dispatch a run.
 - Locked projects block search dispatch for every actor.
 
+## Workflow 4: Draft Corpus Review
+
+Planned. Activate these checks after the workflow 4 implementation starts.
+
+The prepared slice covers a read-only corpus review surface after search runs
+persist project works. It should not implement screening, full-text retrieval,
+export, manual merge, or corpus lock actions.
+
+### Owner Corpus Review
+
+1. Clear sessions.
+2. Log in as `owner@nexusscholar.test`.
+3. Open `Cardiometabolic Review Search Strategy`.
+4. Open the `Corpus` action from the project overview.
+5. Capture `output/playwright/workflow-4-corpus-overview.png`.
+
+Expected signals:
+
+- Project status is `Draft corpus` when a completed search run has contributed
+  records.
+- Metrics show unique works, raw query links, provider coverage, metadata
+  issues, and duplicate cluster count when clusters exist.
+- Corpus records are listed with year, provider badges, metadata quality, and
+  query-link counts.
+- The page is read-only in this slice; no include, exclude, merge, split,
+  screen, export, or lock action is visible.
+
+### Record Detail And Provenance
+
+1. As the owner, open the corpus review page.
+2. Select a record with multiple providers or query links.
+3. Capture `output/playwright/workflow-4-corpus-detail.png`.
+
+Expected signals:
+
+- Detail shows title, abstract preview, year, venue, identifiers, provider
+  sightings, query provenance, rank, and seen timestamp.
+- Missing abstract, missing identifier, and retracted flags are visible as
+  metadata facts.
+- Provider aliases use core-normalized values such as `semantic_scholar`.
+
+### Corpus Filters
+
+1. As the owner, filter by provider, search query, year range, identifier
+   namespace, and metadata issue.
+2. Capture `output/playwright/workflow-4-corpus-filters.png`.
+
+Expected signals:
+
+- Filters are reflected in the URL query string.
+- Pagination keeps filter parameters.
+- Reset returns to the full project corpus without leaving the project context.
+
+### Corpus Role Boundary
+
+1. Clear sessions.
+2. Log in as `reviewer@nexusscholar.test`.
+3. Open the `Cardiometabolic Review Search Strategy` corpus page.
+4. Capture `output/playwright/workflow-4-reviewer-corpus-readonly.png`.
+5. Repeat as `viewer@nexusscholar.test`.
+
+Expected signals:
+
+- Reviewer and viewer can inspect corpus records and provenance.
+- Reviewer and viewer do not see mutation controls.
+- Users outside the project and without workspace administration cannot view
+  the corpus.
+
+### Empty Corpus State
+
+1. As the owner, open a project with no persisted query-work membership.
+2. Capture `output/playwright/workflow-4-corpus-empty.png`.
+
+Expected signals:
+
+- The page explains that search must run before corpus review has records.
+- The primary next action points to the search plan when allowed.
+- No fake records or placeholder metrics are shown.
+
+### Locked Corpus State
+
+1. As the owner, open a project with `locked_at` and a corpus snapshot.
+2. Capture `output/playwright/workflow-4-corpus-locked.png`.
+
+Expected signals:
+
+- Membership is presented as snapshot-backed, not draft query-work membership.
+- Snapshot metadata includes locked time, actor, reason, and work count.
+- Search and snowballing mutation actions are not available while locked.
+
 ## UI Hardening: Brand Tokens
 
 Run this after global token or shared component changes.
