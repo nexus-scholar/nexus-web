@@ -205,6 +205,46 @@ Expected signals:
 - The visual panel image is decorative for assistive technology and does not
   introduce readable pseudo-text or a heavy PNG payload.
 
+## UI Hardening: Sidebar Shell
+
+Run this after sidebar, workspace switcher, account footer, or navigation
+changes.
+
+### Owner Sidebar Smoke
+
+1. Clear sessions.
+2. Log in as `owner@nexusscholar.test`.
+3. Open `/dashboard`.
+4. Verify the sidebar contains static workspace rows, not a workspace dropdown.
+5. Switch from `Evidence Synthesis Lab` to `Dr. Lina Haddad's Workspace`.
+6. Collapse the sidebar.
+7. Capture `output/playwright/nexus-sidebar-refactor-dashboard.png` and
+   `output/playwright/nexus-sidebar-refactor-collapsed.png`.
+
+Expected signals:
+
+- The sidebar brand reads `Nexus Scholar`.
+- There are no `Repository`, `Documentation`, GitHub, or Laravel starter links.
+- Workspace rows show the workspace name and role.
+- The active workspace row is highlighted and disabled.
+- `Settings` and `Log out` are direct footer actions, not a user dropdown.
+- Collapsed mode keeps the logo, workspace icons, navigation icons, account
+  avatar, settings icon, and logout icon visible without text overlap.
+
+### Operator Sidebar Smoke
+
+1. Clear sessions.
+2. Log in as `operator@nexusscholar.test`.
+3. Open `/operator/users`.
+4. Verify operator navigation is visible.
+5. Capture `output/playwright/nexus-sidebar-operator-users.png`.
+
+Expected signals:
+
+- `Operator users` and `Operator workspaces` appear only for the operator.
+- Workspace navigation and account footer still match the owner sidebar shape.
+- Operator pages contain no starter-kit footer links.
+
 ## Browser Verification Rules
 
 - Prefer the Browser MCP for local visual checks.

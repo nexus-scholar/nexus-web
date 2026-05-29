@@ -94,6 +94,7 @@ Current UI test coverage includes:
 - `SettingsSection`,
 - `useCurrentUrl`,
 - auth layout variant selection.
+- app sidebar product navigation and operator-only links.
 - workspace switcher rendering and context switching.
 
 Do not build a broad snapshot suite. It will slow the team down and catch the

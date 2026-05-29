@@ -1,7 +1,8 @@
+import type * as InertiaReact from '@inertiajs/react';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import type { ReactNode } from 'react';
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { SidebarProvider } from '@/components/ui/sidebar';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { WorkspaceSwitcher } from '@/components/workspace-switcher';
@@ -40,12 +41,18 @@ const mockPage = vi.hoisted(() => ({
     },
 }));
 
-vi.mock('@inertiajs/react', () => ({
-    router: {
-        post: postMock,
-    },
-    usePage: () => mockPage,
-}));
+vi.mock('@inertiajs/react', async (importOriginal) => {
+    const actual = await importOriginal<typeof InertiaReact>();
+
+    return {
+        ...actual,
+        router: {
+            ...actual.router,
+            post: postMock,
+        },
+        usePage: () => mockPage,
+    };
+});
 
 function renderWithSidebar(children: ReactNode) {
     return render(
@@ -56,11 +63,18 @@ function renderWithSidebar(children: ReactNode) {
 }
 
 describe('WorkspaceSwitcher', () => {
+    beforeEach(() => {
+        postMock.mockClear();
+    });
+
     it('renders the active workspace and role', () => {
         renderWithSidebar(<WorkspaceSwitcher />);
 
         expect(screen.getByText('Evidence Synthesis Lab')).toBeInTheDocument();
         expect(screen.getByText('Admin')).toBeInTheDocument();
+        expect(
+            screen.getByRole('button', { name: /Evidence Synthesis Lab/i }),
+        ).toBeDisabled();
     });
 
     it('posts the selected workspace when the user switches context', async () => {
