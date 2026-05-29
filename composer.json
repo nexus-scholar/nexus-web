@@ -1,13 +1,47 @@
 {
     "$schema": "https://getcomposer.org/schema.json",
-    "name": "laravel/react-starter-kit",
+    "name": "nexus-scholar/nexus-web",
     "type": "project",
-    "description": "The skeleton application for the Laravel framework.",
+    "description": "Hosted Nexus Scholar web application for systematic review teams.",
     "keywords": [
+        "nexus-scholar",
+        "systematic-review",
         "laravel",
-        "framework"
+        "inertia"
     ],
     "license": "MIT",
+    "repositories": [
+        {
+            "type": "path",
+            "url": "../core",
+            "options": {
+                "symlink": true,
+                "versions": {
+                    "nexus-scholar/core": "1.0.0"
+                }
+            }
+        },
+        {
+            "type": "path",
+            "url": "../graph-core",
+            "options": {
+                "symlink": true,
+                "versions": {
+                    "nexus-scholar/graph-core": "1.2.0"
+                }
+            }
+        },
+        {
+            "type": "path",
+            "url": "../graph-algorithms",
+            "options": {
+                "symlink": true,
+                "versions": {
+                    "nexus-scholar/graph-algorithms": "1.2.0"
+                }
+            }
+        }
+    ],
     "require": {
         "php": "^8.3",
         "inertiajs/inertia-laravel": "^3.0",
@@ -15,7 +49,8 @@
         "laravel/fortify": "^1.37.2",
         "laravel/framework": "^13.7",
         "laravel/tinker": "^3.0",
-        "laravel/wayfinder": "^0.1.14"
+        "laravel/wayfinder": "^0.1.14",
+        "nexus-scholar/core": "^1.0"
     },
     "require-dev": {
         "fakerphp/faker": "^1.24",
