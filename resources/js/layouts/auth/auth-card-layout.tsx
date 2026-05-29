@@ -24,11 +24,13 @@ export default function AuthCardLayout({
             <div className="flex w-full max-w-md flex-col gap-6">
                 <Link
                     href={home()}
+                    aria-label="Nexus Scholar home"
                     className="flex items-center gap-2 self-center font-medium"
                 >
-                    <div className="flex h-9 w-9 items-center justify-center">
-                        <AppLogoIcon className="size-9 fill-current text-black dark:text-white" />
+                    <div className="flex size-9 items-center justify-center rounded-lg bg-brand text-brand-foreground shadow-sm">
+                        <AppLogoIcon className="size-5" />
                     </div>
+                    <span aria-hidden="true">Nexus Scholar</span>
                 </Link>
 
                 <div className="flex flex-col gap-6">

@@ -2,6 +2,8 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\User;
+use App\Models\Workspace;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -41,7 +43,53 @@ class HandleInertiaRequests extends Middleware
             'auth' => [
                 'user' => $request->user(),
             ],
+            'workspace' => fn () => $this->workspacePayload($request),
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
+        ];
+    }
+
+    /**
+     * @return array{current: array<string, mixed>|null, memberships: array<int, array<string, mixed>>}
+     */
+    private function workspacePayload(Request $request): array
+    {
+        $user = $request->user();
+
+        if (! $user) {
+            return ['current' => null, 'memberships' => []];
+        }
+
+        $current = $user->currentWorkspace;
+
+        return [
+            'current' => $current instanceof Workspace ? $this->workspaceSummary($current, $user) : null,
+            'memberships' => $user->activeWorkspaceMemberships()
+                ->with('workspace')
+                ->whereHas('workspace', fn ($query) => $query->whereNull('suspended_at'))
+                ->oldest()
+                ->get()
+                ->map(fn ($membership) => [
+                    'id' => $membership->id,
+                    'role' => $membership->role->value,
+                    'role_label' => $membership->role->label(),
+                    'workspace' => $this->workspaceSummary($membership->workspace, $user),
+                ])
+                ->values()
+                ->all(),
+        ];
+    }
+
+    private function workspaceSummary(Workspace $workspace, User $user): array
+    {
+        return [
+            'id' => $workspace->id,
+            'name' => $workspace->name,
+            'slug' => $workspace->slug,
+            'type' => $workspace->type->value,
+            'role' => $user->workspaceRole($workspace)?->value,
+            'suspended_at' => $workspace->suspended_at?->toISOString(),
+            'settings_url' => route('workspaces.settings.edit', $workspace, absolute: false),
+            'members_url' => route('workspaces.members.index', $workspace, absolute: false),
         ];
     }
 }

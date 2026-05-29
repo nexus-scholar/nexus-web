@@ -1,5 +1,8 @@
 <?php
 
+use App\Http\Middleware\EnsureCurrentWorkspace;
+use App\Http\Middleware\EnsureOperator;
+use App\Http\Middleware\EnsureUserIsNotDisabled;
 use App\Http\Middleware\HandleAppearance;
 use App\Http\Middleware\HandleInertiaRequests;
 use Illuminate\Foundation\Application;
@@ -16,6 +19,12 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->encryptCookies(except: ['appearance', 'sidebar_state']);
+
+        $middleware->alias([
+            'not_disabled' => EnsureUserIsNotDisabled::class,
+            'operator' => EnsureOperator::class,
+            'workspace.ready' => EnsureCurrentWorkspace::class,
+        ]);
 
         $middleware->web(append: [
             HandleAppearance::class,
