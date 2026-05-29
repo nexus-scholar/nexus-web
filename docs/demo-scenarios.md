@@ -218,6 +218,54 @@ Expected signals:
 - Workspace admin can access the project without an explicit project membership
   row.
 
+## Workflow 3: Search Plan And Search Run
+
+Prepare these scenarios with the first search-plan implementation.
+
+### Owner Search Plan Draft
+
+1. Clear sessions.
+2. Log in as `owner@nexusscholar.test`.
+3. Open the completed demo project.
+4. Open the `Search plan` action.
+5. Add or edit query rows, providers, year range, result limit, and raw-payload
+   policy.
+6. Capture `output/playwright/workflow-3-search-plan-draft.png`.
+
+Expected signals:
+
+- Search-plan editing is available only after protocol completion.
+- Provider selection uses known provider tags.
+- Protocol defaults are visible without hiding per-query overrides.
+- Validation errors identify the specific query row and field.
+
+### Owner Search Run Dispatch
+
+1. As the owner, run all draft search-plan items.
+2. Open the search-run overview page after dispatch.
+3. Capture `output/playwright/workflow-3-search-run-overview.png`.
+
+Expected signals:
+
+- The run moves to a background state immediately.
+- Provider-level progress, raw counts, unique-work counts, and failures are
+  visible when available.
+- Partial provider failure does not hide successful provider results.
+
+### Search Plan Role Boundary
+
+1. Clear sessions.
+2. Log in as `reviewer@nexusscholar.test`.
+3. Open the demo project search-plan page.
+4. Capture `output/playwright/workflow-3-reviewer-search-plan-readonly.png`.
+5. Repeat as `viewer@nexusscholar.test`.
+
+Expected signals:
+
+- Reviewer and viewer can inspect the plan and search-run status.
+- Reviewer and viewer cannot edit the plan or dispatch a run.
+- Locked projects block search dispatch for every actor.
+
 ## UI Hardening: Brand Tokens
 
 Run this after global token or shared component changes.
