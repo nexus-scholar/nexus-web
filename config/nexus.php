@@ -164,4 +164,8 @@ return [
             ],
         ],
     ],
+
+    'projects' => [
+        'personal_workspace_active_limit' => env('NEXUS_PERSONAL_WORKSPACE_PROJECT_LIMIT', 2),
+    ],
 ];

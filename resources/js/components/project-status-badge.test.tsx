@@ -21,6 +21,14 @@ describe('project workflow badges', () => {
         expect(screen.getByText('Locked')).toHaveClass('text-status-audit');
     });
 
+    it('renders core project lock status as locked corpus', () => {
+        render(<ProjectStatusBadge status="locked" />);
+
+        expect(screen.getByText('Locked corpus')).toHaveClass(
+            'text-status-audit',
+        );
+    });
+
     it('renders project roles with caller-provided labels', () => {
         render(
             <ProjectRoleBadge status="adjudicator">

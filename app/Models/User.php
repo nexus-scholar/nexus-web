@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Enums\ProjectMembershipStatus;
+use App\Enums\ProjectRole;
 use App\Enums\WorkspaceMembershipStatus;
 use App\Enums\WorkspaceRole;
 use Database\Factories\UserFactory;
@@ -43,6 +45,17 @@ class User extends Authenticatable implements MustVerifyEmail, PasskeyUser
         return $this->hasMany(WorkspaceMembership::class);
     }
 
+    public function projectMemberships(): HasMany
+    {
+        return $this->hasMany(ProjectMembership::class);
+    }
+
+    public function activeProjectMemberships(): HasMany
+    {
+        return $this->projectMemberships()
+            ->where('status', ProjectMembershipStatus::Active->value);
+    }
+
     public function activeWorkspaceMemberships(): HasMany
     {
         return $this->workspaceMemberships()
@@ -70,6 +83,19 @@ class User extends Authenticatable implements MustVerifyEmail, PasskeyUser
     public function belongsToWorkspace(Workspace $workspace): bool
     {
         return $this->workspaceRole($workspace) !== null;
+    }
+
+    public function projectRole(Project $project): ?ProjectRole
+    {
+        return $this->activeProjectMemberships()
+            ->where('project_id', $project->id)
+            ->first()
+            ?->role;
+    }
+
+    public function belongsToProject(Project $project): bool
+    {
+        return $this->projectRole($project) !== null;
     }
 
     public function isWorkspaceOwner(Workspace $workspace): bool

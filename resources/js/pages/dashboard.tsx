@@ -1,9 +1,13 @@
 import { Head, Link, useForm, usePage } from '@inertiajs/react';
-import { Building2, ShieldCheck, UsersRound } from 'lucide-react';
+import { FileText, FolderPlus, ShieldCheck, UsersRound } from 'lucide-react';
 import type { FormEvent } from 'react';
 import InputError from '@/components/input-error';
 import { MetricCard } from '@/components/metric-card';
 import { PageHeader, PageShell } from '@/components/page-shell';
+import {
+    ProjectStatusBadge,
+    ProtocolStatusBadge,
+} from '@/components/project-status-badge';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -17,9 +21,32 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { WorkspaceStatusBadge } from '@/components/workspace-status-badge';
 import { dashboard } from '@/routes';
+import type { ProjectStatus, ProtocolStatus, ReviewType } from '@/types';
+
+type DashboardProject = {
+    id: string;
+    name: string;
+    slug: string;
+    review_type: ReviewType;
+    review_type_label: string;
+    status: ProjectStatus;
+    status_label: string;
+    protocol_status: ProtocolStatus | null;
+    protocol_status_label: string | null;
+    members_count: number;
+    overview_url: string;
+    protocol_url: string;
+};
+
+type DashboardProps = {
+    projects: DashboardProject[];
+    can: {
+        create_project: boolean;
+    };
+};
 
 export default function Dashboard() {
-    const { workspace } = usePage().props;
+    const { can, projects, workspace } = usePage<DashboardProps>().props;
     const createWorkspace = useForm({ name: '' });
 
     const submitWorkspace = (event: FormEvent) => {
@@ -41,13 +68,22 @@ export default function Dashboard() {
                     title={workspace.current?.name ?? 'Dashboard'}
                     description="Workspace access, membership context, and the next shared lab setup."
                     actions={
-                        workspace.current && (
-                            <Button variant="outline" asChild>
-                                <Link href={workspace.current.settings_url}>
-                                    Workspace settings
-                                </Link>
-                            </Button>
-                        )
+                        <>
+                            {can.create_project && (
+                                <Button size="sm" asChild>
+                                    <Link href="/projects/create">
+                                        New project
+                                    </Link>
+                                </Button>
+                            )}
+                            {workspace.current && (
+                                <Button variant="outline" size="sm" asChild>
+                                    <Link href={workspace.current.settings_url}>
+                                        Workspace settings
+                                    </Link>
+                                </Button>
+                            )}
+                        </>
                     }
                 />
 
@@ -59,10 +95,10 @@ export default function Dashboard() {
                         icon={ShieldCheck}
                     />
                     <MetricCard
-                        label="Accessible workspaces"
-                        value={workspace.memberships.length}
-                        description="Personal and shared contexts available to you."
-                        icon={Building2}
+                        label="Active projects"
+                        value={projects.length}
+                        description="Projects visible in the current workspace."
+                        icon={FileText}
                     />
                     <MetricCard
                         label="Workspace type"
@@ -78,6 +114,98 @@ export default function Dashboard() {
 
                 <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_22rem]">
                     <section className="space-y-4">
+                        <Card>
+                            <CardHeader className="flex-row items-start justify-between gap-4">
+                                <div className="space-y-1">
+                                    <CardTitle>Projects</CardTitle>
+                                    <CardDescription>
+                                        Protocol-backed reviews in this
+                                        workspace.
+                                    </CardDescription>
+                                </div>
+                                {can.create_project && (
+                                    <Button size="sm" variant="outline" asChild>
+                                        <Link href="/projects/create">
+                                            Create
+                                        </Link>
+                                    </Button>
+                                )}
+                            </CardHeader>
+                            <CardContent className="divide-y">
+                                {projects.length === 0 ? (
+                                    <div className="grid gap-3 py-4 text-sm text-muted-foreground">
+                                        <div className="flex items-center gap-2">
+                                            <FolderPlus className="size-4" />
+                                            <span>
+                                                No projects have been created in
+                                                this workspace yet.
+                                            </span>
+                                        </div>
+                                        {can.create_project && (
+                                            <Button
+                                                size="sm"
+                                                className="w-fit"
+                                                asChild
+                                            >
+                                                <Link href="/projects/create">
+                                                    Create project
+                                                </Link>
+                                            </Button>
+                                        )}
+                                    </div>
+                                ) : (
+                                    projects.map((project) => (
+                                        <div
+                                            key={project.id}
+                                            className="grid gap-3 py-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center"
+                                        >
+                                            <div className="min-w-0">
+                                                <div className="truncate text-sm font-medium">
+                                                    {project.name}
+                                                </div>
+                                                <div className="mt-1 flex flex-wrap gap-2">
+                                                    <ProjectStatusBadge
+                                                        status={project.status}
+                                                    />
+                                                    {project.protocol_status && (
+                                                        <ProtocolStatusBadge
+                                                            status={
+                                                                project.protocol_status
+                                                            }
+                                                        />
+                                                    )}
+                                                </div>
+                                            </div>
+                                            <div className="flex flex-wrap gap-2">
+                                                <Button
+                                                    variant="outline"
+                                                    size="sm"
+                                                    asChild
+                                                >
+                                                    <Link
+                                                        href={
+                                                            project.protocol_url
+                                                        }
+                                                    >
+                                                        Protocol
+                                                    </Link>
+                                                </Button>
+                                                <Button size="sm" asChild>
+                                                    <Link
+                                                        href={
+                                                            project.overview_url
+                                                        }
+                                                    >
+                                                        Open
+                                                    </Link>
+                                                </Button>
+                                            </div>
+                                        </div>
+                                    ))
+                                )}
+                            </CardContent>
+                        </Card>
+
                         <Card>
                             <CardHeader className="flex-row items-start justify-between gap-4">
                                 <div className="space-y-1">

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\ProjectStatus;
 use App\Enums\WorkspaceMembershipStatus;
 use App\Enums\WorkspaceRole;
 use App\Enums\WorkspaceType;
@@ -64,6 +65,16 @@ class Workspace extends Model
     public function invitations(): HasMany
     {
         return $this->hasMany(WorkspaceInvitation::class);
+    }
+
+    public function projects(): HasMany
+    {
+        return $this->hasMany(Project::class);
+    }
+
+    public function activeProjects(): HasMany
+    {
+        return $this->projects()->where('status', '!=', ProjectStatus::Archived->value);
     }
 
     public function isPersonal(): bool

@@ -12,6 +12,7 @@ export type ProjectStatus =
     | 'ready_for_search'
     | 'searching'
     | 'draft_corpus'
+    | 'locked'
     | 'locked_corpus'
     | 'screening'
     | 'adjudication'

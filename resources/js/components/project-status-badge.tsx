@@ -28,6 +28,10 @@ const projectStatusMeta = {
         className:
             'border-transparent bg-brand-muted text-brand-muted-foreground',
     },
+    locked: {
+        label: 'Locked corpus',
+        className: 'border-transparent bg-status-audit-bg text-status-audit',
+    },
     locked_corpus: {
         label: 'Locked corpus',
         className: 'border-transparent bg-status-audit-bg text-status-audit',

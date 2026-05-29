@@ -3,11 +3,20 @@
 namespace Database\Seeders;
 
 use App\Actions\Workspaces\CreatePersonalWorkspace;
+use App\Enums\ProjectMembershipStatus;
+use App\Enums\ProjectRole;
+use App\Enums\ProjectStatus;
+use App\Enums\ProtocolStatus;
+use App\Enums\ReviewType;
 use App\Enums\WorkspaceMembershipStatus;
 use App\Enums\WorkspaceRole;
 use App\Enums\WorkspaceType;
 use App\Models\AuditEvent;
 use App\Models\OauthIdentity;
+use App\Models\Project;
+use App\Models\ProjectMembership;
+use App\Models\ProjectProtocol;
+use App\Models\ProjectProtocolVersion;
 use App\Models\User;
 use App\Models\Workspace;
 use App\Models\WorkspaceInvitation;
@@ -38,6 +47,15 @@ class DemoAccessSeeder extends Seeder
         $this->membership($lab, $admin, WorkspaceRole::Admin);
         $this->membership($lab, $reviewer, WorkspaceRole::Member);
         $this->membership($lab, $viewer, WorkspaceRole::Member);
+
+        collect([$owner, $admin, $reviewer, $viewer])
+            ->each(fn (User $user) => $user->forceFill(['current_workspace_id' => $lab->id])->save());
+
+        $demoProject = $this->project($lab, $owner);
+        $this->projectMembership($demoProject, $owner, ProjectRole::Owner);
+        $this->projectMembership($demoProject, $reviewer, ProjectRole::Reviewer);
+        $this->projectMembership($demoProject, $viewer, ProjectRole::Viewer);
+        $this->projectProtocol($demoProject, $owner);
 
         $suspended = $this->workspace('Suspended Review Group', 'suspended-review-group', $owner);
         $suspended->forceFill([
@@ -79,6 +97,7 @@ class DemoAccessSeeder extends Seeder
 
         $this->audit('user.disabled', $disabled, $operator, null, 'Demo disabled account.');
         $this->audit('workspace.suspended', $suspended, $operator, $suspended, 'Demo suspended workspace.');
+        $this->audit('project.created', $demoProject, $owner, $lab, 'Demo project created.', $demoProject);
     }
 
     private function user(
@@ -149,12 +168,89 @@ class DemoAccessSeeder extends Seeder
         );
     }
 
+    private function project(Workspace $workspace, User $owner): Project
+    {
+        return Project::updateOrCreate(
+            [
+                'workspace_id' => $workspace->id,
+                'slug' => 'ai-screening-primary-care-review',
+            ],
+            [
+                'name' => 'AI Screening in Primary Care Reviews',
+                'owner_user_id' => $owner->id,
+                'description' => 'Demo project for protocol readiness and project role checks.',
+                'review_type' => ReviewType::SystematicReview,
+                'status' => ProjectStatus::Draft,
+                'metadata' => ['source' => 'demo-seeder'],
+            ],
+        );
+    }
+
+    private function projectMembership(Project $project, User $user, ProjectRole $role): ProjectMembership
+    {
+        return ProjectMembership::updateOrCreate(
+            [
+                'project_id' => $project->id,
+                'user_id' => $user->id,
+            ],
+            [
+                'role' => $role,
+                'status' => ProjectMembershipStatus::Active,
+                'joined_at' => now(),
+                'removed_at' => null,
+            ],
+        );
+    }
+
+    private function projectProtocol(Project $project, User $owner): ProjectProtocol
+    {
+        $protocol = ProjectProtocol::updateOrCreate(
+            ['project_id' => $project->id],
+            [
+                'status' => ProtocolStatus::Draft,
+                'version' => 1,
+                'title' => $project->name,
+                'research_question' => 'How accurate and efficient is AI-assisted screening in primary care evidence reviews?',
+                'background' => 'The demo lab wants a traceable protocol before search starts.',
+                'inclusion_criteria' => 'Peer-reviewed studies evaluating AI-assisted screening workflows.',
+                'exclusion_criteria' => '',
+                'target_providers' => ['openalex', 'crossref'],
+                'date_range_start' => null,
+                'date_range_end' => null,
+                'no_date_limit' => true,
+                'language_policy' => 'English-language records for the MVP demo.',
+                'min_reviewer_count' => 2,
+                'ai_screening_policy' => 'human_only',
+                'full_text_policy' => 'optional',
+                'created_by' => $owner->id,
+                'updated_by' => $owner->id,
+            ],
+        );
+
+        ProjectProtocolVersion::firstOrCreate(
+            [
+                'project_protocol_id' => $protocol->id,
+                'version' => $protocol->version,
+            ],
+            [
+                'project_id' => $project->id,
+                'status' => $protocol->status,
+                'snapshot' => $protocol->load('project')->snapshot(),
+                'reason' => 'Demo protocol draft.',
+                'created_by' => $owner->id,
+            ],
+        );
+
+        return $protocol;
+    }
+
     private function audit(
         string $eventType,
         Model $target,
         User $actor,
         ?Workspace $workspace = null,
         ?string $reason = null,
+        ?Project $project = null,
     ): void {
         AuditEvent::firstOrCreate(
             [
@@ -165,6 +261,7 @@ class DemoAccessSeeder extends Seeder
             [
                 'id' => (string) Str::uuid(),
                 'workspace_id' => $workspace?->id,
+                'project_id' => $project?->id,
                 'actor_user_id' => $actor->id,
                 'reason' => $reason,
                 'metadata' => ['source' => 'demo-seeder'],

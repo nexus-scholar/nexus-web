@@ -48,6 +48,16 @@ Seeded workspace states:
 - `Suspended Review Group`: suspended workspace for operator review.
 - `pending-reviewer@nexusscholar.test`: pending invitation in Evidence Synthesis Lab.
 
+Seeded project states:
+
+- `AI Screening in Primary Care Reviews`: draft project in Evidence Synthesis
+  Lab with a draft protocol.
+- Owner has the project `owner` role.
+- Reviewer has the project `reviewer` role.
+- Viewer has the project `viewer` role.
+- Workspace admin can administer the project through workspace policy without a
+  project membership row.
+
 ## Workflow 1: Auth, Workspaces, And Access
 
 ### Public Entry
@@ -130,6 +140,83 @@ Expected signals:
 
 - The disabled account cannot proceed into the authenticated app.
 - The app does not expose workspace pages after login is blocked.
+
+## Workflow 2: Project Creation And Protocol
+
+### Owner Project Dashboard
+
+1. Clear sessions.
+2. Log in as `owner@nexusscholar.test`.
+3. Open `/dashboard`.
+4. Verify the active workspace is `Evidence Synthesis Lab`.
+5. Capture `output/playwright/workflow-2-owner-dashboard-projects.png`.
+
+Expected signals:
+
+- Dashboard includes a `Projects` panel.
+- `AI Screening in Primary Care Reviews` is visible.
+- Project and protocol status badges are visible.
+- `New project`, `Protocol`, and `Open` actions are visible.
+
+### Create Project
+
+1. As the owner, open `/projects/create`.
+2. Enter a title, review type, research question, and background.
+3. Submit the form.
+4. Capture `output/playwright/workflow-2-create-project.png`.
+
+Expected signals:
+
+- The page uses the guided project setup layout.
+- The project is created in the active workspace.
+- The app redirects to the project overview.
+- The new project appears on the dashboard.
+
+### Protocol Editor
+
+1. As the owner, open the demo project's `Protocol` action.
+2. Fill missing protocol fields, including exclusion criteria.
+3. Set target providers through the provider tag selector. Verify selected
+   providers render as removable tags and available providers render as toggle
+   choices.
+4. Set language policy, reviewer count, AI policy, and full-text policy.
+5. Scroll the search-readiness card near the bottom of the viewport and open
+   the AI policy and full-text dropdowns.
+6. Save the draft.
+7. Capture `output/playwright/workflow-2-protocol-editor.png`,
+   `output/playwright/workflow-2-protocol-provider-tags.png`,
+   `output/playwright/workflow-2-protocol-provider-tags-select-fixed.png`, and
+   `output/playwright/workflow-2-protocol-full-text-select-fixed.png`.
+
+Expected signals:
+
+- Protocol fields use the Nexus/shadcn form styling.
+- Target providers are selected from known provider tags, not comma-separated
+  free-form text.
+- AI policy and full-text dropdowns remain readable near the bottom of the
+  viewport; they should flip upward instead of collapsing into a thin scroll
+  strip.
+- The project status remains visible in the header.
+- Save is available to the project owner.
+- Missing field errors appear when the owner attempts to complete an
+  incomplete protocol.
+
+### Role Boundary
+
+1. Clear sessions.
+2. Log in as `reviewer@nexusscholar.test`.
+3. Open the demo project overview.
+4. Open the demo project protocol page.
+5. Capture `output/playwright/workflow-2-reviewer-protocol-readonly.png`.
+6. Repeat as `viewer@nexusscholar.test`.
+
+Expected signals:
+
+- Reviewer and viewer can see the project because they have explicit project
+  memberships.
+- Reviewer and viewer do not see enabled protocol save controls.
+- Workspace admin can access the project without an explicit project membership
+  row.
 
 ## UI Hardening: Brand Tokens
 
