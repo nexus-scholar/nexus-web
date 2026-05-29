@@ -1,0 +1,903 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Workflow 3 Search Wireframes - Nexus Scholar</title>
+    <style>
+        :root {
+            --background: #f7f8f8;
+            --surface: #ffffff;
+            --surface-muted: #f3f5f5;
+            --border: #d9dfdf;
+            --border-strong: #b9c3c3;
+            --text: #111719;
+            --muted: #566368;
+            --brand: #087f86;
+            --brand-soft: #d6f1f2;
+            --success: #138a47;
+            --success-soft: #e3f6eb;
+            --warning: #9a6700;
+            --warning-soft: #fff3c4;
+            --danger: #b42318;
+            --danger-soft: #fee4e2;
+            --info: #2768b5;
+            --info-soft: #e7f0ff;
+            --shadow: 0 1px 2px rgba(15, 23, 42, 0.06);
+            font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            background: var(--background);
+            color: var(--text);
+        }
+
+        .frame {
+            display: grid;
+            grid-template-columns: 304px 1fr;
+            min-height: 1133px;
+            background: var(--background);
+        }
+
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+            border-right: 1px solid var(--border);
+            background: #f2f5f5;
+            padding: 28px 20px;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .mark {
+            display: grid;
+            place-items: center;
+            width: 34px;
+            height: 34px;
+            border-radius: 8px;
+            background: var(--brand);
+            color: #fff;
+            font-weight: 700;
+        }
+
+        .brand-title {
+            font-weight: 700;
+            line-height: 1.1;
+        }
+
+        .brand-subtitle {
+            color: var(--muted);
+            font-size: 12px;
+        }
+
+        .nav-label {
+            margin: 8px 0;
+            color: var(--muted);
+            font-size: 12px;
+        }
+
+        .nav-item {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            border-radius: 8px;
+            padding: 10px 12px;
+            font-size: 14px;
+        }
+
+        .nav-item.active {
+            background: var(--brand-soft);
+            color: #064d52;
+            font-weight: 650;
+        }
+
+        .sidebar-spacer {
+            flex: 1;
+        }
+
+        .account {
+            border-top: 1px solid var(--border);
+            padding-top: 18px;
+        }
+
+        .main {
+            padding: 8px 0 0;
+        }
+
+        .app-bar {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            height: 56px;
+            border-bottom: 1px solid var(--border);
+            padding: 0 24px;
+            background: rgba(255, 255, 255, 0.55);
+        }
+
+        .content {
+            padding: 24px;
+        }
+
+        .page-head {
+            display: flex;
+            justify-content: space-between;
+            gap: 24px;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 18px;
+            margin-bottom: 20px;
+        }
+
+        .crumb {
+            color: var(--muted);
+            font-size: 13px;
+        }
+
+        h1, h2, h3 {
+            margin: 0;
+        }
+
+        h1 {
+            font-size: 24px;
+            line-height: 1.2;
+        }
+
+        h2 {
+            font-size: 18px;
+        }
+
+        h3 {
+            font-size: 15px;
+        }
+
+        p {
+            margin: 0;
+        }
+
+        .description {
+            margin-top: 6px;
+            color: var(--muted);
+            font-size: 14px;
+        }
+
+        .badge-row {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            justify-content: flex-end;
+            flex-wrap: wrap;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            min-height: 26px;
+            border: 1px solid var(--border);
+            border-radius: 999px;
+            padding: 4px 10px;
+            background: var(--surface);
+            color: var(--muted);
+            font-size: 12px;
+            font-weight: 650;
+        }
+
+        .badge.brand {
+            margin: 0;
+            background: var(--brand-soft);
+            color: #064d52;
+            border-color: #b9e4e6;
+        }
+
+        .badge.success {
+            background: var(--success-soft);
+            color: var(--success);
+            border-color: #b9e9ca;
+        }
+
+        .badge.warning {
+            background: var(--warning-soft);
+            color: var(--warning);
+            border-color: #f7d66b;
+        }
+
+        .badge.danger {
+            background: var(--danger-soft);
+            color: var(--danger);
+            border-color: #f5b5af;
+        }
+
+        .layout {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) 350px;
+            gap: 16px;
+            align-items: start;
+        }
+
+        .stack {
+            display: grid;
+            gap: 16px;
+        }
+
+        .card {
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: var(--surface);
+            box-shadow: var(--shadow);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: start;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 16px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .card-body {
+            padding: 16px;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .grid-3 {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+        }
+
+        .field {
+            display: grid;
+            gap: 6px;
+        }
+
+        .label {
+            font-size: 13px;
+            font-weight: 650;
+        }
+
+        .input, .textarea, .select {
+            min-height: 38px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            background: #fff;
+            padding: 9px 11px;
+            color: var(--text);
+            font-size: 14px;
+        }
+
+        .textarea {
+            min-height: 78px;
+            line-height: 1.45;
+        }
+
+        .disabled {
+            background: var(--surface-muted);
+            color: #68767a;
+        }
+
+        .query-row {
+            display: grid;
+            grid-template-columns: 138px minmax(0, 1fr) 98px 112px;
+            gap: 10px;
+            align-items: start;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 12px;
+            background: #fbfcfc;
+        }
+
+        .provider-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+        }
+
+        .provider {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            min-height: 48px;
+            border: 1px solid var(--border);
+            border-radius: 7px;
+            padding: 8px 10px;
+            background: #fff;
+        }
+
+        .provider.selected {
+            background: var(--brand);
+            color: #fff;
+            border-color: var(--brand);
+        }
+
+        .provider small {
+            display: block;
+            color: inherit;
+            opacity: 0.75;
+            font-size: 11px;
+        }
+
+        .button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            min-height: 38px;
+            border: 1px solid var(--border);
+            border-radius: 7px;
+            padding: 8px 12px;
+            background: #fff;
+            font-weight: 700;
+            font-size: 13px;
+        }
+
+        .button.primary {
+            background: #111719;
+            border-color: #111719;
+            color: #fff;
+        }
+
+        .button.brand {
+            background: var(--brand);
+            border-color: var(--brand);
+            color: #fff;
+        }
+
+        .button:disabled, .button.disabled {
+            background: var(--surface-muted);
+            color: #7a8588;
+            border-color: var(--border);
+        }
+
+        .metric-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+        }
+
+        .metric {
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: #fff;
+            padding: 13px;
+        }
+
+        .metric-value {
+            margin-top: 8px;
+            font-size: 24px;
+            font-weight: 800;
+        }
+
+        .metric-label {
+            color: var(--muted);
+            font-size: 12px;
+        }
+
+        .progress {
+            overflow: hidden;
+            height: 8px;
+            border-radius: 999px;
+            background: #e5e9e9;
+        }
+
+        .progress span {
+            display: block;
+            height: 100%;
+            border-radius: inherit;
+            background: var(--brand);
+        }
+
+        .provider-row {
+            display: grid;
+            grid-template-columns: 160px 110px 100px 100px minmax(0, 1fr);
+            gap: 12px;
+            align-items: center;
+            border-top: 1px solid var(--border);
+            padding: 13px 0;
+        }
+
+        .provider-row:first-child {
+            border-top: 0;
+            padding-top: 0;
+        }
+
+        .timeline {
+            display: grid;
+            gap: 12px;
+        }
+
+        .timeline-item {
+            display: grid;
+            grid-template-columns: 18px 1fr;
+            gap: 10px;
+            font-size: 13px;
+        }
+
+        .dot {
+            width: 10px;
+            height: 10px;
+            margin-top: 4px;
+            border-radius: 50%;
+            background: var(--brand);
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        .table th, .table td {
+            border-bottom: 1px solid var(--border);
+            padding: 11px 8px;
+            text-align: left;
+            vertical-align: top;
+        }
+
+        .table th {
+            color: var(--muted);
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .callout {
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 12px;
+            background: var(--surface-muted);
+            color: var(--muted);
+            font-size: 13px;
+            line-height: 1.45;
+        }
+
+        .callout.warning {
+            background: var(--warning-soft);
+            color: var(--warning);
+            border-color: #f7d66b;
+        }
+
+        .callout.danger {
+            background: var(--danger-soft);
+            color: var(--danger);
+            border-color: #f5b5af;
+        }
+
+        .screen {
+            display: none;
+        }
+
+        body[data-screen="plan"] #plan,
+        body[data-screen="run"] #run,
+        body[data-screen="readonly"] #readonly,
+        body[data-screen="locked"] #locked {
+            display: block;
+        }
+    </style>
+</head>
+<body data-screen="plan">
+    <template id="sidebar-template">
+        <aside class="sidebar">
+            <div class="brand">
+                <div class="mark">N</div>
+                <div>
+                    <div class="brand-title">Nexus Scholar</div>
+                    <div class="brand-subtitle">Evidence reviews</div>
+                </div>
+            </div>
+            <div>
+                <div class="nav-label">Workspaces</div>
+                <div class="nav-item">▦ Dr. Lina Haddad's Workspace<br><span class="brand-subtitle">Owner</span></div>
+                <div class="nav-item active">◎ Evidence Synthesis Lab<br><span class="brand-subtitle">Owner</span></div>
+            </div>
+            <div>
+                <div class="nav-label">Workspace</div>
+                <div class="nav-item">□ Dashboard</div>
+                <div class="nav-item">⚙ Workspace settings</div>
+                <div class="nav-item">☷ Members</div>
+            </div>
+            <div class="sidebar-spacer"></div>
+            <div class="account">
+                <div class="nav-item">DH&nbsp;&nbsp; Dr. Lina Haddad</div>
+                <div class="nav-item">⚙ Settings</div>
+                <div class="nav-item">⇥ Log out</div>
+            </div>
+        </aside>
+    </template>
+
+    <section class="screen" id="plan">
+        <div class="frame">
+            <div data-sidebar></div>
+            <main class="main">
+                <div class="app-bar">▣ <strong>Search plan</strong></div>
+                <div class="content">
+                    <header class="page-head">
+                        <div>
+                            <div class="crumb">Evidence Synthesis Lab / AI Screening in Primary Care Reviews / Search plan</div>
+                            <h1>Search plan</h1>
+                            <p class="description">Convert the completed protocol into repeatable provider queries before corpus construction.</p>
+                        </div>
+                        <div class="badge-row">
+                            <span class="badge success">Protocol complete</span>
+                            <span class="badge brand">Ready for search</span>
+                            <span class="button">Overview</span>
+                        </div>
+                    </header>
+                    <div class="layout">
+                        <div class="stack">
+                            <div class="card">
+                                <div class="card-header">
+                                    <div>
+                                        <h2>Plan defaults</h2>
+                                        <p class="description">Inherited from the protocol, with per-query overrides below.</p>
+                                    </div>
+                                </div>
+                                <div class="card-body stack">
+                                    <div class="provider-grid">
+                                        <div class="provider selected">✓ <div>OpenAlex<small>Available by default</small></div></div>
+                                        <div class="provider selected">✓ <div>Crossref<small>Available by default</small></div></div>
+                                        <div class="provider selected">✓ <div>PubMed<small>Available by default</small></div></div>
+                                        <div class="provider">+ <div>Semantic Scholar<small>Available by default</small></div></div>
+                                        <div class="provider">+ <div>DOAJ<small>Available by default</small></div></div>
+                                        <div class="provider">+ <div>IEEE<small>Requires credentials</small></div></div>
+                                    </div>
+                                    <div class="grid-3">
+                                        <div class="field">
+                                            <div class="label">Default date range</div>
+                                            <div class="input">No date limit</div>
+                                        </div>
+                                        <div class="field">
+                                            <div class="label">Default result limit</div>
+                                            <div class="input">50 per query</div>
+                                        </div>
+                                        <div class="field">
+                                            <div class="label">Raw provider payloads</div>
+                                            <div class="select">Off by default</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="card">
+                                <div class="card-header">
+                                    <div>
+                                        <h2>Query draft</h2>
+                                        <p class="description">Each row will become a persisted core search query.</p>
+                                    </div>
+                                    <span class="button">+ Add query</span>
+                                </div>
+                                <div class="card-body stack">
+                                    <div class="query-row">
+                                        <div class="field">
+                                            <div class="label">Query id</div>
+                                            <div class="input">primary-ai</div>
+                                        </div>
+                                        <div class="field">
+                                            <div class="label">Query text</div>
+                                            <div class="textarea">"AI-assisted screening" AND "primary care" AND systematic review</div>
+                                        </div>
+                                        <div class="field">
+                                            <div class="label">Limit</div>
+                                            <div class="input">50</div>
+                                        </div>
+                                        <div class="field">
+                                            <div class="label">Priority</div>
+                                            <div class="select">Core</div>
+                                        </div>
+                                    </div>
+                                    <div class="query-row">
+                                        <div class="field">
+                                            <div class="label">Query id</div>
+                                            <div class="input">recall-check</div>
+                                        </div>
+                                        <div class="field">
+                                            <div class="label">Query text</div>
+                                            <div class="textarea">machine learning title abstract screening evidence synthesis</div>
+                                        </div>
+                                        <div class="field">
+                                            <div class="label">Limit</div>
+                                            <div class="input">25</div>
+                                        </div>
+                                        <div class="field">
+                                            <div class="label">Priority</div>
+                                            <div class="select">Expansion</div>
+                                        </div>
+                                    </div>
+                                    <div class="callout">Validation preview: query id must be unique, query text cannot be empty, providers must match core aliases, and search is blocked after corpus lock.</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <aside class="stack">
+                            <div class="card">
+                                <div class="card-header">
+                                    <div>
+                                        <h2>Run controls</h2>
+                                        <p class="description">Background only.</p>
+                                    </div>
+                                </div>
+                                <div class="card-body stack">
+                                    <button class="button primary">Save draft</button>
+                                    <button class="button brand">Run all queries</button>
+                                    <button class="button">Run selected query</button>
+                                    <div class="callout warning">Search mutates draft corpus membership. Once locked, this action disappears.</div>
+                                </div>
+                            </div>
+                            <div class="card">
+                                <div class="card-header"><h2>Readiness</h2></div>
+                                <div class="card-body stack">
+                                    <span class="badge success">✓ Protocol complete</span>
+                                    <span class="badge success">✓ Providers selected</span>
+                                    <span class="badge success">✓ 2 query rows valid</span>
+                                    <span class="badge warning">Raw payloads disabled</span>
+                                </div>
+                            </div>
+                            <div class="card">
+                                <div class="card-header"><h2>Recent runs</h2></div>
+                                <div class="card-body stack">
+                                    <div class="callout">No search run has been dispatched for this plan yet.</div>
+                                </div>
+                            </div>
+                        </aside>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </section>
+
+    <section class="screen" id="run">
+        <div class="frame">
+            <div data-sidebar></div>
+            <main class="main">
+                <div class="app-bar">▣ <strong>Search run</strong></div>
+                <div class="content">
+                    <header class="page-head">
+                        <div>
+                            <div class="crumb">Evidence Synthesis Lab / AI Screening in Primary Care Reviews / Search run</div>
+                            <h1>Search run</h1>
+                            <p class="description">Background execution status, provider progress, and persisted corpus counts.</p>
+                        </div>
+                        <div class="badge-row">
+                            <span class="badge brand">Running</span>
+                            <span class="badge">Run #SR-2026-0529-01</span>
+                            <span class="button">Back to plan</span>
+                        </div>
+                    </header>
+
+                    <div class="stack">
+                        <div class="metric-grid">
+                            <div class="metric"><div class="metric-label">Queries</div><div class="metric-value">2 / 2</div></div>
+                            <div class="metric"><div class="metric-label">Raw records</div><div class="metric-value">186</div></div>
+                            <div class="metric"><div class="metric-label">Unique works</div><div class="metric-value">143</div></div>
+                            <div class="metric"><div class="metric-label">Provider failures</div><div class="metric-value">1</div></div>
+                        </div>
+
+                        <div class="layout">
+                            <div class="stack">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <div>
+                                            <h2>Provider progress</h2>
+                                            <p class="description">Successful providers remain visible even when another provider fails.</p>
+                                        </div>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="provider-row">
+                                            <strong>OpenAlex</strong>
+                                            <span class="badge success">Complete</span>
+                                            <span>92 raw</span>
+                                            <span>70 unique</span>
+                                            <div><div class="progress"><span style="width:100%"></span></div></div>
+                                        </div>
+                                        <div class="provider-row">
+                                            <strong>Crossref</strong>
+                                            <span class="badge success">Complete</span>
+                                            <span>61 raw</span>
+                                            <span>48 unique</span>
+                                            <div><div class="progress"><span style="width:100%"></span></div></div>
+                                        </div>
+                                        <div class="provider-row">
+                                            <strong>PubMed</strong>
+                                            <span class="badge brand">Running</span>
+                                            <span>33 raw</span>
+                                            <span>25 unique</span>
+                                            <div><div class="progress"><span style="width:68%"></span></div></div>
+                                        </div>
+                                        <div class="provider-row">
+                                            <strong>Semantic Scholar</strong>
+                                            <span class="badge danger">Failed</span>
+                                            <span>0 raw</span>
+                                            <span>0 unique</span>
+                                            <div class="callout danger">Rate limit or upstream provider error. Retry is available.</div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="card">
+                                    <div class="card-header"><h2>Query results</h2></div>
+                                    <div class="card-body">
+                                        <table class="table">
+                                            <thead><tr><th>Query</th><th>Priority</th><th>Providers</th><th>Raw</th><th>Unique</th><th>Status</th></tr></thead>
+                                            <tbody>
+                                                <tr><td>primary-ai</td><td>Core</td><td>OpenAlex, Crossref, PubMed</td><td>142</td><td>108</td><td><span class="badge success">Complete</span></td></tr>
+                                                <tr><td>recall-check</td><td>Expansion</td><td>OpenAlex, PubMed, Semantic Scholar</td><td>44</td><td>35</td><td><span class="badge warning">Partial</span></td></tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <aside class="stack">
+                                <div class="card">
+                                    <div class="card-header"><h2>Lifecycle</h2></div>
+                                    <div class="card-body timeline">
+                                        <div class="timeline-item"><span class="dot"></span><div><strong>Queued</strong><br><span class="description">15:42 by Dr. Lina Haddad</span></div></div>
+                                        <div class="timeline-item"><span class="dot"></span><div><strong>Started</strong><br><span class="description">15:43 via background worker</span></div></div>
+                                        <div class="timeline-item"><span class="dot"></span><div><strong>Provider completed</strong><br><span class="description">OpenAlex, Crossref</span></div></div>
+                                        <div class="timeline-item"><span class="dot" style="background:var(--danger)"></span><div><strong>Provider failed</strong><br><span class="description">Semantic Scholar</span></div></div>
+                                    </div>
+                                </div>
+                                <div class="card">
+                                    <div class="card-header"><h2>Next step</h2></div>
+                                    <div class="card-body stack">
+                                        <div class="callout">Keep adding search runs until the team is ready to freeze the draft corpus.</div>
+                                        <button class="button">Retry failed providers</button>
+                                        <button class="button primary">Open corpus preview</button>
+                                    </div>
+                                </div>
+                            </aside>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </section>
+
+    <section class="screen" id="readonly">
+        <div class="frame">
+            <div data-sidebar></div>
+            <main class="main">
+                <div class="app-bar">▣ <strong>Search plan</strong></div>
+                <div class="content">
+                    <header class="page-head">
+                        <div>
+                            <div class="crumb">Evidence Synthesis Lab / AI Screening in Primary Care Reviews / Search plan</div>
+                            <h1>Search plan</h1>
+                            <p class="description">Reviewer view. Plan and run history are visible; editing and dispatch are restricted.</p>
+                        </div>
+                        <div class="badge-row">
+                            <span class="badge">Reviewer</span>
+                            <span class="badge success">Protocol complete</span>
+                            <span class="button">Overview</span>
+                        </div>
+                    </header>
+
+                    <div class="layout">
+                        <div class="stack">
+                            <div class="callout">You can inspect the search plan and run history. Only project owners and workspace admins can edit or dispatch searches.</div>
+                            <div class="card">
+                                <div class="card-header"><h2>Plan defaults</h2></div>
+                                <div class="card-body stack">
+                                    <div class="provider-grid">
+                                        <div class="provider selected">✓ <div>OpenAlex<small>Selected</small></div></div>
+                                        <div class="provider selected">✓ <div>Crossref<small>Selected</small></div></div>
+                                        <div class="provider selected">✓ <div>PubMed<small>Selected</small></div></div>
+                                    </div>
+                                    <div class="grid-3">
+                                        <div class="field"><div class="label">Date range</div><div class="input disabled">No date limit</div></div>
+                                        <div class="field"><div class="label">Limit</div><div class="input disabled">50 per query</div></div>
+                                        <div class="field"><div class="label">Raw payloads</div><div class="input disabled">Off</div></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card">
+                                <div class="card-header"><h2>Query draft</h2></div>
+                                <div class="card-body">
+                                    <table class="table">
+                                        <thead><tr><th>ID</th><th>Query text</th><th>Priority</th><th>Limit</th></tr></thead>
+                                        <tbody>
+                                            <tr><td>primary-ai</td><td>"AI-assisted screening" AND "primary care" AND systematic review</td><td>Core</td><td>50</td></tr>
+                                            <tr><td>recall-check</td><td>machine learning title abstract screening evidence synthesis</td><td>Expansion</td><td>25</td></tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                        <aside class="stack">
+                            <div class="card">
+                                <div class="card-header"><h2>Actions</h2></div>
+                                <div class="card-body stack">
+                                    <button class="button disabled">Save draft</button>
+                                    <button class="button disabled">Run all queries</button>
+                                    <button class="button">View latest run</button>
+                                </div>
+                            </div>
+                            <div class="card">
+                                <div class="card-header"><h2>Latest run</h2></div>
+                                <div class="card-body stack">
+                                    <span class="badge warning">Partial</span>
+                                    <div class="metric"><div class="metric-label">Unique works</div><div class="metric-value">143</div></div>
+                                </div>
+                            </div>
+                        </aside>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </section>
+
+    <section class="screen" id="locked">
+        <div class="frame">
+            <div data-sidebar></div>
+            <main class="main">
+                <div class="app-bar">▣ <strong>Search plan</strong></div>
+                <div class="content">
+                    <header class="page-head">
+                        <div>
+                            <div class="crumb">Evidence Synthesis Lab / AI Screening in Primary Care Reviews / Search plan</div>
+                            <h1>Search blocked after corpus lock</h1>
+                            <p class="description">The project corpus is frozen. Search remains visible for audit, but cannot mutate membership.</p>
+                        </div>
+                        <div class="badge-row">
+                            <span class="badge danger">Locked</span>
+                            <span class="button">Overview</span>
+                        </div>
+                    </header>
+                    <div class="layout">
+                        <div class="stack">
+                            <div class="callout danger">Search dispatch is disabled because core reports this project as locked. Screening, adjudication, full-text retrieval, graph analysis, and exports may continue over the frozen corpus.</div>
+                            <div class="card">
+                                <div class="card-header"><h2>Frozen plan summary</h2></div>
+                                <div class="card-body">
+                                    <table class="table">
+                                        <thead><tr><th>Query</th><th>Providers</th><th>Raw</th><th>Unique</th><th>Last run</th></tr></thead>
+                                        <tbody>
+                                            <tr><td>primary-ai</td><td>OpenAlex, Crossref, PubMed</td><td>142</td><td>108</td><td>Complete</td></tr>
+                                            <tr><td>recall-check</td><td>OpenAlex, PubMed, Semantic Scholar</td><td>44</td><td>35</td><td>Partial</td></tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                        <aside class="stack">
+                            <div class="card">
+                                <div class="card-header"><h2>Actions</h2></div>
+                                <div class="card-body stack">
+                                    <button class="button disabled">Edit search plan</button>
+                                    <button class="button disabled">Run search</button>
+                                    <button class="button primary">Open screening setup</button>
+                                </div>
+                            </div>
+                        </aside>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </section>
+
+    <script>
+        for (const target of document.querySelectorAll('[data-sidebar]')) {
+            target.replaceWith(document.getElementById('sidebar-template').content.cloneNode(true));
+        }
+
+        const screen = new URLSearchParams(window.location.search).get('screen');
+        if (screen) {
+            document.body.dataset.screen = screen;
+        }
+    </script>
+</body>
+</html>

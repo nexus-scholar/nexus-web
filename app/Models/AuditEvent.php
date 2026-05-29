@@ -36,6 +36,11 @@ class AuditEvent extends Model
         return $this->belongsTo(Workspace::class);
     }
 
+    public function project(): BelongsTo
+    {
+        return $this->belongsTo(Project::class);
+    }
+
     public function actor(): BelongsTo
     {
         return $this->belongsTo(User::class, 'actor_user_id');

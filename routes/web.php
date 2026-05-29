@@ -1,7 +1,13 @@
 <?php
 
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Operator\UsersController as OperatorUsersController;
 use App\Http\Controllers\Operator\WorkspacesController as OperatorWorkspacesController;
+use App\Http\Controllers\Projects\ProjectActivityController;
+use App\Http\Controllers\Projects\ProjectController;
+use App\Http\Controllers\Projects\ProjectProtocolController;
+use App\Http\Controllers\Projects\ProjectSearchPlanController;
+use App\Http\Controllers\Projects\ProjectSearchRunController;
 use App\Http\Controllers\Workspaces\WorkspaceController;
 use App\Http\Controllers\Workspaces\WorkspaceInvitationController;
 use App\Http\Controllers\Workspaces\WorkspaceMembersController;
@@ -12,7 +18,7 @@ use Illuminate\Support\Facades\Route;
 Route::inertia('/', 'welcome')->name('home');
 
 Route::middleware(['auth', 'verified', 'not_disabled', 'workspace.ready'])->group(function () {
-    Route::inertia('dashboard', 'dashboard')->name('dashboard');
+    Route::get('dashboard', DashboardController::class)->name('dashboard');
 
     Route::post('workspaces', [WorkspaceController::class, 'store'])->name('workspaces.store');
     Route::post('workspaces/switch', WorkspaceSwitchController::class)->name('workspaces.switch');
@@ -22,6 +28,17 @@ Route::middleware(['auth', 'verified', 'not_disabled', 'workspace.ready'])->grou
     Route::post('workspaces/{workspace}/invitations', [WorkspaceInvitationController::class, 'store'])->name('workspaces.invitations.store');
     Route::patch('workspaces/{workspace}/members/{user}/role', [WorkspaceMembersController::class, 'update'])->name('workspaces.members.update');
     Route::delete('workspaces/{workspace}/members/{user}', [WorkspaceMembersController::class, 'destroy'])->name('workspaces.members.destroy');
+
+    Route::get('projects/create', [ProjectController::class, 'create'])->name('projects.create');
+    Route::post('projects', [ProjectController::class, 'store'])->name('projects.store');
+    Route::get('projects/{project}', [ProjectController::class, 'show'])->name('projects.show');
+    Route::get('projects/{project}/protocol', [ProjectProtocolController::class, 'edit'])->name('projects.protocol.edit');
+    Route::patch('projects/{project}/protocol', [ProjectProtocolController::class, 'update'])->name('projects.protocol.update');
+    Route::get('projects/{project}/search-plan', [ProjectSearchPlanController::class, 'edit'])->name('projects.search-plan.edit');
+    Route::patch('projects/{project}/search-plan', [ProjectSearchPlanController::class, 'update'])->name('projects.search-plan.update');
+    Route::post('projects/{project}/search-runs', [ProjectSearchRunController::class, 'store'])->name('projects.search-runs.store');
+    Route::get('projects/{project}/search-runs/{searchRun}', [ProjectSearchRunController::class, 'show'])->name('projects.search-runs.show');
+    Route::get('projects/{project}/activity', [ProjectActivityController::class, 'index'])->name('projects.activity.index');
 });
 
 Route::middleware(['auth', 'verified', 'not_disabled'])->group(function () {

@@ -48,6 +48,18 @@ Seeded workspace states:
 - `Suspended Review Group`: suspended workspace for operator review.
 - `pending-reviewer@nexusscholar.test`: pending invitation in Evidence Synthesis Lab.
 
+Seeded project states:
+
+- `AI Screening in Primary Care Reviews`: draft project in Evidence Synthesis
+  Lab with a draft protocol.
+- `Cardiometabolic Review Search Strategy`: ready-for-search project in
+  Evidence Synthesis Lab with a completed protocol and draft search plan.
+- Owner has the project `owner` role.
+- Reviewer has the project `reviewer` role.
+- Viewer has the project `viewer` role.
+- Workspace admin can administer the project through workspace policy without a
+  project membership row.
+
 ## Workflow 1: Auth, Workspaces, And Access
 
 ### Public Entry
@@ -130,6 +142,139 @@ Expected signals:
 
 - The disabled account cannot proceed into the authenticated app.
 - The app does not expose workspace pages after login is blocked.
+
+## Workflow 2: Project Creation And Protocol
+
+### Owner Project Dashboard
+
+1. Clear sessions.
+2. Log in as `owner@nexusscholar.test`.
+3. Open `/dashboard`.
+4. Verify the active workspace is `Evidence Synthesis Lab`.
+5. Capture `output/playwright/workflow-2-owner-dashboard-projects.png`.
+
+Expected signals:
+
+- Dashboard includes a `Projects` panel.
+- `AI Screening in Primary Care Reviews` is visible.
+- Project and protocol status badges are visible.
+- `New project`, `Protocol`, and `Open` actions are visible.
+
+### Create Project
+
+1. As the owner, open `/projects/create`.
+2. Enter a title, review type, research question, and background.
+3. Submit the form.
+4. Capture `output/playwright/workflow-2-create-project.png`.
+
+Expected signals:
+
+- The page uses the guided project setup layout.
+- The project is created in the active workspace.
+- The app redirects to the project overview.
+- The new project appears on the dashboard.
+
+### Protocol Editor
+
+1. As the owner, open the demo project's `Protocol` action.
+2. Fill missing protocol fields, including exclusion criteria.
+3. Set target providers through the provider tag selector. Verify selected
+   providers render as removable tags and available providers render as toggle
+   choices.
+4. Set language policy, reviewer count, AI policy, and full-text policy.
+5. Scroll the search-readiness card near the bottom of the viewport and open
+   the AI policy and full-text dropdowns.
+6. Save the draft.
+7. Capture `output/playwright/workflow-2-protocol-editor.png`,
+   `output/playwright/workflow-2-protocol-provider-tags.png`,
+   `output/playwright/workflow-2-protocol-provider-tags-select-fixed.png`, and
+   `output/playwright/workflow-2-protocol-full-text-select-fixed.png`.
+
+Expected signals:
+
+- Protocol fields use the Nexus/shadcn form styling.
+- Target providers are selected from known provider tags, not comma-separated
+  free-form text.
+- AI policy and full-text dropdowns remain readable near the bottom of the
+  viewport; they should flip upward instead of collapsing into a thin scroll
+  strip.
+- The project status remains visible in the header.
+- Save is available to the project owner.
+- Missing field errors appear when the owner attempts to complete an
+  incomplete protocol.
+
+### Role Boundary
+
+1. Clear sessions.
+2. Log in as `reviewer@nexusscholar.test`.
+3. Open the demo project overview.
+4. Open the demo project protocol page.
+5. Capture `output/playwright/workflow-2-reviewer-protocol-readonly.png`.
+6. Repeat as `viewer@nexusscholar.test`.
+
+Expected signals:
+
+- Reviewer and viewer can see the project because they have explicit project
+  memberships.
+- Reviewer and viewer do not see enabled protocol save controls.
+- Workspace admin can access the project without an explicit project membership
+  row.
+
+## Workflow 3: Search Plan And Search Run
+
+The implemented slice covers host-owned search-plan drafting, role-scoped
+read-only review, queued background dispatch, and a stable search-run overview.
+
+### Owner Search Plan Draft
+
+1. Clear sessions.
+2. Log in as `owner@nexusscholar.test`.
+3. Open `Cardiometabolic Review Search Strategy`.
+4. Open the `Search plan` action.
+5. Add or edit query rows, providers, year range, result limit, and raw-payload
+   policy.
+6. Capture `output/playwright/workflow-3-search-plan-draft.png`.
+
+Expected signals:
+
+- Search-plan editing is available only after protocol completion.
+- Provider selection uses known provider tags.
+- Protocol defaults are visible without hiding per-query overrides.
+- Validation errors identify the specific query row and field.
+- `Run all queries` queues a background run and redirects to the run overview.
+
+### Owner Search Run Dispatch
+
+1. As the owner, run all draft search-plan items.
+2. Open the search-run overview page after dispatch.
+3. Capture `output/playwright/workflow-3-search-run-overview.png`.
+4. If a queue worker processes the run during local verification, refresh and
+   capture `output/playwright/workflow-3-search-run-overview-completed.png`.
+
+Expected signals:
+
+- The run moves to a background state immediately.
+- Provider-level progress, raw counts, unique-work counts, and failures are
+  visible when available.
+- Partial provider failure does not hide successful provider results.
+- If no queue worker is running, the overview remains in `Queued` state and the
+  lifecycle panel states that it is waiting for queue records.
+- If a queue worker is running, completed runs show provider timings, raw and
+  unique counts, item completion, and lifecycle records.
+
+### Search Plan Role Boundary
+
+1. Clear sessions.
+2. Log in as `reviewer@nexusscholar.test`.
+3. Open the `Cardiometabolic Review Search Strategy` search-plan page.
+4. Capture `output/playwright/workflow-3-reviewer-search-plan-readonly.png`.
+5. Repeat as `viewer@nexusscholar.test`.
+
+Expected signals:
+
+- Reviewer and viewer can inspect the plan and search-run status.
+- Reviewer and viewer cannot edit the plan or dispatch a run.
+- Locked projects block search dispatch for every actor.
 
 ## UI Hardening: Brand Tokens
 

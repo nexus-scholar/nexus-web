@@ -6,6 +6,7 @@
 /public/hot
 /public/storage
 /output/playwright
+/output/wireframes
 /.playwright-cli
 /storage/*.key
 /storage/pail

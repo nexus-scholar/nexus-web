@@ -96,6 +96,8 @@ Current UI test coverage includes:
 - auth layout variant selection.
 - app sidebar product navigation and operator-only links.
 - workspace switcher rendering and context switching.
+- project/protocol status badges, guided workflow cards, and protocol readiness
+  lists.
 
 Do not build a broad snapshot suite. It will slow the team down and catch the
 wrong failures.

@@ -223,11 +223,15 @@ Implemented:
 - Shared `SettingsSection` panels for account and security surfaces.
 - Sidebar navigation with static workspace switching and inline account actions,
   without Laravel starter repository/documentation links.
+- Project/protocol workflow badges for project status, protocol status, and
+  project roles.
+- `WorkflowStepCard` and `ProtocolReadinessList` for the guided project setup
+  and protocol-readiness surfaces.
 
 Next:
 
-1. Add `DecisionBadge` when the review workflow lands.
-2. Add `AuditEventRow` when audit history becomes visible in the product UI.
+1. Add `AuditEventRow` when audit history becomes visible in the product UI.
+2. Add `DecisionBadge` when the review workflow lands.
 3. Add `DataTable` or table wrappers once imports, records, and screening lists
    land.
 4. Replace remaining generic shell visuals only after the brand mark is final.
