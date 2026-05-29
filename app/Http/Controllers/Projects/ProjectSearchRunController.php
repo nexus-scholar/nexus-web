@@ -67,6 +67,7 @@ class ProjectSearchRunController extends Controller
                 'overview' => route('projects.show', $project, absolute: false),
                 'protocol' => route('projects.protocol.edit', $project, absolute: false),
                 'search_plan' => route('projects.search-plan.edit', $project, absolute: false),
+                'corpus' => route('projects.corpus.index', $project, absolute: false),
                 'activity' => route('projects.activity.index', $project, absolute: false),
             ],
         ];

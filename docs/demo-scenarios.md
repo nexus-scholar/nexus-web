@@ -52,8 +52,11 @@ Seeded project states:
 
 - `AI Screening in Primary Care Reviews`: draft project in Evidence Synthesis
   Lab with a draft protocol.
-- `Cardiometabolic Review Search Strategy`: ready-for-search project in
-  Evidence Synthesis Lab with a completed protocol and draft search plan.
+- `Cardiometabolic Review Search Strategy`: draft-corpus project in Evidence
+  Synthesis Lab with a completed protocol, draft search plan, completed demo
+  search run, and deterministic corpus records.
+- `Locked Cardiometabolic Evidence Snapshot`: locked corpus project in Evidence
+  Synthesis Lab with snapshot-backed corpus membership.
 - Owner has the project `owner` role.
 - Reviewer has the project `reviewer` role.
 - Viewer has the project `viewer` role.
@@ -278,11 +281,9 @@ Expected signals:
 
 ## Workflow 4: Draft Corpus Review
 
-Planned. Activate these checks after the workflow 4 implementation starts.
-
-The prepared slice covers a read-only corpus review surface after search runs
-persist project works. It should not implement screening, full-text retrieval,
-export, manual merge, or corpus lock actions.
+The implemented first slice covers a read-only corpus review surface after
+search runs persist project works. It does not implement screening, full-text
+retrieval, export, manual merge, or corpus lock actions.
 
 ### Owner Corpus Review
 
@@ -357,8 +358,9 @@ Expected signals:
 
 ### Locked Corpus State
 
-1. As the owner, open a project with `locked_at` and a corpus snapshot.
-2. Capture `output/playwright/workflow-4-corpus-locked.png`.
+1. As the owner, open `Locked Cardiometabolic Evidence Snapshot`.
+2. Open the `Corpus` action from the project overview.
+3. Capture `output/playwright/workflow-4-corpus-locked.png`.
 
 Expected signals:
 

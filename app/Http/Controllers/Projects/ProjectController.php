@@ -9,6 +9,7 @@ use App\Models\Project;
 use App\Models\ProjectProtocol;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -88,6 +89,7 @@ class ProjectController extends Controller
                 'view_search_plan' => $request->user()->can('viewSearchPlan', $project),
                 'update_search_plan' => $request->user()->can('updateSearchPlan', $project),
                 'run_search' => $request->user()->can('runSearch', $project),
+                'view_corpus' => $request->user()->can('viewCorpus', $project),
                 'view_activity' => $request->user()->can('viewActivity', $project),
             ],
         ]);
@@ -117,8 +119,10 @@ class ProjectController extends Controller
                 'protocol' => route('projects.protocol.edit', $project, absolute: false),
                 'search_plan' => route('projects.search-plan.edit', $project, absolute: false),
                 'search_runs' => route('projects.search-runs.store', $project, absolute: false),
+                'corpus' => route('projects.corpus.index', $project, absolute: false),
                 'activity' => route('projects.activity.index', $project, absolute: false),
             ],
+            'corpus' => $this->corpusSummary($project),
             'protocol' => $project->protocol ? [
                 'id' => $project->protocol->id,
                 'status' => $project->protocol->status->value,
@@ -126,6 +130,41 @@ class ProjectController extends Controller
                 'version' => $project->protocol->version,
                 'completed_at' => $project->protocol->completed_at?->toISOString(),
             ] : null,
+        ];
+    }
+
+    private function corpusSummary(Project $project): array
+    {
+        $latestSnapshot = $project->isLocked()
+            ? DB::table('corpus_snapshots')
+                ->where('project_id', $project->id)
+                ->orderByDesc('locked_at')
+                ->orderByDesc('created_at')
+                ->first()
+            : null;
+
+        if ($latestSnapshot) {
+            return [
+                'available' => (int) $latestSnapshot->work_count > 0,
+                'source' => 'locked',
+                'unique_works' => (int) $latestSnapshot->work_count,
+                'raw_query_links' => DB::table('corpus_snapshot_works')
+                    ->where('snapshot_id', $latestSnapshot->id)
+                    ->count(),
+            ];
+        }
+
+        $membership = DB::table('query_works')
+            ->join('search_queries', 'search_queries.id', '=', 'query_works.search_query_id')
+            ->where('search_queries.project_id', $project->id);
+
+        $uniqueWorks = (clone $membership)->distinct()->count('query_works.work_id');
+
+        return [
+            'available' => $uniqueWorks > 0,
+            'source' => 'draft',
+            'unique_works' => $uniqueWorks,
+            'raw_query_links' => (clone $membership)->count(),
         ];
     }
 

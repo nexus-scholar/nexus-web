@@ -1,6 +1,7 @@
 import { Head, Link } from '@inertiajs/react';
 import {
     AlertCircle,
+    BookOpenCheck,
     CheckCircle2,
     Clock3,
     Database,
@@ -36,6 +37,7 @@ type ProjectPayload = {
         overview: string;
         protocol: string;
         search_plan: string;
+        corpus: string;
         activity: string;
     };
 };
@@ -136,6 +138,17 @@ export default function ProjectSearchRun({ project, searchRun }: Props) {
                                     Search plan
                                 </Link>
                             </Button>
+                            {(searchRun.status === 'completed' ||
+                                project.status === 'draft_corpus' ||
+                                project.status === 'locked' ||
+                                project.status === 'locked_corpus') && (
+                                <Button variant="outline" size="sm" asChild>
+                                    <Link href={project.urls.corpus}>
+                                        <BookOpenCheck className="size-4" />
+                                        Corpus
+                                    </Link>
+                                </Button>
+                            )}
                         </>
                     }
                 />

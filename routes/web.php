@@ -5,6 +5,7 @@ use App\Http\Controllers\Operator\UsersController as OperatorUsersController;
 use App\Http\Controllers\Operator\WorkspacesController as OperatorWorkspacesController;
 use App\Http\Controllers\Projects\ProjectActivityController;
 use App\Http\Controllers\Projects\ProjectController;
+use App\Http\Controllers\Projects\ProjectCorpusController;
 use App\Http\Controllers\Projects\ProjectProtocolController;
 use App\Http\Controllers\Projects\ProjectSearchPlanController;
 use App\Http\Controllers\Projects\ProjectSearchRunController;
@@ -38,6 +39,7 @@ Route::middleware(['auth', 'verified', 'not_disabled', 'workspace.ready'])->grou
     Route::patch('projects/{project}/search-plan', [ProjectSearchPlanController::class, 'update'])->name('projects.search-plan.update');
     Route::post('projects/{project}/search-runs', [ProjectSearchRunController::class, 'store'])->name('projects.search-runs.store');
     Route::get('projects/{project}/search-runs/{searchRun}', [ProjectSearchRunController::class, 'show'])->name('projects.search-runs.show');
+    Route::get('projects/{project}/corpus', [ProjectCorpusController::class, 'index'])->name('projects.corpus.index');
     Route::get('projects/{project}/activity', [ProjectActivityController::class, 'index'])->name('projects.activity.index');
 });
 
