@@ -3,6 +3,7 @@ import {
     Activity,
     FileText,
     LockKeyhole,
+    LibraryBig,
     SearchCheck,
     UsersRound,
 } from 'lucide-react';
@@ -53,6 +54,13 @@ type ProjectPayload = {
         protocol: string;
         search_plan: string;
         activity: string;
+        corpus: string;
+    };
+    corpus: {
+        available: boolean;
+        source: 'draft' | 'locked';
+        unique_works: number;
+        raw_query_links: number;
     };
     protocol: {
         id: string;
@@ -84,6 +92,7 @@ type Props = {
         view_search_plan: boolean;
         update_search_plan: boolean;
         run_search: boolean;
+        view_corpus: boolean;
         view_activity: boolean;
     };
 };
@@ -126,6 +135,13 @@ export default function ProjectOverview({
                                 <Button variant="outline" size="sm" asChild>
                                     <Link href={project.urls.search_plan}>
                                         Search plan
+                                    </Link>
+                                </Button>
+                            )}
+                            {can.view_corpus && project.corpus.available && (
+                                <Button variant="outline" size="sm" asChild>
+                                    <Link href={project.urls.corpus}>
+                                        Corpus
                                     </Link>
                                 </Button>
                             )}
@@ -257,13 +273,38 @@ export default function ProjectOverview({
                             step={3}
                             title="Search plan"
                             description="Draft provider-ready queries for the search run."
-                            status={protocolReady ? 'current' : 'pending'}
+                            status={
+                                project.corpus.available
+                                    ? 'complete'
+                                    : protocolReady
+                                      ? 'current'
+                                      : 'pending'
+                            }
                             action={
                                 can.view_search_plan &&
                                 protocolReady && (
                                     <Button size="sm" variant="outline" asChild>
                                         <Link href={project.urls.search_plan}>
                                             Open search plan
+                                        </Link>
+                                    </Button>
+                                )
+                            }
+                        />
+                        <WorkflowStepCard
+                            step={4}
+                            title="Corpus review"
+                            description="Inspect works, metadata gaps, and provider provenance."
+                            status={
+                                project.corpus.available ? 'current' : 'pending'
+                            }
+                            action={
+                                can.view_corpus &&
+                                project.corpus.available && (
+                                    <Button size="sm" variant="outline" asChild>
+                                        <Link href={project.urls.corpus}>
+                                            <LibraryBig className="size-4" />
+                                            Open corpus
                                         </Link>
                                     </Button>
                                 )

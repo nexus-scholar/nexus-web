@@ -18,14 +18,18 @@ use App\Models\ProjectMembership;
 use App\Models\ProjectProtocol;
 use App\Models\ProjectProtocolVersion;
 use App\Models\ProjectSearchPlan;
+use App\Models\ProjectSearchRun;
+use App\Models\ProjectSearchRunItem;
 use App\Models\User;
 use App\Models\Workspace;
 use App\Models\WorkspaceInvitation;
 use App\Models\WorkspaceMembership;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
+use Ramsey\Uuid\Uuid;
 
 class DemoAccessSeeder extends Seeder
 {
@@ -64,6 +68,15 @@ class DemoAccessSeeder extends Seeder
         $this->projectMembership($searchProject, $viewer, ProjectRole::Viewer);
         $this->completedProjectProtocol($searchProject, $owner);
         $this->searchPlan($searchProject, $owner);
+        $this->demoCorpus($searchProject, $owner);
+
+        $lockedProject = $this->lockedCorpusProject($lab, $owner);
+        $this->projectMembership($lockedProject, $owner, ProjectRole::Owner);
+        $this->projectMembership($lockedProject, $reviewer, ProjectRole::Reviewer);
+        $this->projectMembership($lockedProject, $viewer, ProjectRole::Viewer);
+        $this->completedProjectProtocol($lockedProject, $owner);
+        $this->searchPlan($lockedProject, $owner);
+        $this->demoCorpus($lockedProject, $owner, locked: true);
 
         $suspended = $this->workspace('Suspended Review Group', 'suspended-review-group', $owner);
         $suspended->forceFill([
@@ -107,6 +120,7 @@ class DemoAccessSeeder extends Seeder
         $this->audit('workspace.suspended', $suspended, $operator, $suspended, 'Demo suspended workspace.');
         $this->audit('project.created', $demoProject, $owner, $lab, 'Demo project created.', $demoProject);
         $this->audit('project.created', $searchProject, $owner, $lab, 'Demo search-ready project created.', $searchProject);
+        $this->audit('project.created', $lockedProject, $owner, $lab, 'Demo locked corpus project created.', $lockedProject);
     }
 
     private function user(
@@ -208,6 +222,27 @@ class DemoAccessSeeder extends Seeder
                 'description' => 'Demo project with a completed protocol and editable search plan.',
                 'review_type' => ReviewType::SystematicReview,
                 'status' => ProjectStatus::ReadyForSearch,
+                'metadata' => ['source' => 'demo-seeder'],
+            ],
+        );
+    }
+
+    private function lockedCorpusProject(Workspace $workspace, User $owner): Project
+    {
+        return Project::updateOrCreate(
+            [
+                'workspace_id' => $workspace->id,
+                'slug' => 'cardiometabolic-review-locked-corpus',
+            ],
+            [
+                'name' => 'Locked Cardiometabolic Evidence Snapshot',
+                'owner_user_id' => $owner->id,
+                'description' => 'Demo project with a locked corpus snapshot for audit-state review.',
+                'review_type' => ReviewType::SystematicReview,
+                'status' => ProjectStatus::LockedCorpus,
+                'locked_at' => now()->subHours(6),
+                'locked_by' => (string) $owner->id,
+                'lock_reason' => 'Demo locked snapshot for corpus review.',
                 'metadata' => ['source' => 'demo-seeder'],
             ],
         );
@@ -364,6 +399,380 @@ class DemoAccessSeeder extends Seeder
         );
 
         return $plan->refresh()->load('queries');
+    }
+
+    private function demoCorpus(Project $project, User $owner, bool $locked = false): void
+    {
+        $slug = $project->slug;
+        $now = now();
+        $plan = $project->searchPlan()->with('queries')->firstOrFail();
+
+        $this->resetDemoCorpusState($project);
+
+        $queryIds = [
+            'primary-search' => $this->demoUuid("{$slug}:search-query:primary"),
+            'implementation-search' => $this->demoUuid("{$slug}:search-query:implementation"),
+        ];
+
+        $run = ProjectSearchRun::updateOrCreate(
+            ['id' => $this->demoUuid("{$slug}:search-run:completed")],
+            [
+                'project_id' => $project->id,
+                'project_search_plan_id' => $plan->id,
+                'status' => 'completed',
+                'plan_version' => $plan->version,
+                'query_count' => 2,
+                'failure_count' => 0,
+                'total_raw' => 17,
+                'total_unique' => 12,
+                'requested_by' => $owner->id,
+                'started_at' => $now->copy()->subMinutes(12),
+                'completed_at' => $now->copy()->subMinutes(10),
+                'metadata' => ['source' => 'demo-seeder'],
+            ],
+        );
+
+        foreach ($plan->queries as $query) {
+            ProjectSearchRunItem::updateOrCreate(
+                [
+                    'project_search_run_id' => $run->id,
+                    'query_key' => $query->query_key,
+                ],
+                [
+                    'id' => $this->demoUuid("{$slug}:search-run-item:{$query->query_key}"),
+                    'project_search_plan_query_id' => $query->id,
+                    'sort_order' => $query->sort_order,
+                    'label' => $query->label,
+                    'query' => $query->query,
+                    'providers' => $query->providers,
+                    'year_from' => $query->year_from,
+                    'year_to' => $query->year_to,
+                    'result_limit' => $query->result_limit,
+                    'include_raw_data' => $query->include_raw_data,
+                    'status' => 'completed',
+                    'core_search_query_id' => $queryIds[$query->query_key],
+                    'total_raw' => $query->query_key === 'primary-search' ? 12 : 5,
+                    'total_unique' => $query->query_key === 'primary-search' ? 8 : 4,
+                    'duration_ms' => $query->query_key === 'primary-search' ? 820 : 540,
+                    'started_at' => $now->copy()->subMinutes(12),
+                    'completed_at' => $now->copy()->subMinutes(10),
+                ],
+            );
+
+            DB::table('search_queries')->updateOrInsert(
+                ['id' => $queryIds[$query->query_key]],
+                [
+                    'project_id' => $project->id,
+                    'query_text' => $query->query,
+                    'from_year' => $query->year_from,
+                    'to_year' => $query->year_to,
+                    'max_results' => $query->result_limit,
+                    'offset' => 0,
+                    'include_raw_data' => $query->include_raw_data,
+                    'provider_aliases' => json_encode($query->providers),
+                    'cache_key' => hash('sha256', "{$project->id}:{$query->query_key}"),
+                    'status' => 'completed',
+                    'total_raw' => $query->query_key === 'primary-search' ? 12 : 5,
+                    'total_unique' => $query->query_key === 'primary-search' ? 8 : 4,
+                    'duration_ms' => $query->query_key === 'primary-search' ? 820 : 540,
+                    'executed_at' => $now->copy()->subMinutes(10),
+                    'metadata' => json_encode(['source' => 'demo-seeder']),
+                    'created_at' => $now,
+                    'updated_at' => $now,
+                ],
+            );
+        }
+
+        $authors = $this->demoAuthors($slug);
+        $works = $this->demoWorks($slug);
+
+        foreach ($authors as $author) {
+            DB::table('authors')->updateOrInsert(
+                ['id' => $author['id']],
+                [
+                    'full_name' => $author['full_name'],
+                    'normalized_name' => $author['normalized_name'],
+                    'orcid' => $author['orcid'],
+                    'created_at' => $now,
+                    'updated_at' => $now,
+                ],
+            );
+        }
+
+        foreach ($works as $index => $work) {
+            DB::table('scholarly_works')->updateOrInsert(
+                ['id' => $work['id']],
+                [
+                    'title' => $work['title'],
+                    'abstract' => $work['abstract'],
+                    'year' => $work['year'],
+                    'venue_name' => $work['venue_name'],
+                    'venue_type' => 'journal',
+                    'url' => "https://example.test/nexus-demo/{$work['slug']}",
+                    'language' => 'en',
+                    'cited_by_count' => $work['cited_by_count'],
+                    'is_retracted' => $work['is_retracted'],
+                    'retrieved_at' => $now->copy()->subMinutes(20),
+                    'created_at' => $now,
+                    'updated_at' => $now,
+                ],
+            );
+
+            foreach ($work['identifiers'] as $identifier) {
+                DB::table('work_external_ids')->updateOrInsert(
+                    [
+                        'work_id' => $work['id'],
+                        'namespace' => $identifier['namespace'],
+                        'value' => $identifier['value'],
+                    ],
+                    [
+                        'id' => $this->demoUuid("{$slug}:identifier:{$work['slug']}:{$identifier['namespace']}"),
+                        'is_primary' => $identifier['is_primary'],
+                        'created_at' => $now,
+                        'updated_at' => $now,
+                    ],
+                );
+            }
+
+            foreach ($work['providers'] as $providerIndex => $provider) {
+                DB::table('work_providers')->updateOrInsert(
+                    [
+                        'work_id' => $work['id'],
+                        'provider_alias' => $provider,
+                    ],
+                    [
+                        'id' => $this->demoUuid("{$slug}:provider:{$work['slug']}:{$provider}"),
+                        'provider_work_id' => $this->providerWorkId($provider, $work['slug']),
+                        'metadata' => json_encode(['source' => 'demo-seeder']),
+                        'first_seen_at' => $now->copy()->subMinutes(25 - $providerIndex),
+                        'last_seen_at' => $now->copy()->subMinutes(10),
+                        'created_at' => $now,
+                        'updated_at' => $now,
+                    ],
+                );
+
+                DB::table('query_works')->updateOrInsert(
+                    [
+                        'search_query_id' => $queryIds[$work['query_key']],
+                        'work_id' => $work['id'],
+                        'provider_alias' => $provider,
+                    ],
+                    [
+                        'id' => $this->demoUuid("{$slug}:query-work:{$work['slug']}:{$provider}"),
+                        'provider_work_id' => $this->providerWorkId($provider, $work['slug']),
+                        'rank' => $index + $providerIndex + 1,
+                        'seen_at' => $now->copy()->subMinutes(20 - $providerIndex),
+                        'created_at' => $now,
+                        'updated_at' => $now,
+                    ],
+                );
+            }
+
+            DB::table('work_authors')->updateOrInsert(
+                [
+                    'work_id' => $work['id'],
+                    'author_id' => $authors[$index % count($authors)]['id'],
+                ],
+                [
+                    'id' => $this->demoUuid("{$slug}:work-author:{$work['slug']}:primary"),
+                    'position' => 1,
+                    'is_corresponding' => true,
+                    'created_at' => $now,
+                    'updated_at' => $now,
+                ],
+            );
+        }
+
+        $clusterId = $this->demoUuid("{$slug}:dedup-cluster:digital-coaching");
+        DB::table('dedup_clusters')->updateOrInsert(
+            ['id' => $clusterId],
+            [
+                'project_id' => $project->id,
+                'strategy' => 'demo-title-doi',
+                'thresholds' => json_encode(['title_similarity' => 0.92]),
+                'representative_work_id' => $works[0]['id'],
+                'cluster_size' => 2,
+                'confidence' => 0.9400,
+                'metadata' => json_encode(['source' => 'demo-seeder']),
+                'is_locked' => $locked,
+                'created_at' => $now,
+                'updated_at' => $now,
+            ],
+        );
+
+        foreach ([[$works[0], true], [$works[5], false]] as [$work, $representative]) {
+            DB::table('cluster_members')->updateOrInsert(
+                [
+                    'cluster_id' => $clusterId,
+                    'work_id' => $work['id'],
+                ],
+                [
+                    'id' => $this->demoUuid("{$slug}:cluster-member:{$work['slug']}"),
+                    'is_representative' => $representative,
+                    'reason' => 'title_doi',
+                    'confidence' => 0.9400,
+                    'created_at' => $now,
+                    'updated_at' => $now,
+                ],
+            );
+        }
+
+        if ($locked) {
+            $this->demoCorpusSnapshot($project, $owner, $works, $queryIds);
+        } else {
+            $project->forceFill([
+                'status' => ProjectStatus::DraftCorpus,
+                'locked_at' => null,
+                'locked_by' => null,
+                'lock_reason' => null,
+            ])->save();
+        }
+    }
+
+    private function resetDemoCorpusState(Project $project): void
+    {
+        DB::table('project_search_runs')
+            ->where('project_id', $project->id)
+            ->delete();
+
+        DB::table('corpus_snapshots')
+            ->where('project_id', $project->id)
+            ->delete();
+
+        DB::table('dedup_clusters')
+            ->where('project_id', $project->id)
+            ->delete();
+
+        DB::table('search_queries')
+            ->where('project_id', $project->id)
+            ->delete();
+    }
+
+    private function demoCorpusSnapshot(Project $project, User $owner, array $works, array $queryIds): void
+    {
+        $snapshotId = $this->demoUuid("{$project->slug}:corpus-snapshot:locked");
+        $now = now();
+
+        DB::table('corpus_snapshots')->updateOrInsert(
+            ['id' => $snapshotId],
+            [
+                'project_id' => $project->id,
+                'locked_at' => $project->locked_at ?? $now->copy()->subHours(6),
+                'work_count' => count($works),
+                'created_by' => (string) $owner->id,
+                'lock_reason' => 'Demo locked snapshot for corpus review.',
+                'metadata' => json_encode([
+                    'source' => 'demo-seeder',
+                    'query_ids' => array_values($queryIds),
+                ]),
+                'created_at' => $now,
+                'updated_at' => $now,
+            ],
+        );
+
+        foreach ($works as $work) {
+            $providers = $work['providers'];
+            $searchQueryId = $queryIds[$work['query_key']];
+
+            DB::table('corpus_snapshot_works')->updateOrInsert(
+                [
+                    'snapshot_id' => $snapshotId,
+                    'work_id' => $work['id'],
+                ],
+                [
+                    'id' => $this->demoUuid("{$project->slug}:snapshot-work:{$work['slug']}"),
+                    'search_query_ids' => json_encode([$searchQueryId]),
+                    'provider_aliases' => json_encode($providers),
+                    'provenance' => json_encode(collect($providers)
+                        ->map(fn (string $provider, int $index): array => [
+                            'search_query_id' => $searchQueryId,
+                            'query_label' => $work['query_key'] === 'primary-search'
+                                ? 'Primary intervention search'
+                                : 'Implementation and adherence search',
+                            'provider_alias' => $provider,
+                            'provider_work_id' => $this->providerWorkId($provider, $work['slug']),
+                            'rank' => $index + 1,
+                            'seen_at' => now()->subMinutes(20 - $index)->toISOString(),
+                        ])
+                        ->all()),
+                    'included_at' => $project->locked_at ?? now()->subHours(6),
+                    'created_at' => $now,
+                    'updated_at' => $now,
+                ],
+            );
+        }
+
+        $project->forceFill([
+            'status' => ProjectStatus::LockedCorpus,
+            'locked_at' => $project->locked_at ?? $now->copy()->subHours(6),
+            'locked_by' => (string) $owner->id,
+            'lock_reason' => 'Demo locked snapshot for corpus review.',
+        ])->save();
+    }
+
+    private function demoAuthors(string $slug): array
+    {
+        return [
+            ['id' => $this->demoUuid('author:nguyen'), 'full_name' => 'Anika Nguyen', 'normalized_name' => 'anika nguyen', 'orcid' => '0000-0002-0000-0001'],
+            ['id' => $this->demoUuid('author:haddad'), 'full_name' => 'Lina Haddad', 'normalized_name' => 'lina haddad', 'orcid' => '0000-0002-0000-0002'],
+            ['id' => $this->demoUuid('author:patel'), 'full_name' => 'Samir Patel', 'normalized_name' => 'samir patel', 'orcid' => '0000-0002-0000-0003'],
+            ['id' => $this->demoUuid('author:moreno'), 'full_name' => 'Isabel Moreno', 'normalized_name' => 'isabel moreno', 'orcid' => '0000-0002-0000-0004'],
+        ];
+    }
+
+    private function demoWorks(string $slug): array
+    {
+        $rows = [
+            ['digital-coaching-risk', 'Digital coaching for cardiometabolic risk in primary care', 'A randomized evaluation of remote digital coaching for cardiometabolic risk management in adult primary care.', 2024, 'Primary Care Digital Health', false, ['openalex', 'crossref'], [['doi', '10.1000/nexus.001', true], ['openalex', 'W-DEMO-001', false]], 'primary-search', 42],
+            ['mobile-reminders-adherence', 'Mobile reminders for cardiometabolic medication adherence', null, 2022, 'Journal of Medication Support', false, ['pubmed'], [['pubmed', '39000001', true]], 'primary-search', 18],
+            ['telehealth-monitoring', 'Telehealth monitoring for adults with metabolic syndrome', 'Remote monitoring was associated with improved follow-up completion in primary care clinics.', 2021, 'Telemedicine Evidence Review', false, ['openalex'], [], 'primary-search', 27],
+            ['pharmacy-blood-pressure', 'Community pharmacy blood pressure follow-up after digital referral', 'A pragmatic cohort study of pharmacy referral and blood pressure follow-up.', 2023, 'Implementation Science in Care', false, ['crossref', 'pubmed'], [['doi', '10.1000/nexus.004', true]], 'primary-search', 13],
+            ['remote-lifestyle-app', 'Remote lifestyle app engagement and cardiometabolic outcomes', 'Engagement with a lifestyle application was tracked alongside cardiometabolic outcomes.', 2020, 'Digital Therapeutics Quarterly', false, ['pubmed'], [['pubmed', '39000005', true]], 'primary-search', 31],
+            ['digital-coaching-duplicate', 'Digital health coaching for cardiometabolic risk in primary care', 'A near-duplicate record from another provider with overlapping title and DOI evidence.', 2024, 'Primary Care Digital Health', false, ['semantic_scholar', 'openalex'], [['doi', '10.1000/nexus.001', true], ['semantic_scholar', 'S2-DEMO-006', false]], 'primary-search', 39],
+            ['ai-risk-feedback', 'AI-assisted cardiometabolic risk feedback in clinics', 'Risk feedback generated by a clinical AI assistant was reviewed by primary care teams.', 2025, 'Clinical Decision Support', false, ['semantic_scholar'], [['semantic_scholar', 'S2-DEMO-007', true]], 'implementation-search', 9],
+            ['implementation-barriers', 'Implementation barriers for digital cardiometabolic interventions', 'Qualitative evidence about workflow barriers, staffing, and patient engagement.', 2021, 'Implementation Reports', false, ['semantic_scholar', 'crossref'], [['doi', '10.1000/nexus.008', true]], 'implementation-search', 16],
+            ['sms-adherence', 'SMS adherence support for hypertension and diabetes reviews', 'SMS support was evaluated in a mixed chronic disease primary care cohort.', 2020, 'Chronic Care Informatics', false, ['pubmed', 'crossref'], [['pubmed', '39000009', true]], 'primary-search', 22],
+            ['patient-portal-followup', 'Patient portal follow-up for cardiometabolic laboratory monitoring', 'Portal reminders improved laboratory monitoring completion in a multicenter cohort.', 2023, 'Ambulatory Care Informatics', false, ['openalex', 'semantic_scholar'], [['openalex', 'W-DEMO-010', true]], 'implementation-search', 25],
+            ['retracted-telehealth-trial', 'Retracted telehealth intervention trial for cardiometabolic outcomes', 'This record is marked retracted in the demo corpus to test audit visibility.', 2025, 'Retracted Clinical Trials', true, ['semantic_scholar'], [['semantic_scholar', 'S2-DEMO-011', true]], 'implementation-search', 2],
+            ['care-manager-dashboard', 'Care manager dashboard use during cardiometabolic follow-up', 'Care managers used a dashboard to prioritize follow-up for high-risk adult patients.', 2022, 'Care Management Systems', false, ['openalex', 'pubmed'], [['doi', '10.1000/nexus.012', true], ['pubmed', '39000012', false]], 'primary-search', 34],
+        ];
+
+        return collect($rows)
+            ->map(fn (array $row): array => [
+                'slug' => $row[0],
+                'id' => $this->demoUuid("{$slug}:work:{$row[0]}"),
+                'title' => $row[1],
+                'abstract' => $row[2],
+                'year' => $row[3],
+                'venue_name' => $row[4],
+                'is_retracted' => $row[5],
+                'providers' => $row[6],
+                'identifiers' => collect($row[7])
+                    ->map(fn (array $identifier): array => [
+                        'namespace' => $identifier[0],
+                        'value' => $identifier[1],
+                        'is_primary' => $identifier[2],
+                    ])
+                    ->all(),
+                'query_key' => $row[8],
+                'cited_by_count' => $row[9],
+            ])
+            ->all();
+    }
+
+    private function providerWorkId(string $provider, string $workSlug): string
+    {
+        return match ($provider) {
+            'doi', 'crossref' => '10.1000/nexus.'.substr(hash('crc32b', $workSlug), 0, 6),
+            'pubmed' => '39'.substr(hash('crc32b', $workSlug), 0, 6),
+            'semantic_scholar' => 'S2-'.strtoupper(substr(hash('crc32b', $workSlug), 0, 10)),
+            default => 'W-'.strtoupper(substr(hash('crc32b', $workSlug), 0, 10)),
+        };
+    }
+
+    private function demoUuid(string $key): string
+    {
+        return Uuid::uuid5(Uuid::NAMESPACE_URL, 'nexus-scholar-web-demo:'.$key)->toString();
     }
 
     private function audit(

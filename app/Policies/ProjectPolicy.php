@@ -50,6 +50,15 @@ class ProjectPolicy
         return $this->updateSearchPlan($user, $project);
     }
 
+    public function viewCorpus(User $user, Project $project): bool
+    {
+        if ($project->workspace?->isSuspended()) {
+            return false;
+        }
+
+        return $this->view($user, $project);
+    }
+
     public function viewActivity(User $user, Project $project): bool
     {
         return $this->view($user, $project);
