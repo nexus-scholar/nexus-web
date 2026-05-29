@@ -49,6 +49,11 @@ class ProjectSearchPlan extends Model
         return $this->hasMany(ProjectSearchPlanQuery::class)->orderBy('sort_order');
     }
 
+    public function runs(): HasMany
+    {
+        return $this->hasMany(ProjectSearchRun::class);
+    }
+
     public function createdBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');

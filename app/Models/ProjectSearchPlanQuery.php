@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class ProjectSearchPlanQuery extends Model
 {
@@ -39,5 +40,10 @@ class ProjectSearchPlanQuery extends Model
     public function searchPlan(): BelongsTo
     {
         return $this->belongsTo(ProjectSearchPlan::class, 'project_search_plan_id');
+    }
+
+    public function runItems(): HasMany
+    {
+        return $this->hasMany(ProjectSearchRunItem::class, 'project_search_plan_query_id');
     }
 }

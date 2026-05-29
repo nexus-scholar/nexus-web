@@ -23,6 +23,8 @@ export type ProtocolStatus = 'draft' | 'complete' | 'locked' | 'amended';
 
 export type SearchPlanStatus = 'draft' | 'ready';
 
+export type SearchRunStatus = 'queued' | 'running' | 'completed' | 'failed';
+
 export type ProjectRole = 'owner' | 'reviewer' | 'adjudicator' | 'viewer';
 
 export type ProtocolReadinessItem = {

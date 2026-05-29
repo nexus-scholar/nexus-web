@@ -10,10 +10,20 @@ use App\Enums\ProjectStatus;
 use App\Enums\ReviewType;
 use App\Enums\WorkspaceMembershipStatus;
 use App\Enums\WorkspaceRole;
+use App\Jobs\RunProjectSearchPlanJob;
 use App\Models\Project;
 use App\Models\User;
 use App\Models\Workspace;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Bus;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
+use Nexus\Search\Application\Aggregator\AggregatedResult;
+use Nexus\Search\Application\Aggregator\ProviderStat;
+use Nexus\Search\Application\Port\SearchExecutorPort;
+use Nexus\Search\Application\UseCase\SearchAcrossProviders;
+use Nexus\Shared\Domain\CorpusSlice;
+use Nexus\Shared\Port\JobLifecycleRecorderPort;
 use Tests\TestCase;
 
 class ProjectSearchPlanWorkflowTest extends TestCase
@@ -159,6 +169,148 @@ class ProjectSearchPlanWorkflowTest extends TestCase
             ]))
             ->assertRedirect(route('projects.search-plan.edit', $project, absolute: false))
             ->assertSessionHasErrors('default_providers');
+    }
+
+    public function test_owner_can_dispatch_search_run_from_saved_plan(): void
+    {
+        Bus::fake();
+        [$project, $owner] = $this->completedProject();
+
+        $this->actingAs($owner)
+            ->post(route('projects.search-runs.store', $project))
+            ->assertRedirect();
+
+        $run = $project->searchRuns()->firstOrFail();
+
+        $this->assertSame('queued', $run->status->value);
+        $this->assertSame(ProjectStatus::Searching, $project->fresh()->status);
+        $this->assertSame(1, $run->items()->count());
+        $this->assertDatabaseHas('audit_events', [
+            'project_id' => $project->id,
+            'event_type' => 'project.search_run.dispatched',
+        ]);
+        Bus::assertDispatched(
+            RunProjectSearchPlanJob::class,
+            fn (RunProjectSearchPlanJob $job): bool => $job->searchRunId === $run->id,
+        );
+    }
+
+    public function test_reviewer_cannot_dispatch_search_run(): void
+    {
+        [$project] = $this->completedProject();
+        $reviewer = User::factory()->create();
+        app(CreatePersonalWorkspace::class)->handle($reviewer);
+        $this->workspaceMember($project->workspace, $reviewer, WorkspaceRole::Member);
+        $project->memberships()->create([
+            'user_id' => $reviewer->id,
+            'role' => ProjectRole::Reviewer,
+            'status' => 'active',
+            'joined_at' => now(),
+        ]);
+        $reviewer->forceFill(['current_workspace_id' => $project->workspace_id])->save();
+
+        $this->actingAs($reviewer)
+            ->post(route('projects.search-runs.store', $project))
+            ->assertForbidden();
+    }
+
+    public function test_search_run_job_executes_plan_items_through_core_port(): void
+    {
+        Bus::fake();
+        [$project, $owner] = $this->completedProject();
+
+        $this->app->instance(SearchExecutorPort::class, new class implements SearchExecutorPort
+        {
+            public function handle(SearchAcrossProviders $command): AggregatedResult
+            {
+                return new AggregatedResult(
+                    corpus: CorpusSlice::empty(),
+                    providerStats: [new ProviderStat('openalex', 3, 12)],
+                    totalRaw: 3,
+                    durationMs: 18,
+                );
+            }
+        });
+
+        $this->actingAs($owner)->post(route('projects.search-runs.store', $project));
+        $run = $project->searchRuns()->firstOrFail();
+
+        (new RunProjectSearchPlanJob($run->id))->handle(
+            $this->app->make(SearchExecutorPort::class),
+            $this->app->make(JobLifecycleRecorderPort::class),
+        );
+
+        $run->refresh()->load('items');
+
+        $this->assertSame('completed', $run->status->value);
+        $this->assertSame(ProjectStatus::DraftCorpus, $project->fresh()->status);
+        $this->assertSame(3, $run->total_raw);
+        $this->assertSame(0, $run->total_unique);
+        $this->assertSame('completed', $run->items->first()->status->value);
+        $this->assertNotNull($run->items->first()->core_search_query_id);
+        $this->assertDatabaseHas('job_lifecycle_records', [
+            'run_id' => $run->id,
+            'status' => 'completed',
+            'project_id' => $project->id,
+        ]);
+    }
+
+    public function test_search_run_page_exposes_item_and_provider_progress(): void
+    {
+        Bus::fake();
+        [$project, $owner] = $this->completedProject();
+
+        $this->actingAs($owner)->post(route('projects.search-runs.store', $project));
+        $run = $project->searchRuns()->firstOrFail();
+        $item = $run->items()->firstOrFail();
+        $item->update([
+            'status' => 'completed',
+            'core_search_query_id' => 'Qdemo',
+            'total_raw' => 5,
+            'total_unique' => 4,
+        ]);
+        $run->update([
+            'status' => 'completed',
+            'total_raw' => 5,
+            'total_unique' => 4,
+        ]);
+
+        DB::table('search_queries')->insert([
+            'id' => 'Qdemo',
+            'project_id' => $project->id,
+            'query_text' => 'primary care intervention',
+            'max_results' => 50,
+            'offset' => 0,
+            'include_raw_data' => false,
+            'provider_aliases' => json_encode(['openalex']),
+            'cache_key' => str_repeat('a', 64),
+            'status' => 'completed',
+            'total_raw' => 5,
+            'total_unique' => 4,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        DB::table('search_query_providers')->insert([
+            'id' => (string) Str::uuid(),
+            'search_query_id' => 'Qdemo',
+            'provider_alias' => 'openalex',
+            'status' => 'completed',
+            'result_count' => 5,
+            'total_raw' => 5,
+            'total_unique' => 4,
+            'duration_ms' => 12,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $this->actingAs($owner)
+            ->withHeaders($this->inertiaHeaders())
+            ->get(route('projects.search-runs.show', [$project, $run]))
+            ->assertJsonPath('component', 'projects/search-run')
+            ->assertJsonPath('props.searchRun.status', 'completed')
+            ->assertJsonPath('props.searchRun.items.0.provider_progress.0.provider_alias', 'openalex')
+            ->assertJsonPath('props.searchRun.items.0.provider_progress.0.total_unique', 4);
     }
 
     /**

@@ -23,6 +23,7 @@ type ProjectPayload = {
         overview: string;
         protocol: string;
         search_plan: string;
+        search_runs: string;
         activity: string;
     };
     protocol: {
@@ -59,10 +60,17 @@ export default function ProjectSearchPlan({ can, project, searchPlan }: Props) {
         include_raw_data: searchPlan.include_raw_data,
         queries: searchPlan.queries,
     });
+    const runForm = useForm({});
     const formErrors = form.errors as Record<string, string | undefined>;
 
     const submit = () => {
         form.patch(project.urls.search_plan, {
+            preserveScroll: true,
+        });
+    };
+
+    const runAll = () => {
+        runForm.post(project.urls.search_runs, {
             preserveScroll: true,
         });
     };
@@ -104,9 +112,9 @@ export default function ProjectSearchPlan({ can, project, searchPlan }: Props) {
                                 protocol.
                             </div>
                             <div className="mt-1 text-sm leading-5 opacity-85">
-                                Edit provider-specific query rows here. Search
-                                execution will use this plan in the next
-                                background workflow slice.
+                                Edit provider-specific query rows here.
+                                Background search runs use the saved plan
+                                snapshot.
                             </div>
                         </div>
                     </div>
@@ -120,6 +128,8 @@ export default function ProjectSearchPlan({ can, project, searchPlan }: Props) {
                     isLocked={Boolean(project.locked_at)}
                     planStatusLabel={searchPlan.status_label}
                     planVersion={searchPlan.version}
+                    runProcessing={runForm.processing}
+                    onRunAll={runAll}
                     onSubmit={submit}
                 />
             </PageShell>

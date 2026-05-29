@@ -98,12 +98,19 @@ Implemented:
    - `doaj`
    - `ieee`
 
+Implemented in the execution slice:
+
+1. Added a host-owned search-run record and per-query run-item snapshots.
+2. Added a background job that runs all draft plan items
+   through `SearchExecutorPort`.
+3. Added a search-run overview page that reads persisted core rows and job
+   lifecycle state.
+
 Next:
 
-1. Add a background job that runs a selected plan item or all draft items
-   through `SearchExecutorPort`.
-2. Add a search-run overview page that reads persisted core rows and job
-   lifecycle state.
+1. Add selected-query dispatch after the full-run path is stable.
+2. Add live polling or partial reloads if manual refresh becomes too slow for
+   real reviewers.
 
 ## Initial Routes
 
@@ -140,9 +147,10 @@ only when the protocol is complete or ready for search.
 Automated coverage:
 
 - Pest route, policy, validation, and locked-project tests for the draft slice.
-- Vitest tests for plan form, provider reuse, and read-only state.
-- Add background dispatch and run-status component tests with the execution
-  slice.
+- Pest route, policy, background dispatch, core-port job execution, provider
+  progress payload, and locked-project tests for the execution slice.
+- Vitest tests for plan form, provider reuse, read-only state, run dispatch
+  control, and run status badges.
 - Build, lint, type, format, and `git diff --check` gates.
 
 Browser scenarios:
@@ -169,11 +177,10 @@ Browser scenarios:
 
 ## Next Action
 
-Wire the background execution slice:
+Harden the execution slice with real provider configuration decisions:
 
-1. Add host-owned search-run records if core lifecycle IDs are not enough for a
-   stable browser URL.
-2. Dispatch search-plan items through `SearchExecutorPort`.
-3. Render provider progress, raw counts, unique counts, and provider failures.
-4. Keep owner/admin run authorization and locked-project blocking in policy and
-   tests.
+1. Decide which providers should be enabled for hosted MVP demo runs.
+2. Add provider credential readiness checks before dispatch.
+3. Add selected-query dispatch only after full-run browser behavior is stable.
+4. Add periodic refresh or partial reloads when a running queue worker is part
+   of the default local dev loop.

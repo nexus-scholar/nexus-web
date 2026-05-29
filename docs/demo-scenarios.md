@@ -222,9 +222,8 @@ Expected signals:
 
 ## Workflow 3: Search Plan And Search Run
 
-The first implemented slice covers host-owned search-plan drafting and
-role-scoped read-only review. Background search dispatch is intentionally left
-for the next slice.
+The implemented slice covers host-owned search-plan drafting, role-scoped
+read-only review, queued background dispatch, and a stable search-run overview.
 
 ### Owner Search Plan Draft
 
@@ -242,16 +241,15 @@ Expected signals:
 - Provider selection uses known provider tags.
 - Protocol defaults are visible without hiding per-query overrides.
 - Validation errors identify the specific query row and field.
-- `Run all queries` is visible but disabled until the background search-run
-  slice is implemented.
+- `Run all queries` queues a background run and redirects to the run overview.
 
 ### Owner Search Run Dispatch
-
-This scenario is planned for the next implementation slice.
 
 1. As the owner, run all draft search-plan items.
 2. Open the search-run overview page after dispatch.
 3. Capture `output/playwright/workflow-3-search-run-overview.png`.
+4. If a queue worker processes the run during local verification, refresh and
+   capture `output/playwright/workflow-3-search-run-overview-completed.png`.
 
 Expected signals:
 
@@ -259,6 +257,10 @@ Expected signals:
 - Provider-level progress, raw counts, unique-work counts, and failures are
   visible when available.
 - Partial provider failure does not hide successful provider results.
+- If no queue worker is running, the overview remains in `Queued` state and the
+  lifecycle panel states that it is waiting for queue records.
+- If a queue worker is running, completed runs show provider timings, raw and
+  unique counts, item completion, and lifecycle records.
 
 ### Search Plan Role Boundary
 

@@ -54,6 +54,8 @@ type ProjectSearchPlanFormProps = {
     isLocked: boolean;
     planStatusLabel: string;
     planVersion: number;
+    runProcessing?: boolean;
+    onRunAll: () => void;
     onSubmit: () => void;
 };
 
@@ -63,9 +65,11 @@ export function ProjectSearchPlanForm({
     form,
     formErrors,
     isLocked,
+    onRunAll,
     onSubmit,
     planStatusLabel,
     planVersion,
+    runProcessing = false,
 }: ProjectSearchPlanFormProps) {
     const disabled = !canUpdateSearchPlan;
 
@@ -144,6 +148,8 @@ export function ProjectSearchPlanForm({
                     isLocked={isLocked}
                     planStatusLabel={planStatusLabel}
                     planVersion={planVersion}
+                    runProcessing={runProcessing}
+                    onRunAll={onRunAll}
                 />
             </aside>
         </form>
@@ -260,8 +266,8 @@ function QueryStrategyCard({
                 <div className="space-y-1">
                     <CardTitle>Query strategy</CardTitle>
                     <CardDescription>
-                        Search strings that will become background provider jobs
-                        in the next execution slice.
+                        Search strings that can be queued as background provider
+                        jobs.
                     </CardDescription>
                 </div>
                 <Button
@@ -456,16 +462,20 @@ function SearchPlanActionsCard({
     form,
     formErrors,
     isLocked,
+    onRunAll,
     planStatusLabel,
     planVersion,
+    runProcessing,
 }: {
     canRunSearch: boolean;
     canUpdateSearchPlan: boolean;
     form: InertiaFormProps<ProjectSearchPlanFormData>;
     formErrors: Record<string, string | undefined>;
     isLocked: boolean;
+    onRunAll: () => void;
     planStatusLabel: string;
     planVersion: number;
+    runProcessing: boolean;
 }) {
     return (
         <Card>
@@ -512,13 +522,14 @@ function SearchPlanActionsCard({
                 <Button
                     type="button"
                     variant="outline"
-                    disabled
+                    disabled={!canRunSearch || form.processing || runProcessing}
                     className="w-full justify-start"
                     aria-label={
                         canRunSearch
-                            ? 'Run all queries unavailable'
+                            ? 'Run all queries'
                             : 'Run all queries blocked'
                     }
+                    onClick={onRunAll}
                 >
                     <Play className="size-4" />
                     Run all queries
@@ -527,8 +538,8 @@ function SearchPlanActionsCard({
                 <div className="flex gap-2 rounded-md border bg-muted/30 p-3 text-xs leading-5 text-muted-foreground">
                     <Database className="mt-0.5 size-4 shrink-0" />
                     <span>
-                        Background search dispatch is the next implementation
-                        slice. This screen persists the reviewed plan.
+                        Search runs are queued in the background. Open the run
+                        page after dispatch to inspect provider progress.
                     </span>
                 </div>
 

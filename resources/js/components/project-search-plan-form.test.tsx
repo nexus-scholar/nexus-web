@@ -32,6 +32,7 @@ type HarnessProps = {
     canUpdateSearchPlan?: boolean;
     initial?: ProjectSearchPlanFormData;
     isLocked?: boolean;
+    onRunAll?: () => void;
     onSubmit?: () => void;
 };
 
@@ -40,6 +41,7 @@ function ProjectSearchPlanFormHarness({
     canUpdateSearchPlan = true,
     initial = initialData,
     isLocked = false,
+    onRunAll = vi.fn(),
     onSubmit = vi.fn(),
 }: HarnessProps) {
     const [data, setDataState] = useState(initial);
@@ -67,6 +69,7 @@ function ProjectSearchPlanFormHarness({
             isLocked={isLocked}
             planStatusLabel="Draft"
             planVersion={1}
+            onRunAll={onRunAll}
             onSubmit={onSubmit}
         />
     );
@@ -126,6 +129,19 @@ describe('ProjectSearchPlanForm', () => {
         );
 
         expect(onSubmit).toHaveBeenCalledOnce();
+    });
+
+    it('dispatches all queries when run is available', async () => {
+        const user = userEvent.setup();
+        const onRunAll = vi.fn();
+
+        render(<ProjectSearchPlanFormHarness onRunAll={onRunAll} />);
+
+        await user.click(
+            screen.getByRole('button', { name: 'Run all queries' }),
+        );
+
+        expect(onRunAll).toHaveBeenCalledOnce();
     });
 
     it('keeps reviewer controls read-only', () => {

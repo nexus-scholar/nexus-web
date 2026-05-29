@@ -90,6 +90,11 @@ class Project extends Model
         return $this->hasOne(ProjectSearchPlan::class);
     }
 
+    public function searchRuns(): HasMany
+    {
+        return $this->hasMany(ProjectSearchRun::class);
+    }
+
     public function auditEvents(): HasMany
     {
         return $this->hasMany(AuditEvent::class);
