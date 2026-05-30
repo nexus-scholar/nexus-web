@@ -79,6 +79,50 @@ class ProjectPolicy
         return $this->deduplicateCorpus($user, $project);
     }
 
+    public function viewScreening(User $user, Project $project): bool
+    {
+        if ($project->workspace?->isSuspended()) {
+            return false;
+        }
+
+        return $this->view($user, $project);
+    }
+
+    public function manageScreening(User $user, Project $project): bool
+    {
+        if (! $project->isLocked() || $project->workspace?->isSuspended()) {
+            return false;
+        }
+
+        return $user->projectRole($project) === ProjectRole::Owner
+            || $this->administersProjectWorkspace($user, $project);
+    }
+
+    public function screenAssignedWork(User $user, Project $project): bool
+    {
+        if (! $project->isLocked() || $project->workspace?->isSuspended()) {
+            return false;
+        }
+
+        return in_array($user->projectRole($project), [
+            ProjectRole::Owner,
+            ProjectRole::Reviewer,
+            ProjectRole::Adjudicator,
+        ], true) || $this->administersProjectWorkspace($user, $project);
+    }
+
+    public function resolveScreeningConflict(User $user, Project $project): bool
+    {
+        if (! $project->isLocked() || $project->workspace?->isSuspended()) {
+            return false;
+        }
+
+        return in_array($user->projectRole($project), [
+            ProjectRole::Owner,
+            ProjectRole::Adjudicator,
+        ], true) || $this->administersProjectWorkspace($user, $project);
+    }
+
     public function viewActivity(User $user, Project $project): bool
     {
         return $this->view($user, $project);
