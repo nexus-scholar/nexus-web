@@ -1,5 +1,7 @@
 # Workflow 2 UI Preparation
 
+Status: implemented and merged.
+
 This note records the web UI preparation for project creation and protocol
 definition. It should stay focused on reusable frontend pieces; backend schema
 and policy decisions live in the parent product workflow docs.

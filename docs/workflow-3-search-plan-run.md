@@ -1,6 +1,8 @@
 # Workflow 3: Search Plan And Search Run
 
-This document prepares the first implementation slice after project creation
+Status: implemented and merged.
+
+This document prepared the first implementation slice after project creation
 and protocol completion.
 
 ## Goal

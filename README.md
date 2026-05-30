@@ -4,7 +4,8 @@ Nexus Scholar Web is the hosted Laravel application for the Nexus Scholar produc
 
 The current MVP includes authentication, workspaces, project setup, protocol
 editing, search planning, draft corpus review, deduplication review, corpus
-lock, and title-and-abstract screening.
+lock, title-and-abstract screening, and full-text retrieval with artifact
+audit.
 
 For developer onboarding, start with [`docs/developer-handoff.md`](docs/developer-handoff.md).
 

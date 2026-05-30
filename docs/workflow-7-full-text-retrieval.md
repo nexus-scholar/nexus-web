@@ -2,7 +2,7 @@
 
 Prepared on 2026-05-30.
 
-Status: preparation only. Workflow 6 now produces final per-work screening
+Status: implemented and merged. Workflow 6 produces final per-work screening
 outcomes and a full-text readiness count. Workflow 7 turns those ready records
 into an auditable legal open-access retrieval workflow.
 

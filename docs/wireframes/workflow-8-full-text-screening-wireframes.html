@@ -1,0 +1,710 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>Workflow 8 Wireframes - Full-Text Screening</title>
+        <style>
+            :root {
+                color-scheme: light;
+                --bg: #f6f7f6;
+                --surface: #ffffff;
+                --surface-soft: #f1f4f3;
+                --border: #d9dedb;
+                --border-strong: #c3cbc7;
+                --text: #141817;
+                --muted: #5a6762;
+                --brand: #087f86;
+                --brand-soft: #dcefee;
+                --include: #1f6f43;
+                --include-soft: #dff1e7;
+                --exclude: #9f2f36;
+                --exclude-soft: #f8dddf;
+                --maybe: #6842a0;
+                --maybe-soft: #eee8fb;
+                --audit: #8a5a12;
+                --audit-soft: #f8ecd2;
+                --shadow: 0 18px 48px rgba(20, 24, 23, 0.08);
+            }
+
+            * {
+                box-sizing: border-box;
+            }
+
+            body {
+                margin: 0;
+                background: var(--bg);
+                color: var(--text);
+                font-family:
+                    Inter, ui-sans-serif, system-ui, -apple-system,
+                    BlinkMacSystemFont, "Segoe UI", sans-serif;
+                letter-spacing: 0;
+            }
+
+            main {
+                max-width: 1460px;
+                margin: 0 auto;
+                padding: 28px;
+            }
+
+            h1,
+            h2,
+            h3,
+            p {
+                margin: 0;
+            }
+
+            h1 {
+                font-size: 30px;
+                line-height: 1.15;
+            }
+
+            h2 {
+                font-size: 18px;
+            }
+
+            h3 {
+                font-size: 14px;
+            }
+
+            p {
+                color: var(--muted);
+                line-height: 1.55;
+            }
+
+            .eyebrow {
+                margin-bottom: 6px;
+                color: var(--brand);
+                font-size: 12px;
+                font-weight: 750;
+                text-transform: uppercase;
+            }
+
+            .intro {
+                max-width: 780px;
+                margin-top: 8px;
+            }
+
+            .screen {
+                margin-top: 26px;
+                overflow: hidden;
+                border: 1px solid var(--border);
+                border-radius: 8px;
+                background: var(--surface);
+                box-shadow: var(--shadow);
+            }
+
+            .app {
+                display: grid;
+                min-height: 760px;
+                grid-template-columns: 240px minmax(0, 1fr);
+            }
+
+            .sidebar {
+                display: flex;
+                flex-direction: column;
+                border-right: 1px solid var(--border);
+                background: #fbfcfb;
+                padding: 18px;
+            }
+
+            .brand {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                font-weight: 750;
+            }
+
+            .brand-mark {
+                display: grid;
+                width: 32px;
+                height: 32px;
+                place-items: center;
+                border-radius: 7px;
+                background: var(--brand);
+                color: white;
+                font-size: 13px;
+            }
+
+            .brand-subtitle,
+            .nav-label,
+            .sub {
+                color: var(--muted);
+                font-size: 12px;
+            }
+
+            .nav-label {
+                margin: 28px 0 8px;
+            }
+
+            .nav {
+                display: grid;
+                gap: 6px;
+            }
+
+            .nav-row {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                border-radius: 7px;
+                padding: 9px 10px;
+                color: var(--muted);
+                font-size: 14px;
+            }
+
+            .nav-row.active {
+                background: var(--brand-soft);
+                color: #075157;
+                font-weight: 700;
+            }
+
+            .dot {
+                width: 10px;
+                height: 10px;
+                flex: 0 0 auto;
+                border-radius: 999px;
+                background: currentColor;
+                opacity: 0.7;
+            }
+
+            .spacer {
+                flex: 1;
+            }
+
+            .content {
+                position: relative;
+                min-width: 0;
+                padding: 26px;
+            }
+
+            .topline {
+                display: flex;
+                align-items: flex-start;
+                justify-content: space-between;
+                gap: 16px;
+                border-bottom: 1px solid var(--border);
+                padding-bottom: 18px;
+            }
+
+            .actions,
+            .badges {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+
+            .actions {
+                justify-content: flex-end;
+            }
+
+            .button {
+                display: inline-flex;
+                min-height: 34px;
+                align-items: center;
+                justify-content: center;
+                gap: 8px;
+                border: 1px solid var(--border-strong);
+                border-radius: 7px;
+                background: var(--surface);
+                padding: 7px 12px;
+                color: var(--text);
+                font-size: 13px;
+                font-weight: 700;
+            }
+
+            .button.primary {
+                border-color: var(--text);
+                background: var(--text);
+                color: white;
+            }
+
+            .badge {
+                display: inline-flex;
+                align-items: center;
+                border-radius: 7px;
+                padding: 4px 8px;
+                background: #e9eeeb;
+                color: var(--muted);
+                font-size: 12px;
+                font-weight: 700;
+                white-space: nowrap;
+            }
+
+            .badge.include {
+                background: var(--include-soft);
+                color: var(--include);
+            }
+
+            .badge.exclude {
+                background: var(--exclude-soft);
+                color: var(--exclude);
+            }
+
+            .badge.maybe {
+                background: var(--maybe-soft);
+                color: var(--maybe);
+            }
+
+            .badge.audit {
+                background: var(--audit-soft);
+                color: var(--audit);
+            }
+
+            .grid {
+                display: grid;
+                gap: 14px;
+            }
+
+            .cols-4 {
+                grid-template-columns: repeat(4, minmax(0, 1fr));
+            }
+
+            .cols-main {
+                grid-template-columns: minmax(0, 1fr) 360px;
+            }
+
+            .queue-layout {
+                display: grid;
+                grid-template-columns: 310px minmax(0, 1fr) 360px;
+                gap: 14px;
+                margin-top: 18px;
+            }
+
+            .card {
+                border: 1px solid var(--border);
+                border-radius: 8px;
+                background: var(--surface);
+                padding: 16px;
+            }
+
+            .card.soft {
+                background: var(--surface-soft);
+            }
+
+            .card-head {
+                display: flex;
+                align-items: flex-start;
+                justify-content: space-between;
+                gap: 12px;
+                margin-bottom: 12px;
+            }
+
+            .metric {
+                min-height: 116px;
+            }
+
+            .metric-value {
+                margin-top: 12px;
+                font-size: 30px;
+                font-weight: 780;
+                line-height: 1;
+            }
+
+            .metric-note {
+                margin-top: 8px;
+                color: var(--muted);
+                font-size: 13px;
+            }
+
+            .toolbar {
+                display: grid;
+                grid-template-columns: minmax(0, 1fr) auto auto auto;
+                gap: 10px;
+                margin-bottom: 12px;
+            }
+
+            .input,
+            .textarea {
+                min-height: 38px;
+                border: 1px solid var(--border-strong);
+                border-radius: 7px;
+                background: white;
+                padding: 8px 12px;
+                color: var(--muted);
+                font-size: 13px;
+            }
+
+            .textarea {
+                min-height: 92px;
+            }
+
+            table {
+                width: 100%;
+                border-collapse: collapse;
+                table-layout: fixed;
+                font-size: 13px;
+            }
+
+            th,
+            td {
+                border-top: 1px solid var(--border);
+                padding: 11px 10px;
+                text-align: left;
+                vertical-align: top;
+            }
+
+            th {
+                color: var(--muted);
+                font-size: 12px;
+                font-weight: 750;
+            }
+
+            .record {
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+                font-weight: 700;
+            }
+
+            .queue-list {
+                display: grid;
+                gap: 8px;
+            }
+
+            .queue-row {
+                border: 1px solid var(--border);
+                border-radius: 7px;
+                padding: 11px;
+            }
+
+            .queue-row.active {
+                border-color: var(--brand);
+                background: var(--brand-soft);
+            }
+
+            .criteria {
+                display: grid;
+                gap: 8px;
+                margin-top: 12px;
+            }
+
+            .criterion {
+                border-left: 3px solid var(--brand);
+                padding-left: 10px;
+                color: var(--muted);
+                font-size: 13px;
+            }
+
+            .decision-grid {
+                display: grid;
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+                gap: 8px;
+            }
+
+            .decision {
+                min-height: 48px;
+                border: 1px solid var(--border-strong);
+                border-radius: 7px;
+                padding: 10px;
+                font-weight: 750;
+                text-align: center;
+            }
+
+            .artifact-strip {
+                display: flex;
+                flex-wrap: wrap;
+                align-items: center;
+                justify-content: space-between;
+                gap: 10px;
+                border: 1px solid var(--border);
+                border-radius: 8px;
+                background: var(--surface-soft);
+                padding: 12px;
+            }
+
+            @media (max-width: 980px) {
+                .app,
+                .queue-layout,
+                .cols-main,
+                .cols-4 {
+                    grid-template-columns: 1fr;
+                }
+
+                .sidebar {
+                    display: none;
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <main>
+            <div class="eyebrow">Workflow 8</div>
+            <h1>Full-Text Screening</h1>
+            <p class="intro">
+                Retrieved artifacts are routed into a separate human eligibility
+                workflow. Missing artifacts stay visible as follow-up instead
+                of being silently converted into exclusions.
+            </p>
+
+            <section class="screen">
+                <div class="app">
+                    <aside class="sidebar">
+                        <div class="brand">
+                            <div class="brand-mark">NS</div>
+                            <div>
+                                <div>Nexus Scholar</div>
+                                <div class="brand-subtitle">Evidence reviews</div>
+                            </div>
+                        </div>
+                        <div class="nav-label">Project</div>
+                        <div class="nav">
+                            <div class="nav-row"><span class="dot"></span>Screening</div>
+                            <div class="nav-row"><span class="dot"></span>Full text</div>
+                            <div class="nav-row active"><span class="dot"></span>Full-text screening</div>
+                        </div>
+                        <div class="spacer"></div>
+                        <div class="nav-row"><span class="dot"></span>Dr. Lina Haddad</div>
+                    </aside>
+                    <section class="content">
+                        <div class="topline">
+                            <div>
+                                <p>Evidence Synthesis Lab / Systematic review</p>
+                                <h1>Full-text screening readiness</h1>
+                                <p>
+                                    Assign retrieved full-text artifacts for
+                                    final eligibility decisions.
+                                </p>
+                                <div class="badges" style="margin-top: 10px">
+                                    <span class="badge include">Retrieval complete</span>
+                                    <span class="badge">Stage: full_text</span>
+                                    <span class="badge audit">3 follow-up</span>
+                                </div>
+                            </div>
+                            <div class="actions">
+                                <span class="button primary">Start screening</span>
+                                <span class="button">Full text</span>
+                                <span class="button">Overview</span>
+                            </div>
+                        </div>
+
+                        <div class="grid cols-4" style="margin-top: 20px">
+                            <div class="card metric">
+                                <p>Screenable artifacts</p>
+                                <div class="metric-value">5</div>
+                                <div class="metric-note">Successful retrievals ready for reviewers.</div>
+                            </div>
+                            <div class="card metric">
+                                <p>Follow-up records</p>
+                                <div class="metric-value">3</div>
+                                <div class="metric-note">Failed, skipped, or manual-needed items.</div>
+                            </div>
+                            <div class="card metric">
+                                <p>Required reviewers</p>
+                                <div class="metric-value">2</div>
+                                <div class="metric-note">Inherited from protocol unless changed.</div>
+                            </div>
+                            <div class="card metric">
+                                <p>Policy</p>
+                                <div class="metric-value">Required</div>
+                                <div class="metric-note">Final include needs inspected full text.</div>
+                            </div>
+                        </div>
+
+                        <div class="grid cols-main" style="margin-top: 14px">
+                            <div class="card">
+                                <div class="card-head">
+                                    <div>
+                                        <h2>Screenable records</h2>
+                                        <p>
+                                            Only successful artifact rows enter
+                                            the first screening batch.
+                                        </p>
+                                    </div>
+                                    <span class="badge include">5 ready</span>
+                                </div>
+                                <div class="toolbar">
+                                    <div class="input">Search title, identifier, or source</div>
+                                    <div class="button">Decision</div>
+                                    <div class="button">Artifact</div>
+                                    <div class="button">Columns</div>
+                                </div>
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th style="width: 42%">Record</th>
+                                            <th style="width: 16%">TA decision</th>
+                                            <th style="width: 18%">Artifact</th>
+                                            <th style="width: 24%">Assignment</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>
+                                                <div class="record">Mobile reminders for cardiometabolic medication adherence</div>
+                                                <div class="sub">2022 / pubmed:39000001</div>
+                                            </td>
+                                            <td><span class="badge include">Include</span></td>
+                                            <td><span class="badge include">PDF stored</span></td>
+                                            <td>2 reviewer assignments</td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <div class="record">Telehealth monitoring for adults with metabolic syndrome</div>
+                                                <div class="sub">2021 / openalex:W39000008</div>
+                                            </td>
+                                            <td><span class="badge maybe">Maybe</span></td>
+                                            <td><span class="badge include">PDF stored</span></td>
+                                            <td>2 reviewer assignments</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <aside class="grid">
+                                <div class="card soft">
+                                    <h2>Reviewer setup</h2>
+                                    <p style="margin-top: 6px">
+                                        Assign active reviewers only. Owners and
+                                        admins can resolve conflicts.
+                                    </p>
+                                    <div class="criteria">
+                                        <div class="criterion">Reviewer: Dr. Haddad</div>
+                                        <div class="criterion">Reviewer: Omar Finch</div>
+                                        <div class="criterion">Adjudicator: Admin user</div>
+                                    </div>
+                                </div>
+                                <div class="card">
+                                    <h2>Follow-up queue</h2>
+                                    <p style="margin-top: 6px">
+                                        Missing artifacts remain auditable and
+                                        outside the first screening batch.
+                                    </p>
+                                    <div class="badges" style="margin-top: 10px">
+                                        <span class="badge audit">2 failed</span>
+                                        <span class="badge maybe">1 manual needed</span>
+                                    </div>
+                                </div>
+                            </aside>
+                        </div>
+                    </section>
+                </div>
+            </section>
+
+            <section class="screen">
+                <div class="app">
+                    <aside class="sidebar">
+                        <div class="brand">
+                            <div class="brand-mark">NS</div>
+                            <div>
+                                <div>Nexus Scholar</div>
+                                <div class="brand-subtitle">Evidence reviews</div>
+                            </div>
+                        </div>
+                        <div class="nav-label">Queue</div>
+                        <div class="nav-row active"><span class="dot"></span>Assigned full text</div>
+                        <div class="nav-row"><span class="dot"></span>Conflicts</div>
+                        <div class="spacer"></div>
+                        <div class="nav-row"><span class="dot"></span>Reviewer</div>
+                    </aside>
+                    <section class="content">
+                        <div class="topline">
+                            <div>
+                                <p>Reviewer queue / full_text</p>
+                                <h1>Screen full text</h1>
+                                <p>
+                                    Read the artifact, apply criteria, and
+                                    record a rationale-backed decision.
+                                </p>
+                            </div>
+                            <div class="actions">
+                                <span class="button">Previous</span>
+                                <span class="button">Next</span>
+                            </div>
+                        </div>
+
+                        <div class="queue-layout">
+                            <div class="card">
+                                <div class="card-head">
+                                    <h2>Assignments</h2>
+                                    <span class="badge">5 pending</span>
+                                </div>
+                                <div class="queue-list">
+                                    <div class="queue-row active">
+                                        <div class="record">Mobile reminders for cardiometabolic medication adherence</div>
+                                        <div class="sub">PDF / include at title abstract</div>
+                                    </div>
+                                    <div class="queue-row">
+                                        <div class="record">Telehealth monitoring for adults with metabolic syndrome</div>
+                                        <div class="sub">PDF / maybe at title abstract</div>
+                                    </div>
+                                    <div class="queue-row">
+                                        <div class="record">Remote lifestyle app engagement</div>
+                                        <div class="sub">PDF / include at title abstract</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="grid">
+                                <div class="artifact-strip">
+                                    <div>
+                                        <h2>Artifact</h2>
+                                        <p>demo-completed/106b103c-demo.pdf</p>
+                                    </div>
+                                    <div class="actions">
+                                        <span class="button primary">Open artifact</span>
+                                        <span class="button">Source audit</span>
+                                    </div>
+                                </div>
+
+                                <div class="card">
+                                    <div class="card-head">
+                                        <div>
+                                            <h2>Mobile reminders for cardiometabolic medication adherence</h2>
+                                            <p>Journal of Medication Support / 2022 / pubmed:39000001</p>
+                                        </div>
+                                        <span class="badge include">TA include</span>
+                                    </div>
+                                    <h3>Abstract</h3>
+                                    <p style="margin-top: 6px">
+                                        Evaluates a digital reminder program for
+                                        medication adherence in adult
+                                        cardiometabolic care. Full text is
+                                        available from a legal open-access
+                                        source.
+                                    </p>
+                                    <div class="criteria">
+                                        <div class="criterion">Population: adults in primary or cardiometabolic care.</div>
+                                        <div class="criterion">Intervention: digital follow-up, reminder, portal, or coaching workflow.</div>
+                                        <div class="criterion">Outcome: adherence, utilization, clinical monitoring, or patient engagement.</div>
+                                        <div class="criterion">Exclude editorials, protocols without results, or unrelated disease areas.</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <aside class="grid">
+                                <div class="card">
+                                    <div class="card-head">
+                                        <h2>Decision</h2>
+                                        <span class="badge">Artifact inspected</span>
+                                    </div>
+                                    <div class="decision-grid">
+                                        <div class="decision">Include</div>
+                                        <div class="decision">Maybe</div>
+                                        <div class="decision">Exclude</div>
+                                    </div>
+                                    <div class="input" style="margin-top: 10px">Exclusion reason, required when excluding</div>
+                                    <div class="textarea" style="margin-top: 10px">Rationale and evidence notes</div>
+                                    <div class="actions" style="margin-top: 10px">
+                                        <span class="button primary">Submit decision</span>
+                                    </div>
+                                </div>
+
+                                <div class="card soft">
+                                    <h2>Team status</h2>
+                                    <p style="margin-top: 6px">
+                                        Other reviewer decisions stay summarized
+                                        until this assignment is submitted.
+                                    </p>
+                                    <div class="badges" style="margin-top: 10px">
+                                        <span class="badge">1 of 2 complete</span>
+                                        <span class="badge audit">Conflict possible</span>
+                                    </div>
+                                </div>
+                            </aside>
+                        </div>
+                    </section>
+                </div>
+            </section>
+        </main>
+    </body>
+</html>

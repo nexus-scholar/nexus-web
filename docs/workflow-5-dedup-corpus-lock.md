@@ -2,8 +2,9 @@
 
 Prepared on 2026-05-30.
 
-Status: preparation only. This document defines the next implementation slice
-and the scientific constraints that must be solved before screening begins.
+Status: implemented and merged. This document records the first implementation
+slice and the scientific constraints that must be preserved before screening
+begins.
 
 ## Goal
 

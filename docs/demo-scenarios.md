@@ -544,6 +544,48 @@ Screenshot targets:
 - `output/playwright/workflow-7-full-text-artifact-detail.png`
 - `output/playwright/workflow-7-reviewer-readonly.png`
 
+## Workflow 8: Full-Text Screening
+
+Preparation lives in `docs/workflow-8-full-text-screening.md`.
+Wireframes live in
+`docs/wireframes/workflow-8-full-text-screening-wireframes.html`.
+
+Planned first-slice browser scenarios:
+
+1. Owner opens full-text screening before retrieval is complete and sees a
+   blocker.
+2. Owner opens completed retrieval and sees screenable artifact count plus
+   follow-up count.
+3. Owner starts a full-text screening batch.
+4. Reviewer opens the full-text queue and sees artifact context.
+5. Reviewer records an include decision with rationale.
+6. Reviewer records an exclude decision with exclusion reason.
+7. Viewer opens full-text screening read-only.
+8. Conflicting decisions create an open conflict.
+9. Adjudicator resolves a full-text screening conflict with an audit reason.
+10. Completed full-text screening shows extraction readiness.
+
+Expected signals:
+
+- Full-text screening uses `ScreeningStage::FULL_TEXT`.
+- Only successfully retrieved artifacts enter the first screening batch.
+- Failed, skipped, and manual-needed retrieval items remain visible follow-up
+  states.
+- Final title-and-abstract excludes are not revived.
+- Exclude decisions require structured exclusion reason plus rationale.
+- Artifact access remains project-authorized.
+- Conflicts are stage-scoped and do not mix with title-and-abstract conflicts.
+
+Screenshot targets:
+
+- `output/playwright/workflow-8-full-text-screening-readiness.png`
+- `output/playwright/workflow-8-full-text-screening-setup.png`
+- `output/playwright/workflow-8-full-text-queue.png`
+- `output/playwright/workflow-8-full-text-decision.png`
+- `output/playwright/workflow-8-full-text-conflict.png`
+- `output/playwright/workflow-8-full-text-completed.png`
+- `output/playwright/workflow-8-viewer-readonly.png`
+
 ## UI Hardening: Brand Tokens
 
 Run this after global token or shared component changes.
