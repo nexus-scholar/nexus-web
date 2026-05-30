@@ -102,6 +102,7 @@ php -r '$pdo=new PDO("sqlite:database/database.sqlite"); $pdo->exec("delete from
 | 3. Search plan and run | Done | `docs/workflow-3-search-plan-run.md` |
 | 4. Draft corpus review | Done | `docs/workflow-4-draft-corpus-review.md` |
 | 5. Deduplication and corpus lock | Done | `docs/workflow-5-dedup-corpus-lock.md` |
+| 6. Title and abstract screening | Prepared | `docs/workflow-6-title-abstract-screening.md` |
 
 ## Workflow 5 Notes
 
@@ -180,15 +181,17 @@ The next product workflow should be title and abstract screening.
 
 Recommended first slice:
 
-1. Create `docs/workflow-6-title-abstract-screening.md`.
-2. Define the locked-corpus input contract from workflow 5.
-3. Design reviewer assignment, include/exclude/maybe decisions, conflict
-   states, and audit events before implementing UI.
-4. Extend `DemoAccessSeeder` with screening-ready records and reviewer states.
-5. Add Pest tests for policy, assignment, decision persistence, and conflict
+1. Start from `docs/workflow-6-title-abstract-screening.md`.
+2. Add the web-owned screening batch, assignment, and conflict migrations.
+3. Implement the locked-corpus input contract from workflow 5.
+4. Implement reviewer assignment, include/exclude/maybe decisions, conflict
+   states, and audit events.
+5. Extend `DemoAccessSeeder` with screening-ready records and reviewer states.
+6. Add Pest tests for policy, assignment, decision persistence, and conflict
    creation.
-6. Add React tests for decision controls and conflict badges.
-7. Verify owner, reviewer, viewer, and workspace admin browser scenarios.
+7. Add React tests for decision controls and conflict badges.
+8. Verify owner, reviewer, viewer, adjudicator, and workspace admin browser
+   scenarios.
 
 Do not start full-text retrieval, exports, AI assistance, or billing before the
 screening loop is stable.
