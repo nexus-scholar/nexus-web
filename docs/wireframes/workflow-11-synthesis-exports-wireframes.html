@@ -1,0 +1,680 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>Workflow 11 Wireframes - Synthesis And Exports</title>
+        <style>
+            :root {
+                color-scheme: light;
+                --bg: #f6f7f6;
+                --surface: #ffffff;
+                --surface-soft: #f1f4f3;
+                --border: #d9dedb;
+                --border-strong: #c3cbc7;
+                --text: #141817;
+                --muted: #5a6762;
+                --brand: #087f86;
+                --brand-soft: #dcefee;
+                --ok: #1f6f43;
+                --ok-soft: #dff1e7;
+                --warn: #8a5a12;
+                --warn-soft: #f8ecd2;
+                --risk: #9f2f36;
+                --risk-soft: #f8dddf;
+                --info: #2768b5;
+                --info-soft: #e7f0ff;
+                --purple: #6842a0;
+                --purple-soft: #eee8fb;
+                --shadow: 0 18px 48px rgba(20, 24, 23, 0.08);
+            }
+
+            * {
+                box-sizing: border-box;
+            }
+
+            body {
+                margin: 0;
+                background: var(--bg);
+                color: var(--text);
+                font-family:
+                    Inter, ui-sans-serif, system-ui, -apple-system,
+                    BlinkMacSystemFont, "Segoe UI", sans-serif;
+                letter-spacing: 0;
+            }
+
+            main {
+                max-width: 1460px;
+                margin: 0 auto;
+                padding: 28px;
+            }
+
+            h1,
+            h2,
+            h3,
+            p {
+                margin: 0;
+            }
+
+            h1 {
+                font-size: 30px;
+                line-height: 1.15;
+            }
+
+            h2 {
+                font-size: 18px;
+            }
+
+            h3 {
+                font-size: 14px;
+            }
+
+            p {
+                color: var(--muted);
+                line-height: 1.55;
+            }
+
+            .eyebrow {
+                margin-bottom: 6px;
+                color: var(--brand);
+                font-size: 12px;
+                font-weight: 750;
+                text-transform: uppercase;
+            }
+
+            .intro {
+                max-width: 780px;
+                margin-top: 8px;
+            }
+
+            .screen {
+                margin-top: 26px;
+                overflow: hidden;
+                border: 1px solid var(--border);
+                border-radius: 8px;
+                background: var(--surface);
+                box-shadow: var(--shadow);
+            }
+
+            .app {
+                display: grid;
+                min-height: 820px;
+                grid-template-columns: 250px minmax(0, 1fr);
+            }
+
+            .sidebar {
+                display: flex;
+                flex-direction: column;
+                border-right: 1px solid var(--border);
+                background: #fbfcfb;
+                padding: 18px;
+            }
+
+            .brand {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                font-weight: 750;
+            }
+
+            .brand-mark {
+                display: grid;
+                width: 32px;
+                height: 32px;
+                place-items: center;
+                border-radius: 7px;
+                background: var(--brand);
+                color: white;
+                font-size: 13px;
+            }
+
+            .brand-subtitle,
+            .nav-label,
+            .sub {
+                color: var(--muted);
+                font-size: 12px;
+            }
+
+            .nav-label {
+                margin: 28px 0 8px;
+            }
+
+            .nav {
+                display: grid;
+                gap: 6px;
+            }
+
+            .nav-row {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                border-radius: 7px;
+                padding: 9px 10px;
+                color: var(--muted);
+                font-size: 14px;
+            }
+
+            .nav-row.active {
+                background: var(--brand-soft);
+                color: #075157;
+                font-weight: 700;
+            }
+
+            .dot {
+                width: 10px;
+                height: 10px;
+                flex: 0 0 auto;
+                border-radius: 999px;
+                background: currentColor;
+                opacity: 0.7;
+            }
+
+            .spacer {
+                flex: 1;
+            }
+
+            .content {
+                min-width: 0;
+                padding: 26px;
+            }
+
+            .topline {
+                display: flex;
+                align-items: flex-start;
+                justify-content: space-between;
+                gap: 16px;
+                border-bottom: 1px solid var(--border);
+                padding-bottom: 18px;
+            }
+
+            .actions,
+            .badges {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+
+            .actions {
+                justify-content: flex-end;
+            }
+
+            .button {
+                display: inline-flex;
+                min-height: 34px;
+                align-items: center;
+                justify-content: center;
+                border: 1px solid var(--border-strong);
+                border-radius: 7px;
+                background: var(--surface);
+                padding: 7px 12px;
+                color: var(--text);
+                font-size: 13px;
+                font-weight: 700;
+            }
+
+            .button.primary {
+                border-color: var(--text);
+                background: var(--text);
+                color: white;
+            }
+
+            .badge {
+                display: inline-flex;
+                min-height: 26px;
+                align-items: center;
+                border-radius: 7px;
+                padding: 4px 9px;
+                background: var(--surface-soft);
+                color: var(--muted);
+                font-size: 12px;
+                font-weight: 700;
+            }
+
+            .ok {
+                background: var(--ok-soft);
+                color: var(--ok);
+            }
+
+            .warn {
+                background: var(--warn-soft);
+                color: var(--warn);
+            }
+
+            .risk {
+                background: var(--risk-soft);
+                color: var(--risk);
+            }
+
+            .info {
+                background: var(--info-soft);
+                color: var(--info);
+            }
+
+            .purple {
+                background: var(--purple-soft);
+                color: var(--purple);
+            }
+
+            .grid {
+                display: grid;
+                gap: 14px;
+                margin-top: 22px;
+            }
+
+            .metrics {
+                grid-template-columns: repeat(6, minmax(0, 1fr));
+            }
+
+            .metric {
+                min-height: 124px;
+                border: 1px solid var(--border);
+                border-radius: 8px;
+                background: var(--surface);
+                padding: 16px;
+            }
+
+            .metric strong {
+                display: block;
+                margin: 10px 0 6px;
+                font-size: 28px;
+                line-height: 1;
+            }
+
+            .split {
+                grid-template-columns: minmax(0, 1.1fr) minmax(360px, 0.9fr);
+                align-items: start;
+            }
+
+            .panel {
+                border: 1px solid var(--border);
+                border-radius: 8px;
+                background: var(--surface);
+            }
+
+            .panel-head {
+                display: flex;
+                align-items: flex-start;
+                justify-content: space-between;
+                gap: 12px;
+                border-bottom: 1px solid var(--border);
+                padding: 16px;
+            }
+
+            .toolbar {
+                display: flex;
+                gap: 10px;
+                align-items: center;
+                border-bottom: 1px solid var(--border);
+                padding: 12px 16px;
+            }
+
+            .input {
+                min-height: 38px;
+                border: 1px solid var(--border);
+                border-radius: 7px;
+                background: #fff;
+                padding: 9px 11px;
+                color: var(--muted);
+                font-size: 14px;
+            }
+
+            .grow {
+                flex: 1;
+            }
+
+            .count-row,
+            .export-row,
+            .evidence-row {
+                display: grid;
+                gap: 12px;
+                align-items: center;
+                border-bottom: 1px solid var(--border);
+                padding: 14px 16px;
+            }
+
+            .count-row {
+                grid-template-columns: 1.4fr 0.5fr 0.7fr 0.8fr;
+            }
+
+            .export-row {
+                grid-template-columns: 1fr 0.8fr 0.8fr 0.7fr 0.6fr;
+            }
+
+            .evidence-row {
+                min-width: 1100px;
+                grid-template-columns: 1.5fr 0.7fr 0.8fr 1fr 0.8fr 0.6fr;
+            }
+
+            .count-row:last-child,
+            .export-row:last-child,
+            .evidence-row:last-child {
+                border-bottom: 0;
+            }
+
+            .table-scroll {
+                overflow-x: auto;
+            }
+
+            .builder {
+                display: grid;
+                gap: 12px;
+                padding: 16px;
+            }
+
+            .check-row {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 12px;
+                border: 1px solid var(--border);
+                border-radius: 8px;
+                padding: 12px;
+            }
+
+            .manifest {
+                border-left: 3px solid var(--brand);
+                background: var(--surface-soft);
+                padding: 12px;
+                color: var(--muted);
+                font-size: 13px;
+                line-height: 1.55;
+            }
+
+            @media (max-width: 1100px) {
+                .app {
+                    grid-template-columns: 1fr;
+                }
+
+                .sidebar {
+                    display: none;
+                }
+
+                .metrics,
+                .split {
+                    grid-template-columns: 1fr 1fr;
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <main>
+            <div class="eyebrow">Workflow 11</div>
+            <h1>Synthesis, PRISMA counts, and exports wireframes</h1>
+            <p class="intro">
+                A synthesis command center that reconstructs counts, previews
+                evidence tables, and builds auditable export packages.
+            </p>
+
+            <section class="screen">
+                <div class="app">
+                    <aside class="sidebar">
+                        <div class="brand">
+                            <div class="brand-mark">NS</div>
+                            <div>
+                                Nexus Scholar
+                                <div class="brand-subtitle">Evidence reviews</div>
+                            </div>
+                        </div>
+                        <div class="nav-label">Workspace</div>
+                        <div class="nav">
+                            <div class="nav-row active"><span class="dot"></span>Evidence Synthesis Lab</div>
+                            <div class="nav-row"><span class="dot"></span>Dashboard</div>
+                            <div class="nav-row"><span class="dot"></span>Members</div>
+                            <div class="nav-row"><span class="dot"></span>Settings</div>
+                        </div>
+                        <div class="spacer"></div>
+                        <div class="nav-row"><span class="dot"></span>Dr. Lina Haddad</div>
+                    </aside>
+
+                    <div class="content">
+                        <div class="topline">
+                            <div>
+                                <p>Evidence Synthesis Lab / Systematic review</p>
+                                <h1>Synthesis and exports</h1>
+                                <p class="intro">
+                                    Review final counts, inspect evidence tables,
+                                    and build export packages from locked review
+                                    state.
+                                </p>
+                            </div>
+                            <div class="actions">
+                                <span class="badge ok">Extraction complete</span>
+                                <span class="badge ok">Appraisal complete</span>
+                                <span class="button">Package history</span>
+                                <span class="button primary">New export</span>
+                            </div>
+                        </div>
+
+                        <div class="grid metrics">
+                            <div class="metric">
+                                <p>Records found</p>
+                                <strong>1,248</strong>
+                                <p>Across providers.</p>
+                            </div>
+                            <div class="metric">
+                                <p>After dedup</p>
+                                <strong>147</strong>
+                                <p>Representative works.</p>
+                            </div>
+                            <div class="metric">
+                                <p>Title/abstract include</p>
+                                <strong>61</strong>
+                                <p>Includes plus maybes.</p>
+                            </div>
+                            <div class="metric">
+                                <p>Full text assessed</p>
+                                <strong>52</strong>
+                                <p>Successful artifacts.</p>
+                            </div>
+                            <div class="metric">
+                                <p>Included studies</p>
+                                <strong>43</strong>
+                                <p>Final eligibility.</p>
+                            </div>
+                            <div class="metric">
+                                <p>Export packages</p>
+                                <strong>8</strong>
+                                <p>3 final, 5 draft.</p>
+                            </div>
+                        </div>
+
+                        <div class="grid split">
+                            <section class="panel">
+                                <div class="panel-head">
+                                    <div>
+                                        <h2>PRISMA-style counts</h2>
+                                        <p>Reconstructed from workflow state, grouped by unit.</p>
+                                    </div>
+                                    <span class="button">Download JSON</span>
+                                </div>
+                                <div class="count-row">
+                                    <strong>Count</strong>
+                                    <strong>Value</strong>
+                                    <strong>Unit</strong>
+                                    <strong>Status</strong>
+                                </div>
+                                <div class="count-row">
+                                    <span>Records identified by database search</span>
+                                    <strong>1,248</strong>
+                                    <span>Records</span>
+                                    <span class="badge ok">Complete</span>
+                                </div>
+                                <div class="count-row">
+                                    <span>Duplicate records removed</span>
+                                    <strong>1,101</strong>
+                                    <span>Records</span>
+                                    <span class="badge ok">Complete</span>
+                                </div>
+                                <div class="count-row">
+                                    <span>Full-text records unavailable</span>
+                                    <strong>9</strong>
+                                    <span>Reports</span>
+                                    <span class="badge warn">Follow-up</span>
+                                </div>
+                                <div class="count-row">
+                                    <span>Studies included in synthesis</span>
+                                    <strong>43</strong>
+                                    <span>Studies</span>
+                                    <span class="badge ok">Complete</span>
+                                </div>
+                            </section>
+
+                            <section class="panel">
+                                <div class="panel-head">
+                                    <div>
+                                        <h2>Export builder</h2>
+                                        <p>Background package assembly with manifest and checksums.</p>
+                                    </div>
+                                    <span class="badge info">Ready</span>
+                                </div>
+                                <div class="builder">
+                                    <div class="check-row">
+                                        <div>
+                                            <strong>Bibliography</strong>
+                                            <p>CSV, BibTeX, RIS via core export handlers.</p>
+                                        </div>
+                                        <span class="badge ok">Selected</span>
+                                    </div>
+                                    <div class="check-row">
+                                        <div>
+                                            <strong>PRISMA counts</strong>
+                                            <p>CSV and JSON count package.</p>
+                                        </div>
+                                        <span class="badge ok">Selected</span>
+                                    </div>
+                                    <div class="check-row">
+                                        <div>
+                                            <strong>Extraction and appraisal</strong>
+                                            <p>Evidence table and rating matrix CSV.</p>
+                                        </div>
+                                        <span class="badge ok">Selected</span>
+                                    </div>
+                                    <div class="check-row">
+                                        <div>
+                                            <strong>Full-text ZIP</strong>
+                                            <p>Authorized artifacts only.</p>
+                                        </div>
+                                        <span class="badge warn">Confirm</span>
+                                    </div>
+                                    <div class="manifest">
+                                        Audit reason: Final internal handoff
+                                        export after completed extraction and
+                                        quality appraisal.
+                                    </div>
+                                    <span class="button primary">Build package in background</span>
+                                </div>
+                            </section>
+                        </div>
+
+                        <section class="panel" style="margin-top: 22px">
+                            <div class="panel-head">
+                                <div>
+                                    <h2>Evidence table preview</h2>
+                                    <p>Column visibility, sorting, and horizontal scrolling for dense exports.</p>
+                                </div>
+                                <div class="actions">
+                                    <span class="button">Filters</span>
+                                    <span class="button">Columns</span>
+                                    <span class="button">Export view</span>
+                                </div>
+                            </div>
+                            <div class="toolbar">
+                                <div class="input grow">Search included studies</div>
+                                <span class="button">Outcome</span>
+                                <span class="button">Risk rating</span>
+                                <span class="button">Year</span>
+                            </div>
+                            <div class="table-scroll">
+                                <div class="evidence-row">
+                                    <strong>Study</strong>
+                                    <strong>Year</strong>
+                                    <strong>Design</strong>
+                                    <strong>Primary outcome</strong>
+                                    <strong>Overall rating</strong>
+                                    <strong>Detail</strong>
+                                </div>
+                                <div class="evidence-row">
+                                    <div>
+                                        <strong>Digital coaching in primary care</strong>
+                                        <p class="sub">Final include</p>
+                                    </div>
+                                    <span>2024</span>
+                                    <span>RCT</span>
+                                    <span>Systolic blood pressure</span>
+                                    <span class="badge warn">Some concerns</span>
+                                    <span class="button">Open</span>
+                                </div>
+                                <div class="evidence-row">
+                                    <div>
+                                        <strong>AI risk feedback in clinics</strong>
+                                        <p class="sub">Final include</p>
+                                    </div>
+                                    <span>2025</span>
+                                    <span>Cluster RCT</span>
+                                    <span>Risk score change</span>
+                                    <span class="badge risk">High</span>
+                                    <span class="button">Open</span>
+                                </div>
+                            </div>
+                        </section>
+                    </div>
+                </div>
+            </section>
+
+            <section class="screen">
+                <div class="content">
+                    <div class="topline">
+                        <div>
+                            <p>Export history</p>
+                            <h1>Package detail sheet target</h1>
+                            <p>Package items show manifest metadata, checksums, status, and authorized downloads.</p>
+                        </div>
+                        <div class="actions">
+                            <span class="badge ok">Completed</span>
+                            <span class="button">Copy manifest</span>
+                        </div>
+                    </div>
+                    <section class="panel" style="margin-top: 22px">
+                        <div class="export-row">
+                            <strong>Package item</strong>
+                            <strong>Format</strong>
+                            <strong>Size</strong>
+                            <strong>Checksum</strong>
+                            <strong>Action</strong>
+                        </div>
+                        <div class="export-row">
+                            <div>
+                                <strong>Bibliography</strong>
+                                <p class="sub">Snapshot-backed, citable metadata</p>
+                            </div>
+                            <span>bibtex</span>
+                            <span>92 KB</span>
+                            <span>sha256: 2a91...</span>
+                            <span class="button">Download</span>
+                        </div>
+                        <div class="export-row">
+                            <div>
+                                <strong>PRISMA counts</strong>
+                                <p class="sub">Record, work, report, study units</p>
+                            </div>
+                            <span>json</span>
+                            <span>18 KB</span>
+                            <span>sha256: 91bb...</span>
+                            <span class="button">Download</span>
+                        </div>
+                        <div class="export-row">
+                            <div>
+                                <strong>Audit package</strong>
+                                <p class="sub">Workflow ids and warnings</p>
+                            </div>
+                            <span>json</span>
+                            <span>412 KB</span>
+                            <span>sha256: 773e...</span>
+                            <span class="button">Download</span>
+                        </div>
+                    </section>
+                </div>
+            </section>
+        </main>
+    </body>
+</html>

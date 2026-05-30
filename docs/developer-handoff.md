@@ -11,8 +11,7 @@ data, validation commands, and the next implementation boundary.
 - Default branch: `master`.
 - Current application: hosted Laravel/Inertia SaaS-style app for Nexus Scholar.
 - Package dependency: `nexus-scholar/core:^1.0` from Packagist.
-- Latest merged workflow: workflow 7, full-text retrieval and artifact audit,
-  merged in PR #13.
+- Latest merged workflow: workflow 8, full-text screening, merged in PR #15.
 - Local demo data is deterministic and lives in `Database\Seeders\DemoAccessSeeder`.
 - Browser scenario source of truth is `docs/demo-scenarios.md`.
 
@@ -104,7 +103,41 @@ php -r '$pdo=new PDO("sqlite:database/database.sqlite"); $pdo->exec("delete from
 | 5. Deduplication and corpus lock | Done | `docs/workflow-5-dedup-corpus-lock.md` |
 | 6. Title and abstract screening | Done | `docs/workflow-6-title-abstract-screening.md` |
 | 7. Full-text retrieval and artifact audit | Done | `docs/workflow-7-full-text-retrieval.md` |
-| 8. Full-text screening | Prepared | `docs/workflow-8-full-text-screening.md` |
+| 8. Full-text screening | Done | `docs/workflow-8-full-text-screening.md` |
+| 9. Data extraction | Prepared | `docs/workflow-9-data-extraction.md` |
+| 10. Quality appraisal / risk of bias | Prepared | `docs/workflow-10-quality-appraisal-risk-of-bias.md` |
+| 11. Synthesis, PRISMA counts, exports | Prepared | `docs/workflow-11-synthesis-prisma-exports.md` |
+| 12. Production hardening and launch controls | Prepared | `docs/workflow-12-production-hardening-launch-controls.md` |
+
+## Workflow 8 Notes
+
+Workflow 8 is integrated in the app flow, not only covered by tests.
+
+The owner can open full-text screening after retrieval, reviewers can work
+artifact-linked eligibility queues, excluded studies require structured
+full-text exclusion reasons, conflicts stay stage-scoped, and completed
+full-text screening produces final include/exclude/maybe counts plus follow-up
+artifact counts for extraction readiness.
+
+Hardening already in place:
+
+- full-text screening uses `ScreeningStage::FULL_TEXT`;
+- only successfully retrieved artifacts enter the first screening batch;
+- failed, skipped, and manual-needed retrieval rows remain follow-up states;
+- artifact access remains project-authorized;
+- conflicts are separate from title-and-abstract conflicts;
+- reviewer and viewer access remains role-scoped.
+
+Key files:
+
+- `app/Actions/Projects/StartProjectFullTextScreeningBatch.php`
+- `app/Actions/Projects/RecordProjectFullTextScreeningDecision.php`
+- `app/Actions/Projects/ResolveProjectFullTextScreeningConflict.php`
+- `app/Queries/Projects/ProjectFullTextScreeningReadModel.php`
+- `app/Queries/Projects/ProjectFullTextScreeningQueueReadModel.php`
+- `resources/js/pages/projects/full-text-screening.tsx`
+- `resources/js/pages/projects/full-text-screening-queue.tsx`
+- `tests/Feature/ProjectFullTextWorkflowTest.php`
 
 ## Workflow 7 Notes
 
@@ -187,12 +220,22 @@ CI currently runs:
 - tests on PHP 8.4;
 - tests on PHP 8.5.
 
-The workflow 7 merge passed all of them.
+The Workflow 8 merge passed all of them.
 
 ## Browser Verification
 
 Use `docs/demo-scenarios.md` as the living browser script. Store local
 screenshots under `output/playwright/`; the folder is ignored by Git.
+
+Workflow 8 screenshot targets:
+
+- `output/playwright/workflow-8-full-text-screening-readiness.png`
+- `output/playwright/workflow-8-full-text-screening-setup.png`
+- `output/playwright/workflow-8-full-text-queue.png`
+- `output/playwright/workflow-8-full-text-decision.png`
+- `output/playwright/workflow-8-full-text-conflict.png`
+- `output/playwright/workflow-8-full-text-completed.png`
+- `output/playwright/workflow-8-viewer-readonly.png`
 
 Workflow 7 screenshot targets:
 
@@ -211,22 +254,29 @@ When changing UI, also check:
 
 ## Next Workflow Boundary
 
-The next product workflow should be full-text screening.
+The next product workflow should be Workflow 9: data extraction.
 
 Recommended first slice:
 
-1. Start from `docs/workflow-8-full-text-screening.md`.
-2. Keep Workflow 6 and Workflow 8 separated by explicit `ScreeningStage`
-   filters.
-3. Build candidates from Workflow 7 successful artifact items.
-4. Keep failed, skipped, and manual-needed items in follow-up.
-5. Add artifact-linked reviewer assignments for `full_text` screening.
-6. Require artifact-inspected confirmation, rationale, and exclusion reason
-   when excluding.
-7. Add conflict resolution with audit reason.
-8. Extend `DemoAccessSeeder` with active, conflict, resolved, completed, and
-   read-only full-text screening states.
-9. Add Pest, component, and browser coverage from `docs/demo-scenarios.md`.
+1. Start from `docs/workflow-9-data-extraction.md`.
+2. Build candidates only from final Workflow 8 full-text `include` outcomes.
+3. Keep full-text excludes, maybes, failed retrieval rows, skipped rows, and
+   manual-needed rows out of extraction candidates in the first slice.
+4. Add versioned extraction templates and require template lock before
+   assignments start.
+5. Add reviewer extraction assignments and field-level value recording.
+6. Require evidence pointers for configured fields.
+7. Add field-level conflict detection and adjudication with audit reason.
+8. Add a dataset preview read model.
+9. Extend `DemoAccessSeeder` with ready, active, conflict, completed, and
+   read-only extraction states.
+10. Add Pest, component, and browser coverage from `docs/demo-scenarios.md`.
 
-Do not start data extraction, quality appraisal, exports, citation graphs, AI
-assistance, or billing before full-text screening decisions are stable.
+Prepared follow-up boundaries:
+
+- Workflow 10 quality appraisal:
+  `docs/workflow-10-quality-appraisal-risk-of-bias.md`.
+- Workflow 11 synthesis, PRISMA counts, and exports:
+  `docs/workflow-11-synthesis-prisma-exports.md`.
+- Workflow 12 production hardening and launch controls:
+  `docs/workflow-12-production-hardening-launch-controls.md`.

@@ -602,6 +602,175 @@ Screenshot targets:
 - `output/playwright/workflow-8-full-text-completed.png`
 - `output/playwright/workflow-8-viewer-readonly.png`
 
+## Workflow 9: Data Extraction
+
+Preparation lives in `docs/workflow-9-data-extraction.md`.
+Wireframes live in
+`docs/wireframes/workflow-9-data-extraction-wireframes.html`.
+
+Prepared scenario placeholders:
+
+1. Owner opens extraction before full-text screening is complete and sees a
+   blocker.
+2. Owner opens completed full-text eligibility handoff and sees included-study
+   extraction readiness.
+3. Owner creates and previews a draft extraction template.
+4. Owner locks the extraction template with an audit reason.
+5. Owner starts an extraction batch.
+6. Reviewer opens the extraction queue and records field values with evidence
+   pointers.
+7. Reviewer completes an extraction assignment.
+8. Dual extraction creates a field conflict when reviewer values differ.
+9. Adjudicator resolves a field conflict with an audit reason.
+10. Owner opens the completed extraction dataset preview.
+11. Viewer sees read-only extraction progress and dataset preview.
+
+Expected signals:
+
+- Extraction candidates come only from final full-text `include` outcomes.
+- Full-text excludes, maybes, and follow-up artifact rows are not extracted in
+  the first slice.
+- Extraction starts only after a locked template exists.
+- Template fields are versioned and values remain tied to the version reviewers
+  used.
+- Evidence pointers are required for configured fields.
+- Conflicts are field-level and resolved with an audit reason.
+
+Screenshot targets:
+
+- `output/playwright/workflow-9-extraction-readiness.png`
+- `output/playwright/workflow-9-template-builder.png`
+- `output/playwright/workflow-9-template-lock.png`
+- `output/playwright/workflow-9-extraction-queue.png`
+- `output/playwright/workflow-9-source-sheet.png`
+- `output/playwright/workflow-9-conflict-resolution.png`
+- `output/playwright/workflow-9-dataset-preview.png`
+- `output/playwright/workflow-9-viewer-readonly.png`
+
+## Workflow 10: Quality Appraisal And Risk Of Bias
+
+Preparation lives in
+`docs/workflow-10-quality-appraisal-risk-of-bias.md`.
+Wireframes live in
+`docs/wireframes/workflow-10-quality-appraisal-wireframes.html`.
+
+Prepared scenario placeholders:
+
+1. Owner opens appraisal before full-text screening completion and sees a
+   blocker.
+2. Owner chooses an appraisal tool for a completed included-study set.
+3. Owner previews and locks the appraisal tool with an audit reason.
+4. Owner starts an appraisal batch.
+5. Reviewer opens the appraisal queue and records domain responses and ratings.
+6. Reviewer completes an appraisal assignment.
+7. Different reviewer ratings create an open conflict.
+8. Adjudicator resolves an appraisal conflict with an audit reason.
+9. Owner opens the completed appraisal matrix.
+10. Viewer sees read-only appraisal progress and final matrix.
+
+Expected signals:
+
+- Appraisal candidates come only from final full-text `include` outcomes.
+- Appraisal is separate from eligibility and does not silently change inclusion
+  decisions.
+- Tool templates are locked before assignments start.
+- Tool presets do not claim formal compliance unless exact rules are encoded.
+- High-risk and unclear ratings require rationale and configured evidence
+  pointers.
+- Domain and overall rating conflicts are resolved with an audit reason.
+
+Screenshot targets:
+
+- `output/playwright/workflow-10-appraisal-readiness.png`
+- `output/playwright/workflow-10-tool-setup.png`
+- `output/playwright/workflow-10-appraisal-queue.png`
+- `output/playwright/workflow-10-source-context-sheet.png`
+- `output/playwright/workflow-10-conflict-resolution.png`
+- `output/playwright/workflow-10-appraisal-matrix.png`
+- `output/playwright/workflow-10-viewer-readonly.png`
+
+## Workflow 11: Synthesis, PRISMA Counts, And Exports
+
+Preparation lives in `docs/workflow-11-synthesis-prisma-exports.md`.
+Wireframes live in
+`docs/wireframes/workflow-11-synthesis-exports-wireframes.html`.
+
+Prepared scenario placeholders:
+
+1. Owner opens synthesis before extraction is complete and sees partial
+   readiness.
+2. Owner opens completed synthesis and sees PRISMA-style counts.
+3. Owner previews the evidence table with extraction and appraisal columns.
+4. Owner opens the export builder and selects CSV, BibTeX, RIS, JSON audit
+   package, and full-text ZIP.
+5. Owner starts an export package and sees queued/running status.
+6. Owner opens a completed package detail sheet and sees manifest, item list,
+   checksums, and download controls.
+7. Viewer opens exports and sees read-only package history.
+8. Failed package state shows error and retry guidance to owners/admins.
+
+Expected signals:
+
+- PRISMA-style counts distinguish records, representative works, reports, and
+  studies.
+- Export readiness is explicit per package section.
+- Bibliography exports use core export handlers where applicable.
+- JSON audit packages are deterministic and list source workflow ids.
+- Full-text ZIP downloads use authorized routes and never expose raw storage
+  paths.
+- Export package assembly runs in the background.
+
+Screenshot targets:
+
+- `output/playwright/workflow-11-synthesis-overview.png`
+- `output/playwright/workflow-11-prisma-counts.png`
+- `output/playwright/workflow-11-evidence-table.png`
+- `output/playwright/workflow-11-export-builder.png`
+- `output/playwright/workflow-11-package-history.png`
+- `output/playwright/workflow-11-package-detail.png`
+- `output/playwright/workflow-11-viewer-readonly.png`
+
+## Workflow 12: Production Hardening And Launch Controls
+
+Preparation lives in
+`docs/workflow-12-production-hardening-launch-controls.md`.
+Wireframes live in
+`docs/wireframes/workflow-12-production-controls-wireframes.html`.
+
+Prepared scenario placeholders:
+
+1. Owner opens workspace usage and sees current limits and usage.
+2. Owner sees a near-limit warning.
+3. Owner attempts a blocked heavy operation and sees a clear limit message.
+4. Operator opens health overview and sees queue, storage, and failed job
+   summaries.
+5. Operator opens job monitor, filters failed jobs, and opens a job detail
+   sheet.
+6. Operator retries an allowed failed job with an audit reason.
+7. Operator adjusts a workspace limit with an audit reason.
+8. Owner opens project activity and sees workflow audit events.
+9. Viewer cannot access operator health or workspace limits.
+
+Expected signals:
+
+- Soft limits warn at 80% and block heavy operations at 100%.
+- Existing data remains readable when a heavy operation is blocked.
+- Search, full-text retrieval, and export package assembly stay background-only.
+- Operator pages show job and storage health without leaking secrets.
+- Limit overrides and job retries require audit reasons.
+- Project audit timelines include workflow and operator events.
+
+Screenshot targets:
+
+- `output/playwright/workflow-12-workspace-usage.png`
+- `output/playwright/workflow-12-near-limit-warning.png`
+- `output/playwright/workflow-12-limit-blocker.png`
+- `output/playwright/workflow-12-operator-health.png`
+- `output/playwright/workflow-12-job-monitor.png`
+- `output/playwright/workflow-12-job-detail.png`
+- `output/playwright/workflow-12-storage-dashboard.png`
+- `output/playwright/workflow-12-project-activity.png`
+
 ## UI Hardening: Brand Tokens
 
 Run this after global token or shared component changes.
