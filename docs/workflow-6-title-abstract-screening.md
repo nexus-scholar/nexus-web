@@ -508,6 +508,9 @@ Responsibilities:
 Use dense, operational screens aligned with the current Rhea-inspired Nexus
 app shell.
 
+Wireframes live in
+`docs/wireframes/workflow-6-screening-wireframes.html`.
+
 Recommended surfaces:
 
 - screening overview page,
