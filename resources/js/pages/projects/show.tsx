@@ -2,6 +2,7 @@ import { Head, Link } from '@inertiajs/react';
 import {
     Activity,
     ClipboardList,
+    FileDown,
     FileText,
     GitMerge,
     LockKeyhole,
@@ -59,6 +60,7 @@ type ProjectPayload = {
         corpus: string;
         deduplication: string;
         screening: string;
+        full_text: string;
     };
     corpus: {
         available: boolean;
@@ -99,6 +101,7 @@ type Props = {
         view_corpus: boolean;
         view_deduplication: boolean;
         view_screening: boolean;
+        view_full_text: boolean;
         view_activity: boolean;
     };
 };
@@ -163,6 +166,13 @@ export default function ProjectOverview({
                                 <Button variant="outline" size="sm" asChild>
                                     <Link href={project.urls.screening}>
                                         Screening
+                                    </Link>
+                                </Button>
+                            )}
+                            {can.view_full_text && project.locked_at && (
+                                <Button variant="outline" size="sm" asChild>
+                                    <Link href={project.urls.full_text}>
+                                        Full text
                                     </Link>
                                 </Button>
                             )}
@@ -377,6 +387,23 @@ export default function ProjectOverview({
                                         <Link href={project.urls.screening}>
                                             <ClipboardList className="size-4" />
                                             Open screening
+                                        </Link>
+                                    </Button>
+                                )
+                            }
+                        />
+                        <WorkflowStepCard
+                            step={7}
+                            title="Full-text retrieval"
+                            description="Retrieve open-access artifacts and preserve source audit evidence."
+                            status={project.locked_at ? 'current' : 'pending'}
+                            action={
+                                can.view_full_text &&
+                                project.locked_at && (
+                                    <Button size="sm" variant="outline" asChild>
+                                        <Link href={project.urls.full_text}>
+                                            <FileDown className="size-4" />
+                                            Open full text
                                         </Link>
                                     </Button>
                                 )

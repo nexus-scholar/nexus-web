@@ -1,6 +1,7 @@
 export type * from './auth';
 export type * from './corpus';
 export type * from './deduplication';
+export type * from './full-text';
 export type * from './navigation';
 export type * from './project';
 export type * from './screening';

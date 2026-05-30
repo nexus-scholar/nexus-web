@@ -115,6 +115,16 @@ class Project extends Model
         return $this->hasMany(ProjectScreeningConflict::class);
     }
 
+    public function fullTextBatches(): HasMany
+    {
+        return $this->hasMany(ProjectFullTextBatch::class);
+    }
+
+    public function fullTextItems(): HasMany
+    {
+        return $this->hasMany(ProjectFullTextItem::class);
+    }
+
     public function isLocked(): bool
     {
         return $this->locked_at !== null || in_array($this->status, [

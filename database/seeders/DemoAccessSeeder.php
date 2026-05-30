@@ -2,11 +2,15 @@
 
 namespace Database\Seeders;
 
+use App\Actions\Projects\BuildProjectFullTextCandidates;
 use App\Actions\Projects\ProjectCorpusMembershipHasher;
 use App\Actions\Projects\RecordProjectScreeningDecision;
+use App\Actions\Projects\RefreshProjectFullTextBatchCounts;
 use App\Actions\Projects\ResolveProjectScreeningConflict;
 use App\Actions\Projects\StartProjectScreeningBatch;
 use App\Actions\Workspaces\CreatePersonalWorkspace;
+use App\Enums\ProjectFullTextBatchStatus;
+use App\Enums\ProjectFullTextItemStatus;
 use App\Enums\ProjectMembershipStatus;
 use App\Enums\ProjectRole;
 use App\Enums\ProjectStatus;
@@ -19,6 +23,8 @@ use App\Models\AuditEvent;
 use App\Models\OauthIdentity;
 use App\Models\Project;
 use App\Models\ProjectCorpusDedupRun;
+use App\Models\ProjectFullTextBatch;
+use App\Models\ProjectFullTextItem;
 use App\Models\ProjectMembership;
 use App\Models\ProjectProtocol;
 use App\Models\ProjectProtocolVersion;
@@ -35,6 +41,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Nexus\Screening\Domain\ScreeningDecision;
 use Ramsey\Uuid\Uuid;
@@ -106,6 +113,28 @@ class DemoAccessSeeder extends Seeder
         $this->demoCorpus($completedScreeningProject, $owner, locked: true);
         $this->demoCompletedScreening($completedScreeningProject, $owner, $reviewer, $admin);
 
+        $runningFullTextProject = $this->fullTextRunningProject($lab, $owner);
+        $this->projectMembership($runningFullTextProject, $owner, ProjectRole::Owner);
+        $this->projectMembership($runningFullTextProject, $admin, ProjectRole::Adjudicator);
+        $this->projectMembership($runningFullTextProject, $reviewer, ProjectRole::Reviewer);
+        $this->projectMembership($runningFullTextProject, $viewer, ProjectRole::Viewer);
+        $this->completedProjectProtocol($runningFullTextProject, $owner);
+        $this->searchPlan($runningFullTextProject, $owner);
+        $this->demoCorpus($runningFullTextProject, $owner, locked: true);
+        $this->demoCompletedScreening($runningFullTextProject, $owner, $reviewer, $admin);
+        $this->demoFullTextBatch($runningFullTextProject, $owner, 'running');
+
+        $completedFullTextProject = $this->fullTextCompletedProject($lab, $owner);
+        $this->projectMembership($completedFullTextProject, $owner, ProjectRole::Owner);
+        $this->projectMembership($completedFullTextProject, $admin, ProjectRole::Adjudicator);
+        $this->projectMembership($completedFullTextProject, $reviewer, ProjectRole::Reviewer);
+        $this->projectMembership($completedFullTextProject, $viewer, ProjectRole::Viewer);
+        $this->completedProjectProtocol($completedFullTextProject, $owner);
+        $this->searchPlan($completedFullTextProject, $owner);
+        $this->demoCorpus($completedFullTextProject, $owner, locked: true);
+        $this->demoCompletedScreening($completedFullTextProject, $owner, $reviewer, $admin);
+        $this->demoFullTextBatch($completedFullTextProject, $owner, 'completed');
+
         $suspended = $this->workspace('Suspended Review Group', 'suspended-review-group', $owner);
         $suspended->forceFill([
             'suspended_at' => $suspended->suspended_at ?? now(),
@@ -151,6 +180,8 @@ class DemoAccessSeeder extends Seeder
         $this->audit('project.created', $lockedProject, $owner, $lab, 'Demo locked corpus project created.', $lockedProject);
         $this->audit('project.created', $screeningProject, $owner, $lab, 'Demo screening project created.', $screeningProject);
         $this->audit('project.created', $completedScreeningProject, $owner, $lab, 'Demo completed screening project created.', $completedScreeningProject);
+        $this->audit('project.created', $runningFullTextProject, $owner, $lab, 'Demo running full-text project created.', $runningFullTextProject);
+        $this->audit('project.created', $completedFullTextProject, $owner, $lab, 'Demo completed full-text project created.', $completedFullTextProject);
     }
 
     private function user(
@@ -315,6 +346,48 @@ class DemoAccessSeeder extends Seeder
                 'locked_at' => now()->subHours(3),
                 'locked_by' => (string) $owner->id,
                 'lock_reason' => 'Demo locked snapshot for completed screening handoff.',
+                'metadata' => ['source' => 'demo-seeder'],
+            ],
+        );
+    }
+
+    private function fullTextRunningProject(Workspace $workspace, User $owner): Project
+    {
+        return Project::updateOrCreate(
+            [
+                'workspace_id' => $workspace->id,
+                'slug' => 'cardiometabolic-full-text-running',
+            ],
+            [
+                'name' => 'Cardiometabolic Full-Text Retrieval',
+                'owner_user_id' => $owner->id,
+                'description' => 'Demo project with a running full-text retrieval batch.',
+                'review_type' => ReviewType::SystematicReview,
+                'status' => ProjectStatus::LockedCorpus,
+                'locked_at' => now()->subHours(2),
+                'locked_by' => (string) $owner->id,
+                'lock_reason' => 'Demo locked snapshot for full-text retrieval.',
+                'metadata' => ['source' => 'demo-seeder'],
+            ],
+        );
+    }
+
+    private function fullTextCompletedProject(Workspace $workspace, User $owner): Project
+    {
+        return Project::updateOrCreate(
+            [
+                'workspace_id' => $workspace->id,
+                'slug' => 'cardiometabolic-full-text-audit',
+            ],
+            [
+                'name' => 'Cardiometabolic Full-Text Audit',
+                'owner_user_id' => $owner->id,
+                'description' => 'Demo project with completed full-text retrieval and source audit rows.',
+                'review_type' => ReviewType::SystematicReview,
+                'status' => ProjectStatus::LockedCorpus,
+                'locked_at' => now()->subHour(),
+                'locked_by' => (string) $owner->id,
+                'lock_reason' => 'Demo locked snapshot for full-text artifact audit.',
                 'metadata' => ['source' => 'demo-seeder'],
             ],
         );
@@ -958,8 +1031,167 @@ class DemoAccessSeeder extends Seeder
         }
     }
 
+    private function demoFullTextBatch(Project $project, User $owner, string $state): void
+    {
+        $this->resetDemoFullTextState($project);
+
+        $candidateSet = app(BuildProjectFullTextCandidates::class)->handle($project->refresh()->load('protocol'));
+        $screeningBatch = $candidateSet['screening_batch'];
+        $snapshot = $candidateSet['snapshot'];
+
+        if (! $screeningBatch || ! $snapshot || $candidateSet['candidates'] === []) {
+            return;
+        }
+
+        $now = now();
+        $batch = ProjectFullTextBatch::updateOrCreate(
+            ['id' => $this->demoUuid("{$project->slug}:full-text:batch:{$state}")],
+            [
+                'project_id' => $project->id,
+                'screening_batch_id' => $screeningBatch->id,
+                'snapshot_id' => (string) $snapshot->id,
+                'status' => $state === 'completed'
+                    ? ProjectFullTextBatchStatus::CompletedWithFailures
+                    : ProjectFullTextBatchStatus::Running,
+                'candidate_count' => count($candidateSet['candidates']),
+                'success_count' => 0,
+                'failed_count' => 0,
+                'skipped_count' => 0,
+                'manual_needed_count' => 0,
+                'destination_folder' => "full-text/projects/{$project->id}/demo-{$state}",
+                'source_policy' => [
+                    'legal_open_access_only' => true,
+                    'sources' => collect(config('nexus.full_text.sources', []))
+                        ->reject(fn (mixed $_source, string $alias): bool => $alias === 'shadow_libraries')
+                        ->map(fn (mixed $source): bool => is_array($source) ? (bool) ($source['enabled'] ?? true) : true)
+                        ->all(),
+                ],
+                'requested_by' => $owner->id,
+                'started_at' => $now->copy()->subMinutes($state === 'completed' ? 35 : 12),
+                'completed_at' => $state === 'completed' ? $now->copy()->subMinutes(8) : null,
+            ],
+        );
+
+        foreach ($candidateSet['candidates'] as $index => $candidate) {
+            $status = $state === 'completed'
+                ? [
+                    ProjectFullTextItemStatus::Success,
+                    ProjectFullTextItemStatus::Failed,
+                    ProjectFullTextItemStatus::Skipped,
+                    ProjectFullTextItemStatus::ManualNeeded,
+                ][$index % 4]
+                : match ($index) {
+                    0 => ProjectFullTextItemStatus::Success,
+                    1 => ProjectFullTextItemStatus::Running,
+                    default => ProjectFullTextItemStatus::Queued,
+                };
+            $artifactPath = $status === ProjectFullTextItemStatus::Success
+                ? "{$batch->destination_folder}/{$candidate['work_id']}_demo.pdf"
+                : null;
+
+            if ($artifactPath) {
+                Storage::disk('public')->put($artifactPath, "%PDF-1.4\n% Nexus Scholar demo artifact\n");
+            }
+
+            ProjectFullTextItem::updateOrCreate(
+                ['id' => $this->demoUuid("{$project->slug}:full-text:item:{$candidate['work_id']}")],
+                [
+                    'project_id' => $project->id,
+                    'batch_id' => $batch->id,
+                    'work_id' => $candidate['work_id'],
+                    'screening_decision' => $candidate['screening_decision'],
+                    'status' => $status,
+                    'source_alias' => in_array($status, [
+                        ProjectFullTextItemStatus::Success,
+                        ProjectFullTextItemStatus::Failed,
+                        ProjectFullTextItemStatus::Skipped,
+                    ], true) ? 'demo_oa' : null,
+                    'artifact_type' => $artifactPath ? 'pdf' : null,
+                    'artifact_path' => $artifactPath,
+                    'http_status' => $status === ProjectFullTextItemStatus::Success ? 200 : null,
+                    'error_message' => match ($status) {
+                        ProjectFullTextItemStatus::Failed => 'Demo source returned a non-PDF response.',
+                        ProjectFullTextItemStatus::Skipped => 'No legal open-access artifact was found.',
+                        ProjectFullTextItemStatus::ManualNeeded => 'Manual upload or library access review required.',
+                        default => null,
+                    },
+                    'metadata' => [
+                        'screening_decision_id' => $candidate['screening_decision_id'] ?? null,
+                        'screening_reason' => $candidate['screening_reason'] ?? null,
+                        'source' => 'demo-seeder',
+                    ],
+                    'started_at' => in_array($status, [
+                        ProjectFullTextItemStatus::Success,
+                        ProjectFullTextItemStatus::Failed,
+                        ProjectFullTextItemStatus::Skipped,
+                        ProjectFullTextItemStatus::Running,
+                    ], true) ? $now->copy()->subMinutes(10 - min($index, 8)) : null,
+                    'completed_at' => $status->isTerminal() ? $now->copy()->subMinutes(7 - min($index, 6)) : null,
+                ],
+            );
+
+            $this->demoPdfFetch($candidate['work_id'], $status, $artifactPath, $now->copy()->subMinutes(7 - min($index, 6)));
+        }
+
+        $batch = app(RefreshProjectFullTextBatchCounts::class)->handle(
+            $batch->refresh(),
+            completeIfTerminal: $state === 'completed',
+        );
+
+        $this->audit('project.full_text.batch_started', $batch, $owner, $project->workspace, 'Demo full-text retrieval queued.', $project);
+
+        if ($state === 'completed') {
+            $this->audit('project.full_text.batch_completed', $batch, $owner, $project->workspace, 'Demo full-text retrieval completed with audit outcomes.', $project);
+        }
+    }
+
+    private function demoPdfFetch(
+        string $workId,
+        ProjectFullTextItemStatus $status,
+        ?string $artifactPath,
+        mixed $attemptedAt,
+    ): void {
+        if (! in_array($status, [
+            ProjectFullTextItemStatus::Success,
+            ProjectFullTextItemStatus::Failed,
+            ProjectFullTextItemStatus::Skipped,
+        ], true)) {
+            return;
+        }
+
+        DB::table('pdf_fetches')->updateOrInsert(
+            [
+                'id' => $this->demoUuid("pdf-fetch:{$workId}:{$status->value}"),
+            ],
+            [
+                'work_id' => $workId,
+                'source_alias' => 'demo_oa',
+                'source_url' => 'https://example.test/full-text/'.$workId.'.pdf',
+                'status' => match ($status) {
+                    ProjectFullTextItemStatus::Success => 'success',
+                    ProjectFullTextItemStatus::Failed => 'failure',
+                    default => 'skipped',
+                },
+                'http_status' => $status === ProjectFullTextItemStatus::Success ? 200 : null,
+                'file_path' => $artifactPath,
+                'duration_ms' => $status === ProjectFullTextItemStatus::Success ? 42 : 18,
+                'error_message' => match ($status) {
+                    ProjectFullTextItemStatus::Failed => 'Demo source returned a non-PDF response.',
+                    ProjectFullTextItemStatus::Skipped => 'No legal open-access artifact was found.',
+                    default => null,
+                },
+                'metadata' => json_encode(['source' => 'demo-seeder', 'license' => 'demo-open-access']),
+                'attempted_at' => $attemptedAt,
+                'created_at' => $attemptedAt,
+                'updated_at' => $attemptedAt,
+            ],
+        );
+    }
+
     private function resetDemoScreeningState(Project $project): void
     {
+        $this->resetDemoFullTextState($project);
+
         DB::table('project_screening_conflicts')
             ->where('project_id', $project->id)
             ->delete();
@@ -978,6 +1210,34 @@ class DemoAccessSeeder extends Seeder
 
         DB::table('screening_runs')
             ->where('project_id', $project->id)
+            ->delete();
+    }
+
+    private function resetDemoFullTextState(Project $project): void
+    {
+        $workIds = DB::table('corpus_snapshot_works')
+            ->join('corpus_snapshots', 'corpus_snapshots.id', '=', 'corpus_snapshot_works.snapshot_id')
+            ->where('corpus_snapshots.project_id', $project->id)
+            ->pluck('corpus_snapshot_works.work_id')
+            ->all();
+
+        DB::table('project_full_text_items')
+            ->where('project_id', $project->id)
+            ->delete();
+
+        DB::table('project_full_text_batches')
+            ->where('project_id', $project->id)
+            ->delete();
+
+        if ($workIds !== []) {
+            DB::table('pdf_fetches')
+                ->whereIn('work_id', $workIds)
+                ->delete();
+        }
+
+        DB::table('audit_events')
+            ->where('project_id', $project->id)
+            ->where('event_type', 'like', 'project.full_text.%')
             ->delete();
     }
 
