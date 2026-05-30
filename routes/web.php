@@ -12,6 +12,11 @@ use App\Http\Controllers\Projects\ProjectCorpusLockController;
 use App\Http\Controllers\Projects\ProjectFullTextArtifactController;
 use App\Http\Controllers\Projects\ProjectFullTextBatchController;
 use App\Http\Controllers\Projects\ProjectFullTextController;
+use App\Http\Controllers\Projects\ProjectFullTextScreeningAssignmentDecisionController;
+use App\Http\Controllers\Projects\ProjectFullTextScreeningBatchController;
+use App\Http\Controllers\Projects\ProjectFullTextScreeningConflictResolutionController;
+use App\Http\Controllers\Projects\ProjectFullTextScreeningController;
+use App\Http\Controllers\Projects\ProjectFullTextScreeningQueueController;
 use App\Http\Controllers\Projects\ProjectProtocolController;
 use App\Http\Controllers\Projects\ProjectScreeningAssignmentDecisionController;
 use App\Http\Controllers\Projects\ProjectScreeningBatchController;
@@ -63,6 +68,12 @@ Route::middleware(['auth', 'verified', 'not_disabled', 'workspace.ready'])->grou
     Route::get('projects/{project}/full-text', [ProjectFullTextController::class, 'index'])->name('projects.full-text.index');
     Route::post('projects/{project}/full-text/batches', [ProjectFullTextBatchController::class, 'store'])->name('projects.full-text.batches.store');
     Route::get('projects/{project}/full-text/artifacts/{item}', [ProjectFullTextArtifactController::class, 'show'])->name('projects.full-text.artifacts.show');
+    Route::get('projects/{project}/full-text-screening', [ProjectFullTextScreeningController::class, 'index'])->name('projects.full-text-screening.index');
+    Route::post('projects/{project}/full-text-screening/batches', [ProjectFullTextScreeningBatchController::class, 'store'])->name('projects.full-text-screening.batches.store');
+    Route::get('projects/{project}/full-text-screening/queue', [ProjectFullTextScreeningQueueController::class, 'index'])->name('projects.full-text-screening.queue');
+    Route::post('projects/{project}/full-text-screening/assignments/{assignment}/decision', [ProjectFullTextScreeningAssignmentDecisionController::class, 'store'])->name('projects.full-text-screening.assignments.decision');
+    Route::get('projects/{project}/full-text-screening/conflicts', [ProjectFullTextScreeningController::class, 'index'])->name('projects.full-text-screening.conflicts.index');
+    Route::post('projects/{project}/full-text-screening/conflicts/{conflict}/resolve', [ProjectFullTextScreeningConflictResolutionController::class, 'store'])->name('projects.full-text-screening.conflicts.resolve');
     Route::get('projects/{project}/activity', [ProjectActivityController::class, 'index'])->name('projects.activity.index');
 });
 

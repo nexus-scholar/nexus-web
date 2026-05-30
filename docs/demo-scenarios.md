@@ -75,6 +75,11 @@ Seeded project states:
   running full-text retrieval batch.
 - `Cardiometabolic Full-Text Audit`: completed screening project with
   retrieved, failed, skipped, and manual-needed full-text audit rows.
+- `Cardiometabolic Full-Text Screening`: completed retrieval project with
+  active full-text reviewer assignments and an open full-text conflict.
+- `Cardiometabolic Full-Text Eligibility Handoff`: completed full-text
+  screening project with include, exclude, maybe, resolved conflict, and
+  follow-up artifact counts.
 - Owner has the project `owner` role.
 - Reviewer has the project `reviewer` role.
 - Viewer has the project `viewer` role.
@@ -550,20 +555,26 @@ Preparation lives in `docs/workflow-8-full-text-screening.md`.
 Wireframes live in
 `docs/wireframes/workflow-8-full-text-screening-wireframes.html`.
 
-Planned first-slice browser scenarios:
+Implemented first-slice browser scenarios:
 
-1. Owner opens full-text screening before retrieval is complete and sees a
-   blocker.
-2. Owner opens completed retrieval and sees screenable artifact count plus
-   follow-up count.
-3. Owner starts a full-text screening batch.
-4. Reviewer opens the full-text queue and sees artifact context.
-5. Reviewer records an include decision with rationale.
-6. Reviewer records an exclude decision with exclusion reason.
-7. Viewer opens full-text screening read-only.
-8. Conflicting decisions create an open conflict.
+1. Owner opens `Cardiometabolic Full-Text Retrieval`, then opens full-text
+   screening and sees a blocker while retrieval is still running.
+2. Owner opens `Cardiometabolic Full-Text Audit`, then opens full-text
+   screening and sees successful artifact count plus follow-up count.
+3. Owner opens `Cardiometabolic Full-Text Screening` and sees active full-text
+   screening progress, reviewer workload, and an open conflict.
+4. Reviewer opens the full-text queue and sees artifact context, title and
+   abstract handoff, protocol criteria, and full-text decision controls.
+5. Reviewer records an include decision with rationale after confirming the
+   artifact was inspected.
+6. Reviewer records an exclude decision with a structured exclusion reason.
+7. Viewer opens full-text screening and sees read-only readiness/progress
+   without setup, queue, or conflict-resolution mutation controls.
+8. Conflicting full-text reviewer decisions create a stage-scoped open
+   conflict.
 9. Adjudicator resolves a full-text screening conflict with an audit reason.
-10. Completed full-text screening shows extraction readiness.
+10. Owner opens `Cardiometabolic Full-Text Eligibility Handoff` and sees
+    completed full-text outcomes plus follow-up artifact counts.
 
 Expected signals:
 
@@ -575,6 +586,11 @@ Expected signals:
 - Exclude decisions require structured exclusion reason plus rationale.
 - Artifact access remains project-authorized.
 - Conflicts are stage-scoped and do not mix with title-and-abstract conflicts.
+
+Automated coverage:
+
+- `tests/Feature/ProjectFullTextWorkflowTest.php`
+- `resources/js/components/full-text-screening-decision-panel.test.tsx`
 
 Screenshot targets:
 

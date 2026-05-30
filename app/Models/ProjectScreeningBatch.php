@@ -21,6 +21,7 @@ class ProjectScreeningBatch extends Model
         'required_reviewer_count',
         'criteria_hash',
         'snapshot_id',
+        'source_full_text_batch_id',
         'assignment_policy',
         'counts',
         'created_by',
@@ -53,6 +54,11 @@ class ProjectScreeningBatch extends Model
     public function assignments(): HasMany
     {
         return $this->hasMany(ProjectScreeningAssignment::class, 'batch_id');
+    }
+
+    public function sourceFullTextBatch(): BelongsTo
+    {
+        return $this->belongsTo(ProjectFullTextBatch::class, 'source_full_text_batch_id');
     }
 
     public function conflicts(): HasMany

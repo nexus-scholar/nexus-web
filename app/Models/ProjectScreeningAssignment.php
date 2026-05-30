@@ -21,6 +21,7 @@ class ProjectScreeningAssignment extends Model
         'stage',
         'status',
         'screening_decision_id',
+        'source_full_text_item_id',
         'sort_order',
         'assigned_at',
         'decided_at',
@@ -54,5 +55,10 @@ class ProjectScreeningAssignment extends Model
     public function assignedBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'assigned_by');
+    }
+
+    public function sourceFullTextItem(): BelongsTo
+    {
+        return $this->belongsTo(ProjectFullTextItem::class, 'source_full_text_item_id');
     }
 }

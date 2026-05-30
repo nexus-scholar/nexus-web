@@ -63,6 +63,7 @@ class ProjectScreeningController extends Controller
                 'screening_queue' => route('projects.screening.queue', $project, absolute: false),
                 'screening_batches' => route('projects.screening.batches.store', $project, absolute: false),
                 'full_text' => route('projects.full-text.index', $project, absolute: false),
+                'full_text_screening' => route('projects.full-text-screening.index', $project, absolute: false),
                 'activity' => route('projects.activity.index', $project, absolute: false),
             ],
         ];

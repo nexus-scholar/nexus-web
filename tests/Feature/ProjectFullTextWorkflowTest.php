@@ -3,9 +3,14 @@
 namespace Tests\Feature;
 
 use App\Actions\Projects\BuildProjectFullTextCandidates;
+use App\Actions\Projects\BuildProjectFullTextScreeningCandidates;
 use App\Actions\Projects\CreateProject;
+use App\Actions\Projects\RecordProjectFullTextScreeningDecision;
 use App\Actions\Projects\RecordProjectScreeningDecision;
+use App\Actions\Projects\RefreshProjectFullTextBatchCounts;
+use App\Actions\Projects\ResolveProjectFullTextScreeningConflict;
 use App\Actions\Projects\StartProjectFullTextBatch;
+use App\Actions\Projects\StartProjectFullTextScreeningBatch;
 use App\Actions\Projects\StartProjectScreeningBatch;
 use App\Actions\Workspaces\CreatePersonalWorkspace;
 use App\Actions\Workspaces\CreateSharedWorkspace;
@@ -24,6 +29,8 @@ use App\Models\Project;
 use App\Models\ProjectFullTextBatch;
 use App\Models\ProjectProtocol;
 use App\Models\ProjectScreeningAssignment;
+use App\Models\ProjectScreeningBatch;
+use App\Models\ProjectScreeningConflict;
 use App\Models\User;
 use App\Models\Workspace;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -39,6 +46,7 @@ use Nexus\Dissemination\Domain\Port\FullTextSourceCollection;
 use Nexus\Dissemination\Domain\Port\PdfDownloaderPort;
 use Nexus\Laravel\Persistence\Repository\EloquentWorkRepository;
 use Nexus\Screening\Domain\ScreeningDecision;
+use Nexus\Screening\Domain\ScreeningStage;
 use Nexus\Search\Domain\Port\WorkRepositoryPort;
 use Nexus\Shared\Domain\ScholarlyWork;
 use Nexus\Shared\ValueObject\WorkId;
@@ -224,10 +232,215 @@ class ProjectFullTextWorkflowTest extends TestCase
             ->assertJsonPath('props.fullText.selectedItem.source_attempts.0.status', 'success');
     }
 
+    public function test_full_text_screening_candidate_builder_only_screens_successful_artifacts(): void
+    {
+        [$project, $owner, , , $workIds] = $this->completedScreeningProject([
+            ScreeningDecision::INCLUDE,
+            ScreeningDecision::NEEDS_REVIEW,
+            ScreeningDecision::INCLUDE,
+        ]);
+        $batch = $this->completedRetrievalBatch($project, $owner, [
+            $workIds[0] => ProjectFullTextItemStatus::Success,
+            $workIds[1] => ProjectFullTextItemStatus::Failed,
+            $workIds[2] => ProjectFullTextItemStatus::ManualNeeded,
+        ]);
+
+        $candidateSet = app(BuildProjectFullTextScreeningCandidates::class)->handle($project);
+
+        $this->assertTrue($candidateSet['ready']);
+        $this->assertSame(1, $candidateSet['counts']['screenable']);
+        $this->assertSame(1, $candidateSet['follow_up']['failed']);
+        $this->assertSame(1, $candidateSet['follow_up']['manual_needed']);
+        $this->assertSame($workIds[0], $candidateSet['candidates'][0]['work_id']);
+        $this->assertSame(
+            $batch->items()->where('work_id', $workIds[0])->value('id'),
+            $candidateSet['candidates'][0]['full_text_item']['id'],
+        );
+    }
+
+    public function test_owner_can_start_full_text_screening_and_reviewer_records_full_text_decision(): void
+    {
+        [$project, $owner, $reviewer, , $workIds] = $this->completedScreeningProject([
+            ScreeningDecision::INCLUDE,
+            ScreeningDecision::NEEDS_REVIEW,
+        ]);
+        $this->completedRetrievalBatch($project, $owner, [
+            $workIds[0] => ProjectFullTextItemStatus::Success,
+            $workIds[1] => ProjectFullTextItemStatus::Success,
+        ]);
+
+        $this->actingAs($owner)
+            ->withHeaders($this->inertiaHeaders())
+            ->get(route('projects.full-text-screening.index', $project))
+            ->assertOk()
+            ->assertJsonPath('component', 'projects/full-text-screening')
+            ->assertJsonPath('props.screening.readiness.ready', true)
+            ->assertJsonPath('props.screening.readiness.counts.screenable', 2)
+            ->assertJsonPath('props.can.manage_full_text_screening', true);
+
+        $this->actingAs($owner)
+            ->post(route('projects.full-text-screening.batches.store', $project), [
+                'name' => 'Full-text decisions',
+                'required_reviewer_count' => 1,
+                'reviewer_ids' => [$reviewer->id],
+            ])
+            ->assertRedirect(route('projects.full-text-screening.index', $project));
+
+        $screeningBatch = ProjectScreeningBatch::query()
+            ->where('project_id', $project->id)
+            ->where('stage', ScreeningStage::FULL_TEXT->value)
+            ->firstOrFail();
+        $this->assertSame(2, $screeningBatch->assignments()->count());
+        $this->assertDatabaseHas('screening_runs', [
+            'id' => $screeningBatch->screening_run_id,
+            'stage' => ScreeningStage::FULL_TEXT->value,
+        ]);
+
+        $assignment = $screeningBatch->assignments()->where('assigned_to', $reviewer->id)->firstOrFail();
+        $this->assertNotNull($assignment->source_full_text_item_id);
+
+        $this->actingAs($reviewer)
+            ->withHeaders($this->inertiaHeaders())
+            ->get(route('projects.full-text-screening.queue', [
+                'project' => $project,
+                'assignment' => $assignment->id,
+            ]))
+            ->assertOk()
+            ->assertJsonPath('component', 'projects/full-text-screening-queue')
+            ->assertJsonPath('props.queue.selectedAssignment.artifact.status', 'success');
+
+        $this->actingAs($reviewer)
+            ->post(route('projects.full-text-screening.assignments.decision', [$project, $assignment]), [
+                'decision' => ScreeningDecision::INCLUDE->value,
+                'artifact_inspected' => '1',
+                'reason' => 'The full text satisfies the eligibility criteria.',
+                'evidence' => 'Methods and outcomes match the protocol.',
+            ])
+            ->assertRedirect();
+
+        $assignment->refresh();
+        $this->assertDatabaseHas('screening_decisions', [
+            'id' => $assignment->screening_decision_id,
+            'stage' => ScreeningStage::FULL_TEXT->value,
+            'decision' => ScreeningDecision::INCLUDE->value,
+        ]);
+        $this->assertDatabaseHas('audit_events', [
+            'project_id' => $project->id,
+            'event_type' => 'project.full_text_screening.decision_recorded',
+            'target_id' => $assignment->id,
+        ]);
+    }
+
+    public function test_full_text_screening_does_not_assign_failed_items_and_exclude_requires_basis(): void
+    {
+        [$project, $owner, $reviewer, , $workIds] = $this->completedScreeningProject([
+            ScreeningDecision::INCLUDE,
+            ScreeningDecision::INCLUDE,
+        ]);
+        $this->completedRetrievalBatch($project, $owner, [
+            $workIds[0] => ProjectFullTextItemStatus::Success,
+            $workIds[1] => ProjectFullTextItemStatus::Failed,
+        ]);
+
+        $batch = app(StartProjectFullTextScreeningBatch::class)->handle(
+            $project,
+            $owner,
+            [$reviewer->id],
+            1,
+        );
+
+        $this->assertSame(1, $batch->assignments()->count());
+        $assignment = $batch->assignments()->firstOrFail();
+
+        $this->actingAs($reviewer)
+            ->from(route('projects.full-text-screening.queue', $project))
+            ->post(route('projects.full-text-screening.assignments.decision', [$project, $assignment]), [
+                'decision' => ScreeningDecision::EXCLUDE->value,
+                'artifact_inspected' => '1',
+                'reason' => 'The full text does not meet the protocol.',
+            ])
+            ->assertRedirect(route('projects.full-text-screening.queue', $project))
+            ->assertSessionHasErrors('exclusion_basis');
+
+        $this->actingAs($reviewer)
+            ->post(route('projects.full-text-screening.assignments.decision', [$project, $assignment]), [
+                'decision' => ScreeningDecision::EXCLUDE->value,
+                'artifact_inspected' => '1',
+                'reason' => 'The full text is not an eligible study design.',
+                'exclusion_basis' => 'Wrong study design',
+            ])
+            ->assertRedirect();
+
+        $this->assertDatabaseHas('screening_decisions', [
+            'project_id' => $project->id,
+            'stage' => ScreeningStage::FULL_TEXT->value,
+            'decision' => ScreeningDecision::EXCLUDE->value,
+        ]);
+    }
+
+    public function test_full_text_screening_conflicts_are_stage_scoped_and_resolvable(): void
+    {
+        [$project, $owner, $reviewer, , $workIds, , $adjudicator] = $this->completedScreeningProject([
+            ScreeningDecision::INCLUDE,
+        ]);
+        $this->completedRetrievalBatch($project, $owner, [
+            $workIds[0] => ProjectFullTextItemStatus::Success,
+        ]);
+
+        $batch = app(StartProjectFullTextScreeningBatch::class)->handle(
+            $project,
+            $owner,
+            [$reviewer->id, $adjudicator->id],
+            2,
+        );
+        $assignments = $batch->assignments()->orderBy('sort_order')->get();
+
+        app(RecordProjectFullTextScreeningDecision::class)->handle(
+            $assignments[0],
+            $assignments[0]->assignedTo,
+            ScreeningDecision::INCLUDE->value,
+            'The intervention and outcomes match the protocol.',
+            true,
+        );
+        app(RecordProjectFullTextScreeningDecision::class)->handle(
+            $assignments[1],
+            $assignments[1]->assignedTo,
+            ScreeningDecision::EXCLUDE->value,
+            'The full text has the wrong study design.',
+            true,
+            exclusionBasis: ['Wrong study design'],
+        );
+
+        $conflict = ProjectScreeningConflict::query()
+            ->where('batch_id', $batch->id)
+            ->where('stage', ScreeningStage::FULL_TEXT->value)
+            ->firstOrFail();
+
+        app(ResolveProjectFullTextScreeningConflict::class)->handle(
+            $conflict,
+            $adjudicator,
+            ScreeningDecision::EXCLUDE->value,
+            'Adjudicator confirmed the study design exclusion after full-text review.',
+            exclusionBasis: ['Wrong study design'],
+        );
+
+        $conflict->refresh();
+        $this->assertSame('resolved', $conflict->status->value);
+        $this->assertDatabaseHas('screening_decisions', [
+            'id' => $conflict->resolved_decision_id,
+            'stage' => ScreeningStage::FULL_TEXT->value,
+            'decision_source' => 'human_adjudication',
+        ]);
+        $this->assertDatabaseMissing('project_screening_conflicts', [
+            'batch_id' => $batch->id,
+            'stage' => ScreeningStage::TITLE_ABSTRACT->value,
+        ]);
+    }
+
     /**
      * @param  list<ScreeningDecision>  $finalDecisions
      * @param  list<string>|null  $titles
-     * @return array{0: Project, 1: User, 2: User, 3: User, 4: list<string>, 5: string}
+     * @return array{0: Project, 1: User, 2: User, 3: User, 4: list<string>, 5: string, 6: User}
      */
     private function completedScreeningProject(array $finalDecisions, ?array $titles = null): array
     {
@@ -287,7 +500,35 @@ class ProjectFullTextWorkflowTest extends TestCase
         $batch->refresh();
         $this->assertSame(ProjectScreeningBatchStatus::Completed, $batch->status);
 
-        return [$project->refresh()->load(['workspace', 'protocol']), $owner, $reviewer, $viewer, $workIds, $snapshotId];
+        return [$project->refresh()->load(['workspace', 'protocol']), $owner, $reviewer, $viewer, $workIds, $snapshotId, $adjudicator];
+    }
+
+    /**
+     * @param  array<string, ProjectFullTextItemStatus>  $statusesByWorkId
+     */
+    private function completedRetrievalBatch(Project $project, User $owner, array $statusesByWorkId): ProjectFullTextBatch
+    {
+        Queue::fake();
+        $batch = app(StartProjectFullTextBatch::class)->handle($project, $owner);
+
+        foreach ($batch->items()->get() as $item) {
+            $status = $statusesByWorkId[$item->work_id] ?? ProjectFullTextItemStatus::Success;
+
+            $item->forceFill([
+                'status' => $status,
+                'source_alias' => $status === ProjectFullTextItemStatus::Success ? 'demo_oa' : null,
+                'artifact_type' => $status === ProjectFullTextItemStatus::Success ? 'pdf' : null,
+                'artifact_path' => $status === ProjectFullTextItemStatus::Success
+                    ? 'full-text/projects/'.$project->id.'/batches/'.$batch->id.'/'.$item->work_id.'.pdf'
+                    : null,
+                'error_message' => $status === ProjectFullTextItemStatus::Failed
+                    ? 'Demo retrieval failure.'
+                    : null,
+                'completed_at' => now(),
+            ])->save();
+        }
+
+        return app(RefreshProjectFullTextBatchCounts::class)->handle($batch->refresh(), completeIfTerminal: true);
     }
 
     /**

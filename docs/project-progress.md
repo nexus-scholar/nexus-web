@@ -8,18 +8,19 @@ merged.
 
 ## Current Status
 
-Overall progress toward a handoff-ready hosted systematic-review MVP: **64%**.
+Overall progress toward a handoff-ready hosted systematic-review MVP: **72%**.
 
-The implemented product path now covers the review from sign-in through legal
-open-access full-text retrieval and artifact audit. The remaining work starts
-where scientific full-text eligibility decisions begin.
+The implemented product path now covers the review from sign-in through human
+full-text eligibility decisions with artifact provenance, reviewer queues,
+conflict handling, and follow-up artifact states. The remaining work starts
+where included full-text studies become structured extraction records.
 
 The percentage is intentionally conservative:
 
-- workflow count: 8 of 13 major milestones are implemented, or about 62%;
+- workflow count: 9 of 13 major milestones are implemented, or about 69%;
 - weighted product risk: later scientific workflows are heavier than setup
-  screens, so the working estimate is 64%, not 70%+;
-- CI and local validation are green on `master` after Workflow 7.
+  screens, so the working estimate is 72%, not 80%+;
+- local validation is green for the Workflow 8 branch before final merge.
 
 ## Milestone Table
 
@@ -33,7 +34,7 @@ The percentage is intentionally conservative:
 | Workflow 5: deduplication and corpus lock | Done | `docs/workflow-5-dedup-corpus-lock.md` |
 | Workflow 6: title and abstract screening | Done | `docs/workflow-6-title-abstract-screening.md` |
 | Workflow 7: full-text retrieval and artifact audit | Done | `docs/workflow-7-full-text-retrieval.md` |
-| Workflow 8: full-text screening | Prepared | `docs/workflow-8-full-text-screening.md` |
+| Workflow 8: full-text screening | Done | `docs/workflow-8-full-text-screening.md` |
 | Workflow 9: data extraction | Not started | Needs spec |
 | Workflow 10: quality appraisal / risk of bias | Not started | Needs spec |
 | Workflow 11: synthesis, PRISMA counts, exports | Not started | Needs spec |
@@ -54,6 +55,9 @@ The merged app supports:
   adjudication reason capture, and final handoff counts;
 - full-text retrieval with background batches, legal source policy, artifact
   audit details, source attempts, and read-only reviewer access;
+- full-text screening with artifact-linked reviewer queues, artifact-inspected
+  confirmation, structured exclusion reasons, conflict resolution, and final
+  full-text outcome counts;
 - deterministic demo data and browser scenarios for the implemented workflows.
 
 ## Current Branch And Release State
@@ -66,11 +70,11 @@ The merged app supports:
 
 ## Remaining Product Work
 
-The next high-value slice is Workflow 8: full-text screening. It should be
-implemented before extraction or exports because extraction depends on a stable
-set of included full-text studies.
+The next high-value slice is Workflow 9: data extraction. It should consume the
+completed full-text screening outcome set rather than title-and-abstract
+screening or raw full-text retrieval rows.
 
-After Workflow 8, the strongest sequence is:
+The strongest sequence is:
 
 1. Data extraction schema and reviewer extraction workflow.
 2. Quality appraisal or risk-of-bias workflow.
@@ -80,10 +84,10 @@ After Workflow 8, the strongest sequence is:
 
 ## Current Risks
 
-- Workflow 8 must not treat a retrieved PDF as automatically included. It needs
-  a separate human full-text eligibility decision loop.
-- Missing full text should remain an auditable state, not a hidden exclusion.
-- Existing screening tables can support `full_text` stage, but implementation
-  must keep title-and-abstract and full-text queues clearly separated.
-- Later exports depend on trustworthy final decisions from Workflow 8 and
-  should not be started before that state is stable.
+- Workflow 9 must consume only final full-text outcomes and must not reopen
+  failed or skipped retrieval rows as included studies.
+- Missing full text remains an auditable follow-up state in Workflow 8; future
+  export logic must preserve that distinction.
+- Later exports depend on trustworthy final decisions, extraction fields, and
+  risk-of-bias state, so PRISMA/export work should stay behind extraction and
+  appraisal.
