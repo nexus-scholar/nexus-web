@@ -487,6 +487,57 @@ Screenshot targets:
 - `output/playwright/workflow-6-handoff-ready.png`
 - `output/playwright/workflow-6-viewer-readonly.png`
 
+## Workflow 7: Full-Text Retrieval And Artifact Audit
+
+Preparation lives in `docs/workflow-7-full-text-retrieval.md`.
+Wireframes live in `docs/wireframes/workflow-7-full-text-wireframes.html`.
+
+Planned first-slice browser scenarios:
+
+1. Owner opens `Cardiometabolic Screening Handoff` and sees full-text readiness
+   with include plus maybe records counted as candidates.
+2. Owner opens the full-text page before retrieval and sees candidate preview,
+   source policy, protocol policy, and readiness checks.
+3. Owner starts retrieval and sees a queued or running background batch state.
+4. Owner sees completed retrieval with success, failed, skipped, and
+   manual-needed counts.
+5. Owner opens a row detail sheet and sees the final screening decision,
+   artifact metadata, and source attempts from the full-text audit trail.
+6. Reviewer opens the same full-text page and sees read-only status, artifact
+   access where permitted, and no mutation controls.
+7. Viewer can inspect full-text status without retrieval or retry controls.
+8. A manual-upload-only protocol disables automatic retrieval and explains the
+   policy state without dispatching a job.
+
+Expected signals:
+
+- Candidates come from the completed screening handoff, not draft corpus
+  membership.
+- Final `exclude` outcomes are not queued for automatic retrieval.
+- Retrieval always dispatches to the background queue.
+- The UI shows legal open-access source policy explicitly.
+- Failures and skipped items remain visible audit facts.
+- Artifact access routes require project access and never expose public raw
+  storage paths.
+- Source audit is read through core read APIs instead of duplicated from
+  `pdf_fetches`.
+
+Automated coverage to add with implementation:
+
+- `tests/Feature/ProjectFullTextWorkflowTest.php`
+- `resources/js/components/full-text-status-badge.test.tsx`
+- `resources/js/components/full-text-progress-strip.test.tsx`
+- `resources/js/components/full-text-candidate-table.test.tsx`
+- `resources/js/components/full-text-artifact-sheet.test.tsx`
+
+Screenshot targets:
+
+- `output/playwright/workflow-7-full-text-ready.png`
+- `output/playwright/workflow-7-full-text-running.png`
+- `output/playwright/workflow-7-full-text-completed.png`
+- `output/playwright/workflow-7-full-text-artifact-detail.png`
+- `output/playwright/workflow-7-reviewer-readonly.png`
+
 ## UI Hardening: Brand Tokens
 
 Run this after global token or shared component changes.

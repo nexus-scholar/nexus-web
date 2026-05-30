@@ -11,8 +11,8 @@ data, validation commands, and the next implementation boundary.
 - Default branch: `master`.
 - Current application: hosted Laravel/Inertia SaaS-style app for Nexus Scholar.
 - Package dependency: `nexus-scholar/core:^1.0` from Packagist.
-- Latest merged workflow: workflow 5, deduplication and corpus lock, merged in
-  PR #5.
+- Latest merged workflow: workflow 6, title and abstract screening, merged in
+  PR #11.
 - Local demo data is deterministic and lives in `Database\Seeders\DemoAccessSeeder`.
 - Browser scenario source of truth is `docs/demo-scenarios.md`.
 
@@ -102,32 +102,38 @@ php -r '$pdo=new PDO("sqlite:database/database.sqlite"); $pdo->exec("delete from
 | 3. Search plan and run | Done | `docs/workflow-3-search-plan-run.md` |
 | 4. Draft corpus review | Done | `docs/workflow-4-draft-corpus-review.md` |
 | 5. Deduplication and corpus lock | Done | `docs/workflow-5-dedup-corpus-lock.md` |
-| 6. Title and abstract screening | Prepared | `docs/workflow-6-title-abstract-screening.md` |
+| 6. Title and abstract screening | Done | `docs/workflow-6-title-abstract-screening.md` |
+| 7. Full-text retrieval and artifact audit | Prepared | `docs/workflow-7-full-text-retrieval.md` |
 
-## Workflow 5 Notes
+## Workflow 6 Notes
 
-Workflow 5 is integrated in the app flow, not only covered by tests.
+Workflow 6 is integrated in the app flow, not only covered by tests.
 
-The owner can open deduplication from corpus review, run deduplication, inspect
-duplicate clusters, and lock the corpus with an audit reason. Locking creates a
-representative-only corpus snapshot for downstream screening.
+The owner can start screening from a locked representative snapshot, reviewers
+can work assigned title-and-abstract queues, adjudicators can resolve conflicts
+with rationale, and completed screening produces final per-work outcomes for
+full-text handoff readiness.
 
 Hardening already in place:
 
-- dedup freshness fingerprints query membership, work metadata, identifiers,
-  and authors;
-- lock refuses stale or incomplete dedup evidence;
-- locked projects block dedup reruns and search mutation;
-- reviewers can inspect evidence but cannot run deduplication or lock.
+- screening reads locked representative snapshot membership, not mutable draft
+  corpus membership;
+- include, maybe, and exclude decisions map to core screening verdicts;
+- completed handoff counts final per-work outcomes instead of raw reviewer
+  votes;
+- conflict resolution stays auditable through rationale and event rows;
+- reviewer and viewer access remains read-only outside permitted actions.
 
 Key files:
 
-- `app/Actions/Projects/RunProjectCorpusDeduplication.php`
-- `app/Actions/Projects/LockProjectCorpus.php`
-- `app/Actions/Projects/ProjectCorpusMembershipHasher.php`
-- `app/Queries/Projects/ProjectDeduplicationReadModel.php`
-- `resources/js/pages/projects/deduplication.tsx`
-- `tests/Feature/ProjectDeduplicationWorkflowTest.php`
+- `app/Actions/Projects/StartProjectScreeningBatch.php`
+- `app/Actions/Projects/RecordProjectScreeningDecision.php`
+- `app/Actions/Projects/ResolveProjectScreeningConflict.php`
+- `app/Queries/Projects/ProjectScreeningReadModel.php`
+- `app/Queries/Projects/ProjectScreeningQueueReadModel.php`
+- `resources/js/pages/projects/screening.tsx`
+- `resources/js/pages/projects/screening-queue.tsx`
+- `tests/Feature/ProjectScreeningWorkflowTest.php`
 
 ## Validation Commands
 
@@ -152,21 +158,23 @@ CI currently runs:
 - tests on PHP 8.4;
 - tests on PHP 8.5.
 
-The workflow 5 merge passed all of them.
+The workflow 6 merge passed all of them.
 
 ## Browser Verification
 
 Use `docs/demo-scenarios.md` as the living browser script. Store local
 screenshots under `output/playwright/`; the folder is ignored by Git.
 
-Workflow 5 screenshot targets:
+Workflow 6 screenshot targets:
 
-- `output/playwright/workflow-5-dedup-readiness.png`
-- `output/playwright/workflow-5-dedup-stale.png`
-- `output/playwright/workflow-5-dedup-cluster-detail.png`
-- `output/playwright/workflow-5-lock-confirmation.png`
-- `output/playwright/workflow-5-locked-snapshot.png`
-- `output/playwright/workflow-5-reviewer-readonly.png`
+- `output/playwright/workflow-6-screening-overview.png`
+- `output/playwright/workflow-6-screening-setup.png`
+- `output/playwright/workflow-6-reviewer-queue.png`
+- `output/playwright/workflow-6-reviewer-decision-submitted.png`
+- `output/playwright/workflow-6-conflict-resolution.png`
+- `output/playwright/workflow-6-conflict-resolved.png`
+- `output/playwright/workflow-6-handoff-ready.png`
+- `output/playwright/workflow-6-viewer-readonly.png`
 
 When changing UI, also check:
 
@@ -177,21 +185,24 @@ When changing UI, also check:
 
 ## Next Workflow Boundary
 
-The next product workflow should be title and abstract screening.
+The next product workflow should be full-text retrieval and artifact audit.
 
 Recommended first slice:
 
-1. Start from `docs/workflow-6-title-abstract-screening.md`.
-2. Add the web-owned screening batch, assignment, and conflict migrations.
-3. Implement the locked-corpus input contract from workflow 5.
-4. Implement reviewer assignment, include/exclude/maybe decisions, conflict
-   states, and audit events.
-5. Extend `DemoAccessSeeder` with screening-ready records and reviewer states.
-6. Add Pest tests for policy, assignment, decision persistence, and conflict
-   creation.
-7. Add React tests for decision controls and conflict badges.
-8. Verify owner, reviewer, viewer, adjudicator, and workspace admin browser
-   scenarios.
+1. Start from `docs/workflow-7-full-text-retrieval.md`.
+2. Add web-owned full-text batch and item migrations.
+3. Build candidates from completed Workflow 6 outcomes: include plus maybe,
+   never exclude by default.
+4. Add full-text policy methods and project routes.
+5. Implement an overview page with readiness, progress, candidate table, and a
+   right-side artifact audit sheet.
+6. Dispatch retrieval in a queue job and call core `RetrieveFullTextHandler`
+   with the project id.
+7. Read source audit through `FullTextFetchReaderPort`.
+8. Extend `DemoAccessSeeder` with no-batch, running, completed, failed, and
+   skipped full-text states using fake artifacts.
+9. Add Pest, component, and Python Playwright coverage from
+   `docs/demo-scenarios.md`.
 
-Do not start full-text retrieval, exports, AI assistance, or billing before the
-screening loop is stable.
+Do not start full-text screening, exports, citation graphs, AI assistance, or
+billing before retrieval status and artifact audit are stable.
