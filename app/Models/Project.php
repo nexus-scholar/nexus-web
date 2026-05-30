@@ -100,6 +100,21 @@ class Project extends Model
         return $this->hasMany(AuditEvent::class);
     }
 
+    public function screeningBatches(): HasMany
+    {
+        return $this->hasMany(ProjectScreeningBatch::class);
+    }
+
+    public function screeningAssignments(): HasMany
+    {
+        return $this->hasMany(ProjectScreeningAssignment::class);
+    }
+
+    public function screeningConflicts(): HasMany
+    {
+        return $this->hasMany(ProjectScreeningConflict::class);
+    }
+
     public function isLocked(): bool
     {
         return $this->locked_at !== null || in_array($this->status, [

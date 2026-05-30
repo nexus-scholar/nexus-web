@@ -72,6 +72,11 @@ class User extends Authenticatable implements MustVerifyEmail, PasskeyUser
         return $this->hasMany(AuditEvent::class, 'actor_user_id');
     }
 
+    public function screeningAssignments(): HasMany
+    {
+        return $this->hasMany(ProjectScreeningAssignment::class, 'assigned_to');
+    }
+
     public function workspaceRole(Workspace $workspace): ?WorkspaceRole
     {
         return $this->activeWorkspaceMemberships()
