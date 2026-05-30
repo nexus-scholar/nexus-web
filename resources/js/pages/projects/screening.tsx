@@ -60,6 +60,7 @@ type ProjectPayload = {
         screening: string;
         screening_queue: string;
         screening_batches: string;
+        full_text: string;
         activity: string;
     };
 };
@@ -72,6 +73,7 @@ type Props = {
         manage_screening: boolean;
         screen_assigned_work: boolean;
         resolve_screening_conflict: boolean;
+        view_full_text: boolean;
     };
 };
 
@@ -126,6 +128,14 @@ export default function ProjectScreening({ can, project, screening }: Props) {
                             <Button variant="outline" size="sm" asChild>
                                 <Link href={project.urls.corpus}>Corpus</Link>
                             </Button>
+                            {can.view_full_text &&
+                                screening.batch?.status === 'completed' && (
+                                    <Button variant="outline" size="sm" asChild>
+                                        <Link href={project.urls.full_text}>
+                                            Full text
+                                        </Link>
+                                    </Button>
+                                )}
                             <Button variant="outline" size="sm" asChild>
                                 <Link href={project.urls.overview}>
                                     Overview

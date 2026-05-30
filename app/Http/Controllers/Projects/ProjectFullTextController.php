@@ -4,35 +4,30 @@ namespace App\Http\Controllers\Projects;
 
 use App\Http\Controllers\Controller;
 use App\Models\Project;
-use App\Queries\Projects\ProjectScreeningReadModel;
+use App\Queries\Projects\ProjectFullTextReadModel;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
-class ProjectScreeningController extends Controller
+class ProjectFullTextController extends Controller
 {
-    public function index(
-        Request $request,
-        Project $project,
-        ProjectScreeningReadModel $screening,
-    ): Response {
+    public function index(Request $request, Project $project, ProjectFullTextReadModel $fullText): Response
+    {
         $project->load('workspace');
 
-        $this->authorize('viewScreening', $project);
+        $this->authorize('viewFullText', $project);
 
-        return Inertia::render('projects/screening', [
+        return Inertia::render('projects/full-text', [
             'project' => $this->projectPayload($project),
-            'screening' => $screening->forProject(
+            'fullText' => $fullText->forProject(
                 $project,
                 $request->user(),
-                $request->query('conflict') ? (string) $request->query('conflict') : null,
+                $request->query('item') ? (string) $request->query('item') : null,
             ),
             'can' => [
-                'view_screening' => $request->user()->can('viewScreening', $project),
-                'manage_screening' => $request->user()->can('manageScreening', $project),
-                'screen_assigned_work' => $request->user()->can('screenAssignedWork', $project),
-                'resolve_screening_conflict' => $request->user()->can('resolveScreeningConflict', $project),
                 'view_full_text' => $request->user()->can('viewFullText', $project),
+                'manage_full_text' => $request->user()->can('manageFullText', $project),
+                'download_full_text_artifact' => $request->user()->can('downloadFullTextArtifact', $project),
             ],
         ]);
     }
@@ -56,13 +51,11 @@ class ProjectScreeningController extends Controller
             ],
             'urls' => [
                 'overview' => route('projects.show', $project, absolute: false),
-                'protocol' => route('projects.protocol.edit', $project, absolute: false),
                 'corpus' => route('projects.corpus.index', $project, absolute: false),
                 'deduplication' => route('projects.deduplication.index', $project, absolute: false),
                 'screening' => route('projects.screening.index', $project, absolute: false),
-                'screening_queue' => route('projects.screening.queue', $project, absolute: false),
-                'screening_batches' => route('projects.screening.batches.store', $project, absolute: false),
                 'full_text' => route('projects.full-text.index', $project, absolute: false),
+                'full_text_batches' => route('projects.full-text.batches.store', $project, absolute: false),
                 'activity' => route('projects.activity.index', $project, absolute: false),
             ],
         ];

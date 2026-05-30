@@ -71,6 +71,10 @@ Seeded project states:
   assignments, one open conflict, and one resolved conflict.
 - `Cardiometabolic Screening Handoff`: completed screening project in Evidence
   Synthesis Lab with final include, maybe, exclude, and adjudicated outcomes.
+- `Cardiometabolic Full-Text Retrieval`: completed screening project with a
+  running full-text retrieval batch.
+- `Cardiometabolic Full-Text Audit`: completed screening project with
+  retrieved, failed, skipped, and manual-needed full-text audit rows.
 - Owner has the project `owner` role.
 - Reviewer has the project `reviewer` role.
 - Viewer has the project `viewer` role.
@@ -492,21 +496,23 @@ Screenshot targets:
 Preparation lives in `docs/workflow-7-full-text-retrieval.md`.
 Wireframes live in `docs/wireframes/workflow-7-full-text-wireframes.html`.
 
-Planned first-slice browser scenarios:
+Implemented first-slice browser scenarios:
 
 1. Owner opens `Cardiometabolic Screening Handoff` and sees full-text readiness
    with include plus maybe records counted as candidates.
 2. Owner opens the full-text page before retrieval and sees candidate preview,
    source policy, protocol policy, and readiness checks.
 3. Owner starts retrieval and sees a queued or running background batch state.
-4. Owner sees completed retrieval with success, failed, skipped, and
-   manual-needed counts.
-5. Owner opens a row detail sheet and sees the final screening decision,
+4. Owner opens `Cardiometabolic Full-Text Retrieval` and sees the seeded running
+   background batch state.
+5. Owner opens `Cardiometabolic Full-Text Audit` and sees completed retrieval
+   with success, failed, skipped, and manual-needed counts.
+6. Owner opens a row detail sheet and sees the final screening decision,
    artifact metadata, and source attempts from the full-text audit trail.
-6. Reviewer opens the same full-text page and sees read-only status, artifact
+7. Reviewer opens the same full-text page and sees read-only status, artifact
    access where permitted, and no mutation controls.
-7. Viewer can inspect full-text status without retrieval or retry controls.
-8. A manual-upload-only protocol disables automatic retrieval and explains the
+8. Viewer can inspect full-text status without retrieval or retry controls.
+9. A manual-upload-only protocol disables automatic retrieval and explains the
    policy state without dispatching a job.
 
 Expected signals:
@@ -522,7 +528,7 @@ Expected signals:
 - Source audit is read through core read APIs instead of duplicated from
   `pdf_fetches`.
 
-Automated coverage to add with implementation:
+Automated coverage:
 
 - `tests/Feature/ProjectFullTextWorkflowTest.php`
 - `resources/js/components/full-text-status-badge.test.tsx`

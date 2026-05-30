@@ -9,6 +9,9 @@ use App\Http\Controllers\Projects\ProjectCorpusController;
 use App\Http\Controllers\Projects\ProjectCorpusDeduplicateController;
 use App\Http\Controllers\Projects\ProjectCorpusDeduplicationController;
 use App\Http\Controllers\Projects\ProjectCorpusLockController;
+use App\Http\Controllers\Projects\ProjectFullTextArtifactController;
+use App\Http\Controllers\Projects\ProjectFullTextBatchController;
+use App\Http\Controllers\Projects\ProjectFullTextController;
 use App\Http\Controllers\Projects\ProjectProtocolController;
 use App\Http\Controllers\Projects\ProjectScreeningAssignmentDecisionController;
 use App\Http\Controllers\Projects\ProjectScreeningBatchController;
@@ -57,6 +60,9 @@ Route::middleware(['auth', 'verified', 'not_disabled', 'workspace.ready'])->grou
     Route::post('projects/{project}/screening/assignments/{assignment}/decision', [ProjectScreeningAssignmentDecisionController::class, 'store'])->name('projects.screening.assignments.decision');
     Route::get('projects/{project}/screening/conflicts', [ProjectScreeningController::class, 'index'])->name('projects.screening.conflicts.index');
     Route::post('projects/{project}/screening/conflicts/{conflict}/resolve', [ProjectScreeningConflictResolutionController::class, 'store'])->name('projects.screening.conflicts.resolve');
+    Route::get('projects/{project}/full-text', [ProjectFullTextController::class, 'index'])->name('projects.full-text.index');
+    Route::post('projects/{project}/full-text/batches', [ProjectFullTextBatchController::class, 'store'])->name('projects.full-text.batches.store');
+    Route::get('projects/{project}/full-text/artifacts/{item}', [ProjectFullTextArtifactController::class, 'show'])->name('projects.full-text.artifacts.show');
     Route::get('projects/{project}/activity', [ProjectActivityController::class, 'index'])->name('projects.activity.index');
 });
 

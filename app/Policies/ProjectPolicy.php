@@ -123,6 +123,30 @@ class ProjectPolicy
         ], true) || $this->administersProjectWorkspace($user, $project);
     }
 
+    public function viewFullText(User $user, Project $project): bool
+    {
+        if ($project->workspace?->isSuspended()) {
+            return false;
+        }
+
+        return $this->view($user, $project);
+    }
+
+    public function manageFullText(User $user, Project $project): bool
+    {
+        if (! $project->isLocked() || $project->workspace?->isSuspended()) {
+            return false;
+        }
+
+        return $user->projectRole($project) === ProjectRole::Owner
+            || $this->administersProjectWorkspace($user, $project);
+    }
+
+    public function downloadFullTextArtifact(User $user, Project $project): bool
+    {
+        return $this->viewFullText($user, $project);
+    }
+
     public function viewActivity(User $user, Project $project): bool
     {
         return $this->view($user, $project);
