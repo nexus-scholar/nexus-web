@@ -1,5 +1,5 @@
 import { Head, Link, router } from '@inertiajs/react';
-import { GitMerge, RefreshCw } from 'lucide-react';
+import { ClipboardList, GitMerge, RefreshCw } from 'lucide-react';
 import { DedupClusterTable } from '@/components/dedup-cluster-table';
 import { DedupLockDialog } from '@/components/dedup-lock-dialog';
 import { DedupReadinessRail } from '@/components/dedup-readiness-rail';
@@ -47,6 +47,7 @@ type ProjectPayload = {
         deduplication: string;
         deduplicate: string;
         lock: string;
+        screening: string;
         activity: string;
     };
 };
@@ -121,6 +122,14 @@ export default function ProjectDeduplication({
                             <Button variant="outline" size="sm" asChild>
                                 <Link href={project.urls.corpus}>Corpus</Link>
                             </Button>
+                            {project.locked_at && (
+                                <Button variant="outline" size="sm" asChild>
+                                    <Link href={project.urls.screening}>
+                                        <ClipboardList className="size-4" />
+                                        Screening
+                                    </Link>
+                                </Button>
+                            )}
                             <Button variant="outline" size="sm" asChild>
                                 <Link href={project.urls.overview}>
                                     Overview

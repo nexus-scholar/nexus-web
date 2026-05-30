@@ -19,6 +19,15 @@ php artisan migrate --force
 php artisan db:seed --class=DemoAccessSeeder --force
 ```
 
+For local browser verification through Python Playwright, keep the tooling in
+the ignored project venv:
+
+```powershell
+python -m venv .venv
+.\.venv\Scripts\python.exe -m pip install -r requirements-dev.txt
+.\.venv\Scripts\python.exe -m playwright --version
+```
+
 For a clean scenario run, clear existing browser sessions without deleting demo
 data:
 
@@ -57,6 +66,9 @@ Seeded project states:
   search run, and deterministic corpus records.
 - `Locked Cardiometabolic Evidence Snapshot`: locked corpus project in Evidence
   Synthesis Lab with snapshot-backed corpus membership.
+- `Cardiometabolic Title Abstract Screening`: active screening project in
+  Evidence Synthesis Lab with a locked representative snapshot, reviewer
+  assignments, one open conflict, and one resolved conflict.
 - Owner has the project `owner` role.
 - Reviewer has the project `reviewer` role.
 - Viewer has the project `viewer` role.
@@ -412,6 +424,60 @@ Screenshot targets:
 - `output/playwright/workflow-5-lock-confirmation.png`
 - `output/playwright/workflow-5-locked-snapshot.png`
 - `output/playwright/workflow-5-reviewer-readonly.png`
+
+## Workflow 6: Title And Abstract Screening
+
+Preparation lives in `docs/workflow-6-title-abstract-screening.md`.
+Wireframes live in `docs/wireframes/workflow-6-screening-wireframes.html`.
+
+Implemented first-slice browser scenarios:
+
+1. Owner opens `Cardiometabolic Title Abstract Screening` and verifies the
+   screening overview shows locked snapshot readiness, active batch progress,
+   reviewer workload, open conflicts, resolved conflicts, and audit events.
+2. Owner opens `Locked Cardiometabolic Evidence Snapshot`, opens screening, and
+   sees the setup panel for starting a screening batch from the representative
+   locked corpus snapshot.
+3. Reviewer opens the active screening queue and verifies assigned records,
+   protocol criteria, work metadata, snapshot provenance, and the decision
+   panel.
+4. Reviewer submits a decision with a rationale and sees the queue advance to
+   the next pending assignment.
+5. Viewer opens the active screening overview and sees read-only progress
+   without setup, queue, or conflict-resolution mutation controls.
+6. Workspace admin or adjudicator opens the conflict panel and resolves an open
+   conflict with an audit reason.
+7. Completed or resolved assignments cannot be submitted again from the UI.
+
+Expected signals:
+
+- Screening uses the locked representative snapshot, not mutable draft corpus
+  membership.
+- `include`, `maybe`, and `exclude` labels map to core decision values:
+  `include`, `needs_review`, and `exclude`.
+- Conflict resolution stays in a right-side sheet with source reviewer
+  rationales visible.
+- All mutations require role-appropriate access and a reviewer/adjudicator
+  rationale.
+- Viewer access is read-only.
+
+Automated coverage:
+
+- `tests/Feature/ProjectScreeningWorkflowTest.php`
+- `resources/js/components/decision-badge.test.tsx`
+- `resources/js/components/screening-status-badge.test.tsx`
+- `resources/js/components/reviewer-workload-list.test.tsx`
+- `resources/js/components/screening-queue-table.test.tsx`
+
+Screenshot targets:
+
+- `output/playwright/workflow-6-screening-overview.png`
+- `output/playwright/workflow-6-screening-setup.png`
+- `output/playwright/workflow-6-reviewer-queue.png`
+- `output/playwright/workflow-6-reviewer-decision-submitted.png`
+- `output/playwright/workflow-6-conflict-resolution.png`
+- `output/playwright/workflow-6-conflict-resolved.png`
+- `output/playwright/workflow-6-viewer-readonly.png`
 
 ## UI Hardening: Brand Tokens
 

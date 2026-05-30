@@ -421,6 +421,146 @@ class ProjectScreeningWorkflowTest extends TestCase
         );
     }
 
+    public function test_screening_overview_route_exposes_setup_for_locked_project(): void
+    {
+        [$project, $owner] = $this->lockedScreeningProject(workCount: 2);
+        $reviewer = $this->projectMember($project, ProjectRole::Reviewer);
+
+        $this->actingAs($owner)
+            ->withHeaders($this->inertiaHeaders())
+            ->get(route('projects.screening.index', $project))
+            ->assertOk()
+            ->assertJsonPath('component', 'projects/screening')
+            ->assertJsonPath('props.screening.batch', null)
+            ->assertJsonPath('props.screening.snapshot.work_count', 2)
+            ->assertJsonPath('props.screening.setup.available_reviewers.0.id', $reviewer->id)
+            ->assertJsonPath('props.can.manage_screening', true);
+    }
+
+    public function test_owner_starts_batch_from_route_and_reviewer_sees_queue(): void
+    {
+        [$project, $owner] = $this->lockedScreeningProject(workCount: 2);
+        $reviewer = $this->projectMember($project, ProjectRole::Reviewer);
+
+        $this->actingAs($owner)
+            ->post(route('projects.screening.batches.store', $project), [
+                'name' => 'Route screening batch',
+                'required_reviewer_count' => 1,
+                'reviewer_ids' => [$reviewer->id],
+            ])
+            ->assertRedirect(route('projects.screening.index', $project));
+
+        $batch = $project->screeningBatches()->firstOrFail();
+
+        $this->actingAs($reviewer)
+            ->withHeaders($this->inertiaHeaders())
+            ->get(route('projects.screening.queue', $project))
+            ->assertOk()
+            ->assertJsonPath('component', 'projects/screening-queue')
+            ->assertJsonPath('props.queue.batch.id', $batch->id)
+            ->assertJsonPath('props.queue.assignments.0.status', 'pending')
+            ->assertJsonPath('props.can.screen_assigned_work', true);
+    }
+
+    public function test_reviewer_records_decision_from_route(): void
+    {
+        [$project, $owner] = $this->lockedScreeningProject(workCount: 1);
+        $reviewer = $this->projectMember($project, ProjectRole::Reviewer);
+        $batch = app(StartProjectScreeningBatch::class)->handle($project, $owner, [$reviewer->id], 1);
+        $assignment = $batch->assignments()->firstOrFail();
+
+        $this->actingAs($reviewer)
+            ->post(route('projects.screening.assignments.decision', [$project, $assignment]), [
+                'decision' => ScreeningDecision::INCLUDE->value,
+                'reason' => 'Route submission matches title and abstract criteria.',
+                'evidence' => "primary care\nintervention",
+            ])
+            ->assertRedirect(route('projects.screening.queue', [
+                'project' => $project,
+                'assignment' => $assignment->id,
+            ]));
+
+        $this->assertDatabaseHas('project_screening_assignments', [
+            'id' => $assignment->id,
+            'status' => ProjectScreeningAssignmentStatus::Resolved->value,
+        ]);
+        $this->assertDatabaseHas('screening_decisions', [
+            'project_id' => $project->id,
+            'decision' => ScreeningDecision::INCLUDE->value,
+            'reason' => 'Route submission matches title and abstract criteria.',
+        ]);
+    }
+
+    public function test_viewer_can_inspect_screening_overview_but_cannot_mutate(): void
+    {
+        [$project, $owner] = $this->lockedScreeningProject(workCount: 1);
+        $reviewer = $this->projectMember($project, ProjectRole::Reviewer);
+        $viewer = $this->projectMember($project, ProjectRole::Viewer);
+
+        $this->actingAs($viewer)
+            ->withHeaders($this->inertiaHeaders())
+            ->get(route('projects.screening.index', $project))
+            ->assertOk()
+            ->assertJsonPath('props.can.manage_screening', false)
+            ->assertJsonPath('props.can.screen_assigned_work', false);
+
+        $this->actingAs($viewer)
+            ->post(route('projects.screening.batches.store', $project), [
+                'name' => 'Blocked viewer batch',
+                'required_reviewer_count' => 1,
+                'reviewer_ids' => [$reviewer->id],
+            ])
+            ->assertForbidden();
+
+        $this->actingAs($viewer)
+            ->get(route('projects.screening.queue', $project))
+            ->assertForbidden();
+
+        $this->assertDatabaseCount('project_screening_batches', 0);
+    }
+
+    public function test_adjudicator_resolves_conflict_from_route(): void
+    {
+        [$project, $owner] = $this->lockedScreeningProject(workCount: 1);
+        $reviewer = $this->projectMember($project, ProjectRole::Reviewer);
+        $secondReviewer = $this->projectMember($project, ProjectRole::Reviewer);
+        $adjudicator = $this->projectMember($project, ProjectRole::Adjudicator);
+        $batch = app(StartProjectScreeningBatch::class)->handle($project, $owner, [$reviewer->id, $secondReviewer->id], 2);
+        $assignments = $batch->assignments()->orderBy('assigned_to')->get();
+
+        app(RecordProjectScreeningDecision::class)->handle(
+            $assignments->first(),
+            $assignments->first()->assignedTo,
+            ScreeningDecision::INCLUDE->value,
+            'Relevant intervention and setting.',
+        );
+        app(RecordProjectScreeningDecision::class)->handle(
+            $assignments->last(),
+            $assignments->last()->assignedTo,
+            ScreeningDecision::EXCLUDE->value,
+            'No eligible outcome is visible.',
+        );
+
+        $conflict = ProjectScreeningConflict::query()->firstOrFail();
+
+        $this->actingAs($adjudicator)
+            ->post(route('projects.screening.conflicts.resolve', [$project, $conflict]), [
+                'decision' => ScreeningDecision::NEEDS_REVIEW->value,
+                'reason' => 'Route resolution sends uncertainty to full text.',
+                'uncertainty' => 'Abstract is not decisive.',
+            ])
+            ->assertRedirect(route('projects.screening.index', [
+                'project' => $project,
+                'conflict' => $conflict->id,
+            ]));
+
+        $this->assertDatabaseHas('project_screening_conflicts', [
+            'id' => $conflict->id,
+            'status' => ProjectScreeningConflictStatus::Resolved->value,
+            'resolution_reason' => 'Route resolution sends uncertainty to full text.',
+        ]);
+    }
+
     /**
      * @return array{0: Project, 1: User, 2: list<string>, 3: string|null}
      */
@@ -629,5 +769,15 @@ class ProjectScreeningWorkflowTest extends TestCase
             'created_at' => now(),
             'updated_at' => now(),
         ]);
+    }
+
+    private function inertiaHeaders(): array
+    {
+        $manifest = public_path('build/manifest.json');
+
+        return [
+            'X-Inertia' => 'true',
+            'X-Inertia-Version' => file_exists($manifest) ? hash_file('xxh128', $manifest) : '',
+        ];
     }
 }

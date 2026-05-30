@@ -10,6 +10,11 @@ use App\Http\Controllers\Projects\ProjectCorpusDeduplicateController;
 use App\Http\Controllers\Projects\ProjectCorpusDeduplicationController;
 use App\Http\Controllers\Projects\ProjectCorpusLockController;
 use App\Http\Controllers\Projects\ProjectProtocolController;
+use App\Http\Controllers\Projects\ProjectScreeningAssignmentDecisionController;
+use App\Http\Controllers\Projects\ProjectScreeningBatchController;
+use App\Http\Controllers\Projects\ProjectScreeningConflictResolutionController;
+use App\Http\Controllers\Projects\ProjectScreeningController;
+use App\Http\Controllers\Projects\ProjectScreeningQueueController;
 use App\Http\Controllers\Projects\ProjectSearchPlanController;
 use App\Http\Controllers\Projects\ProjectSearchRunController;
 use App\Http\Controllers\Workspaces\WorkspaceController;
@@ -46,6 +51,12 @@ Route::middleware(['auth', 'verified', 'not_disabled', 'workspace.ready'])->grou
     Route::get('projects/{project}/deduplication', [ProjectCorpusDeduplicationController::class, 'index'])->name('projects.deduplication.index');
     Route::post('projects/{project}/corpus/deduplicate', ProjectCorpusDeduplicateController::class)->name('projects.corpus.deduplicate');
     Route::post('projects/{project}/corpus/lock', ProjectCorpusLockController::class)->name('projects.corpus.lock');
+    Route::get('projects/{project}/screening', [ProjectScreeningController::class, 'index'])->name('projects.screening.index');
+    Route::post('projects/{project}/screening/batches', [ProjectScreeningBatchController::class, 'store'])->name('projects.screening.batches.store');
+    Route::get('projects/{project}/screening/queue', [ProjectScreeningQueueController::class, 'index'])->name('projects.screening.queue');
+    Route::post('projects/{project}/screening/assignments/{assignment}/decision', [ProjectScreeningAssignmentDecisionController::class, 'store'])->name('projects.screening.assignments.decision');
+    Route::get('projects/{project}/screening/conflicts', [ProjectScreeningController::class, 'index'])->name('projects.screening.conflicts.index');
+    Route::post('projects/{project}/screening/conflicts/{conflict}/resolve', [ProjectScreeningConflictResolutionController::class, 'store'])->name('projects.screening.conflicts.resolve');
     Route::get('projects/{project}/activity', [ProjectActivityController::class, 'index'])->name('projects.activity.index');
 });
 

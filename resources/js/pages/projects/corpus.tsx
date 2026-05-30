@@ -1,5 +1,11 @@
 import { Head, Link, router } from '@inertiajs/react';
-import { FileSearch, GitMerge, LockKeyhole, Search } from 'lucide-react';
+import {
+    ClipboardList,
+    FileSearch,
+    GitMerge,
+    LockKeyhole,
+    Search,
+} from 'lucide-react';
 import { CorpusFilterBar } from '@/components/corpus-filter-bar';
 import { CorpusMetricStrip } from '@/components/corpus-metric-strip';
 import { CorpusRecordDetail } from '@/components/corpus-record-detail';
@@ -52,6 +58,7 @@ type ProjectPayload = {
         search_plan: string;
         corpus: string;
         deduplication: string;
+        screening: string;
         activity: string;
     };
 };
@@ -129,6 +136,14 @@ export default function ProjectCorpus({ can, corpus, project }: Props) {
                                     <Link href={project.urls.deduplication}>
                                         <GitMerge className="size-4" />
                                         Deduplication
+                                    </Link>
+                                </Button>
+                            )}
+                            {project.locked_at && (
+                                <Button variant="outline" size="sm" asChild>
+                                    <Link href={project.urls.screening}>
+                                        <ClipboardList className="size-4" />
+                                        Screening
                                     </Link>
                                 </Button>
                             )}

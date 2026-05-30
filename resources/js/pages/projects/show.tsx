@@ -1,6 +1,7 @@
 import { Head, Link } from '@inertiajs/react';
 import {
     Activity,
+    ClipboardList,
     FileText,
     GitMerge,
     LockKeyhole,
@@ -57,6 +58,7 @@ type ProjectPayload = {
         activity: string;
         corpus: string;
         deduplication: string;
+        screening: string;
     };
     corpus: {
         available: boolean;
@@ -96,6 +98,7 @@ type Props = {
         run_search: boolean;
         view_corpus: boolean;
         view_deduplication: boolean;
+        view_screening: boolean;
         view_activity: boolean;
     };
 };
@@ -156,6 +159,13 @@ export default function ProjectOverview({
                                         </Link>
                                     </Button>
                                 )}
+                            {can.view_screening && project.locked_at && (
+                                <Button variant="outline" size="sm" asChild>
+                                    <Link href={project.urls.screening}>
+                                        Screening
+                                    </Link>
+                                </Button>
+                            )}
                             {can.view_activity && (
                                 <Button variant="outline" size="sm" asChild>
                                     <Link href={project.urls.activity}>
@@ -343,6 +353,30 @@ export default function ProjectOverview({
                                         <Link href={project.urls.deduplication}>
                                             <GitMerge className="size-4" />
                                             Open deduplication
+                                        </Link>
+                                    </Button>
+                                )
+                            }
+                        />
+                        <WorkflowStepCard
+                            step={6}
+                            title="Title and abstract screening"
+                            description="Assign locked records and record reviewer decisions."
+                            status={
+                                project.status === 'screening' ||
+                                project.status === 'adjudication'
+                                    ? 'current'
+                                    : project.locked_at
+                                      ? 'current'
+                                      : 'pending'
+                            }
+                            action={
+                                can.view_screening &&
+                                project.locked_at && (
+                                    <Button size="sm" variant="outline" asChild>
+                                        <Link href={project.urls.screening}>
+                                            <ClipboardList className="size-4" />
+                                            Open screening
                                         </Link>
                                     </Button>
                                 )
