@@ -1,0 +1,744 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>Workflow 10 Wireframes - Quality Appraisal</title>
+        <style>
+            :root {
+                color-scheme: light;
+                --bg: #f6f7f6;
+                --surface: #ffffff;
+                --surface-soft: #f1f4f3;
+                --border: #d9dedb;
+                --border-strong: #c3cbc7;
+                --text: #141817;
+                --muted: #5a6762;
+                --brand: #087f86;
+                --brand-soft: #dcefee;
+                --low: #1f6f43;
+                --low-soft: #dff1e7;
+                --some: #8a5a12;
+                --some-soft: #f8ecd2;
+                --high: #9f2f36;
+                --high-soft: #f8dddf;
+                --unclear: #6842a0;
+                --unclear-soft: #eee8fb;
+                --info: #2768b5;
+                --info-soft: #e7f0ff;
+                --shadow: 0 18px 48px rgba(20, 24, 23, 0.08);
+            }
+
+            * {
+                box-sizing: border-box;
+            }
+
+            body {
+                margin: 0;
+                background: var(--bg);
+                color: var(--text);
+                font-family:
+                    Inter, ui-sans-serif, system-ui, -apple-system,
+                    BlinkMacSystemFont, "Segoe UI", sans-serif;
+                letter-spacing: 0;
+            }
+
+            main {
+                max-width: 1460px;
+                margin: 0 auto;
+                padding: 28px;
+            }
+
+            h1,
+            h2,
+            h3,
+            p {
+                margin: 0;
+            }
+
+            h1 {
+                font-size: 30px;
+                line-height: 1.15;
+            }
+
+            h2 {
+                font-size: 18px;
+            }
+
+            h3 {
+                font-size: 14px;
+            }
+
+            p {
+                color: var(--muted);
+                line-height: 1.55;
+            }
+
+            .eyebrow {
+                margin-bottom: 6px;
+                color: var(--brand);
+                font-size: 12px;
+                font-weight: 750;
+                text-transform: uppercase;
+            }
+
+            .intro {
+                max-width: 780px;
+                margin-top: 8px;
+            }
+
+            .screen {
+                margin-top: 26px;
+                overflow: hidden;
+                border: 1px solid var(--border);
+                border-radius: 8px;
+                background: var(--surface);
+                box-shadow: var(--shadow);
+            }
+
+            .app {
+                display: grid;
+                min-height: 800px;
+                grid-template-columns: 250px minmax(0, 1fr);
+            }
+
+            .sidebar {
+                display: flex;
+                flex-direction: column;
+                border-right: 1px solid var(--border);
+                background: #fbfcfb;
+                padding: 18px;
+            }
+
+            .brand {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                font-weight: 750;
+            }
+
+            .brand-mark {
+                display: grid;
+                width: 32px;
+                height: 32px;
+                place-items: center;
+                border-radius: 7px;
+                background: var(--brand);
+                color: white;
+                font-size: 13px;
+            }
+
+            .brand-subtitle,
+            .nav-label,
+            .sub {
+                color: var(--muted);
+                font-size: 12px;
+            }
+
+            .nav-label {
+                margin: 28px 0 8px;
+            }
+
+            .nav {
+                display: grid;
+                gap: 6px;
+            }
+
+            .nav-row {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                border-radius: 7px;
+                padding: 9px 10px;
+                color: var(--muted);
+                font-size: 14px;
+            }
+
+            .nav-row.active {
+                background: var(--brand-soft);
+                color: #075157;
+                font-weight: 700;
+            }
+
+            .dot {
+                width: 10px;
+                height: 10px;
+                flex: 0 0 auto;
+                border-radius: 999px;
+                background: currentColor;
+                opacity: 0.7;
+            }
+
+            .spacer {
+                flex: 1;
+            }
+
+            .content {
+                min-width: 0;
+                padding: 26px;
+            }
+
+            .topline {
+                display: flex;
+                align-items: flex-start;
+                justify-content: space-between;
+                gap: 16px;
+                border-bottom: 1px solid var(--border);
+                padding-bottom: 18px;
+            }
+
+            .actions,
+            .badges,
+            .tabs {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+
+            .actions {
+                justify-content: flex-end;
+            }
+
+            .button {
+                display: inline-flex;
+                min-height: 34px;
+                align-items: center;
+                justify-content: center;
+                border: 1px solid var(--border-strong);
+                border-radius: 7px;
+                background: var(--surface);
+                padding: 7px 12px;
+                color: var(--text);
+                font-size: 13px;
+                font-weight: 700;
+            }
+
+            .button.primary {
+                border-color: var(--text);
+                background: var(--text);
+                color: white;
+            }
+
+            .badge {
+                display: inline-flex;
+                min-height: 26px;
+                align-items: center;
+                border-radius: 7px;
+                padding: 4px 9px;
+                background: var(--surface-soft);
+                color: var(--muted);
+                font-size: 12px;
+                font-weight: 700;
+            }
+
+            .low {
+                background: var(--low-soft);
+                color: var(--low);
+            }
+
+            .some {
+                background: var(--some-soft);
+                color: var(--some);
+            }
+
+            .high {
+                background: var(--high-soft);
+                color: var(--high);
+            }
+
+            .unclear {
+                background: var(--unclear-soft);
+                color: var(--unclear);
+            }
+
+            .info {
+                background: var(--info-soft);
+                color: var(--info);
+            }
+
+            .grid {
+                display: grid;
+                gap: 14px;
+                margin-top: 22px;
+            }
+
+            .metrics {
+                grid-template-columns: repeat(5, minmax(0, 1fr));
+            }
+
+            .metric {
+                min-height: 126px;
+                border: 1px solid var(--border);
+                border-radius: 8px;
+                background: var(--surface);
+                padding: 16px;
+            }
+
+            .metric strong {
+                display: block;
+                margin: 10px 0 6px;
+                font-size: 28px;
+                line-height: 1;
+            }
+
+            .split {
+                grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+                align-items: start;
+            }
+
+            .panel {
+                border: 1px solid var(--border);
+                border-radius: 8px;
+                background: var(--surface);
+            }
+
+            .panel-head {
+                display: flex;
+                align-items: flex-start;
+                justify-content: space-between;
+                gap: 12px;
+                border-bottom: 1px solid var(--border);
+                padding: 16px;
+            }
+
+            .toolbar {
+                display: flex;
+                gap: 10px;
+                align-items: center;
+                border-bottom: 1px solid var(--border);
+                padding: 12px 16px;
+            }
+
+            .input {
+                min-height: 38px;
+                border: 1px solid var(--border);
+                border-radius: 7px;
+                background: #fff;
+                padding: 9px 11px;
+                color: var(--muted);
+                font-size: 14px;
+            }
+
+            .grow {
+                flex: 1;
+            }
+
+            .tool-row,
+            .matrix-row {
+                display: grid;
+                gap: 12px;
+                align-items: center;
+                border-bottom: 1px solid var(--border);
+                padding: 14px 16px;
+            }
+
+            .tool-row {
+                grid-template-columns: 1fr 0.75fr 0.75fr 0.5fr;
+            }
+
+            .matrix-row {
+                min-width: 960px;
+                grid-template-columns: 1.5fr repeat(5, 0.7fr) 0.6fr;
+            }
+
+            .tool-row:last-child,
+            .matrix-row:last-child {
+                border-bottom: 0;
+            }
+
+            .table-scroll {
+                overflow-x: auto;
+            }
+
+            .workbench {
+                display: grid;
+                grid-template-columns: 270px minmax(0, 1fr) 330px;
+                min-height: 650px;
+            }
+
+            .study-list {
+                border-right: 1px solid var(--border);
+                background: #fbfcfb;
+            }
+
+            .study-item {
+                border-bottom: 1px solid var(--border);
+                padding: 14px;
+            }
+
+            .study-item.active {
+                background: var(--brand-soft);
+            }
+
+            .form-area {
+                min-width: 0;
+                padding: 18px;
+            }
+
+            .domain-block {
+                margin-top: 16px;
+                border: 1px solid var(--border);
+                border-radius: 8px;
+            }
+
+            .question {
+                display: grid;
+                grid-template-columns: minmax(0, 1fr) 190px;
+                gap: 12px;
+                border-bottom: 1px solid var(--border);
+                padding: 14px;
+            }
+
+            .question:last-child {
+                border-bottom: 0;
+            }
+
+            .source-sheet {
+                border-left: 1px solid var(--border);
+                background: #fbfcfb;
+                padding: 18px;
+            }
+
+            .quote {
+                border-left: 3px solid var(--brand);
+                margin-top: 12px;
+                padding: 10px 12px;
+                background: var(--surface-soft);
+                color: var(--muted);
+                font-size: 13px;
+                line-height: 1.5;
+            }
+
+            .tab {
+                border: 1px solid var(--border);
+                border-radius: 7px;
+                padding: 7px 10px;
+                background: var(--surface);
+                color: var(--muted);
+                font-size: 13px;
+                font-weight: 700;
+            }
+
+            .tab.active {
+                border-color: var(--brand);
+                background: var(--brand-soft);
+                color: #075157;
+            }
+
+            @media (max-width: 1100px) {
+                .app,
+                .workbench {
+                    grid-template-columns: 1fr;
+                }
+
+                .sidebar,
+                .source-sheet,
+                .study-list {
+                    display: none;
+                }
+
+                .metrics,
+                .split {
+                    grid-template-columns: 1fr 1fr;
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <main>
+            <div class="eyebrow">Workflow 10</div>
+            <h1>Quality appraisal and risk-of-bias wireframes</h1>
+            <p class="intro">
+                A host-owned appraisal workflow for included studies: tool
+                setup, reviewer judgement, domain matrix, and adjudication.
+            </p>
+
+            <section class="screen">
+                <div class="app">
+                    <aside class="sidebar">
+                        <div class="brand">
+                            <div class="brand-mark">NS</div>
+                            <div>
+                                Nexus Scholar
+                                <div class="brand-subtitle">Evidence reviews</div>
+                            </div>
+                        </div>
+                        <div class="nav-label">Workspace</div>
+                        <div class="nav">
+                            <div class="nav-row active"><span class="dot"></span>Evidence Synthesis Lab</div>
+                            <div class="nav-row"><span class="dot"></span>Dashboard</div>
+                            <div class="nav-row"><span class="dot"></span>Members</div>
+                            <div class="nav-row"><span class="dot"></span>Settings</div>
+                        </div>
+                        <div class="spacer"></div>
+                        <div class="nav-row"><span class="dot"></span>Dr. Lina Haddad</div>
+                    </aside>
+
+                    <div class="content">
+                        <div class="topline">
+                            <div>
+                                <p>Evidence Synthesis Lab / Systematic review</p>
+                                <h1>Quality appraisal</h1>
+                                <p class="intro">
+                                    Configure an appraisal tool, assign included
+                                    studies, and resolve domain-level judgement
+                                    conflicts.
+                                </p>
+                            </div>
+                            <div class="actions">
+                                <span class="badge info">Included studies ready</span>
+                                <span class="badge unclear">Tool draft</span>
+                                <span class="button">Preview tool</span>
+                                <span class="button primary">Lock tool</span>
+                            </div>
+                        </div>
+
+                        <div class="grid metrics">
+                            <div class="metric">
+                                <p>Candidate studies</p>
+                                <strong>43</strong>
+                                <p>Final full-text includes.</p>
+                            </div>
+                            <div class="metric">
+                                <p>Domains</p>
+                                <strong>5</strong>
+                                <p>Configured in template.</p>
+                            </div>
+                            <div class="metric">
+                                <p>Assignments</p>
+                                <strong>86</strong>
+                                <p>Dual independent mode.</p>
+                            </div>
+                            <div class="metric">
+                                <p>Open conflicts</p>
+                                <strong>7</strong>
+                                <p>Domain or overall ratings.</p>
+                            </div>
+                            <div class="metric">
+                                <p>Matrix complete</p>
+                                <strong>58%</strong>
+                                <p>Final ratings recorded.</p>
+                            </div>
+                        </div>
+
+                        <div class="grid split">
+                            <section class="panel">
+                                <div class="panel-head">
+                                    <div>
+                                        <h2>Tool setup</h2>
+                                        <p>Choose a preset or build a custom domain template.</p>
+                                    </div>
+                                    <span class="button">Add domain</span>
+                                </div>
+                                <div class="tool-row">
+                                    <strong>Domain</strong>
+                                    <strong>Questions</strong>
+                                    <strong>Evidence pointer</strong>
+                                    <strong>Status</strong>
+                                </div>
+                                <div class="tool-row">
+                                    <div>
+                                        <strong>Randomization process</strong>
+                                        <p class="sub">Trial preset</p>
+                                    </div>
+                                    <span>3</span>
+                                    <span class="badge">Optional</span>
+                                    <span class="badge low">Valid</span>
+                                </div>
+                                <div class="tool-row">
+                                    <div>
+                                        <strong>Missing outcome data</strong>
+                                        <p class="sub">Trial preset</p>
+                                    </div>
+                                    <span>4</span>
+                                    <span class="badge some">Required if unclear</span>
+                                    <span class="badge low">Valid</span>
+                                </div>
+                                <div class="tool-row">
+                                    <div>
+                                        <strong>Measurement of outcome</strong>
+                                        <p class="sub">Trial preset</p>
+                                    </div>
+                                    <span>3</span>
+                                    <span class="badge some">Required if high</span>
+                                    <span class="badge info">Review</span>
+                                </div>
+                            </section>
+
+                            <section class="panel">
+                                <div class="panel-head">
+                                    <div>
+                                        <h2>Domain matrix</h2>
+                                        <p>Wide table with filters, column visibility, and detail sheet.</p>
+                                    </div>
+                                    <div class="actions">
+                                        <span class="button">Filters</span>
+                                        <span class="button">Columns</span>
+                                    </div>
+                                </div>
+                                <div class="toolbar">
+                                    <div class="input grow">Search study</div>
+                                    <div class="button">Rating</div>
+                                    <div class="button">Conflict</div>
+                                </div>
+                                <div class="table-scroll">
+                                    <div class="matrix-row">
+                                        <strong>Study</strong>
+                                        <strong>Randomization</strong>
+                                        <strong>Deviations</strong>
+                                        <strong>Missing data</strong>
+                                        <strong>Measurement</strong>
+                                        <strong>Overall</strong>
+                                        <strong>Detail</strong>
+                                    </div>
+                                    <div class="matrix-row">
+                                        <div>
+                                            <strong>Digital coaching in primary care</strong>
+                                            <p class="sub">Extraction complete</p>
+                                        </div>
+                                        <span class="badge low">Low</span>
+                                        <span class="badge some">Some</span>
+                                        <span class="badge low">Low</span>
+                                        <span class="badge unclear">Unclear</span>
+                                        <span class="badge some">Some</span>
+                                        <span class="button">Open</span>
+                                    </div>
+                                    <div class="matrix-row">
+                                        <div>
+                                            <strong>AI risk feedback in clinics</strong>
+                                            <p class="sub">Conflict open</p>
+                                        </div>
+                                        <span class="badge low">Low</span>
+                                        <span class="badge high">High</span>
+                                        <span class="badge some">Some</span>
+                                        <span class="badge some">Some</span>
+                                        <span class="badge high">High</span>
+                                        <span class="button primary">Resolve</span>
+                                    </div>
+                                    <div class="matrix-row">
+                                        <div>
+                                            <strong>Care manager dashboards</strong>
+                                            <p class="sub">Not started</p>
+                                        </div>
+                                        <span class="badge">Pending</span>
+                                        <span class="badge">Pending</span>
+                                        <span class="badge">Pending</span>
+                                        <span class="badge">Pending</span>
+                                        <span class="badge">Pending</span>
+                                        <span class="button">Open</span>
+                                    </div>
+                                </div>
+                            </section>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="screen">
+                <div class="workbench">
+                    <aside class="study-list">
+                        <div class="panel-head">
+                            <div>
+                                <h2>My appraisal queue</h2>
+                                <p>10 assigned studies</p>
+                            </div>
+                        </div>
+                        <div class="study-item active">
+                            <strong>AI risk feedback in clinics</strong>
+                            <p>2 domains complete</p>
+                        </div>
+                        <div class="study-item">
+                            <strong>Digital coaching in primary care</strong>
+                            <p>Complete, conflict pending</p>
+                        </div>
+                        <div class="study-item">
+                            <strong>Remote coaching implementation</strong>
+                            <p>Not started</p>
+                        </div>
+                    </aside>
+
+                    <section class="form-area">
+                        <div class="topline">
+                            <div>
+                                <p>Reviewer appraisal</p>
+                                <h1>AI risk feedback in clinics</h1>
+                                <p>Record signalling-question answers, domain ratings, and rationale.</p>
+                            </div>
+                            <div class="actions">
+                                <span class="badge some">Autosaved</span>
+                                <span class="button">Save</span>
+                                <span class="button primary">Complete assignment</span>
+                            </div>
+                        </div>
+
+                        <div class="tabs" style="margin-top: 16px">
+                            <span class="tab active">Randomization</span>
+                            <span class="tab">Deviations</span>
+                            <span class="tab">Missing data</span>
+                            <span class="tab">Measurement</span>
+                            <span class="tab">Overall</span>
+                        </div>
+
+                        <div class="domain-block">
+                            <div class="question">
+                                <div>
+                                    <strong>Was allocation sequence random?</strong>
+                                    <p>Use full text, methods section, or trial registry if available.</p>
+                                </div>
+                                <div class="input">Probably yes</div>
+                            </div>
+                            <div class="question">
+                                <div>
+                                    <strong>Was allocation concealed?</strong>
+                                    <p>Evidence pointer required when unclear or high risk.</p>
+                                </div>
+                                <div class="input">No information</div>
+                            </div>
+                            <div class="question">
+                                <div>
+                                    <strong>Domain judgement</strong>
+                                    <p>Rationale is required for some concerns, high, or unclear.</p>
+                                </div>
+                                <div class="input">Some concerns</div>
+                            </div>
+                            <div class="question">
+                                <div>
+                                    <strong>Rationale</strong>
+                                    <p>Concise, audit-ready reason.</p>
+                                </div>
+                                <div class="input">Randomization described, concealment not reported.</div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <aside class="source-sheet">
+                        <div class="panel-head" style="padding: 0 0 14px; border-bottom: 1px solid var(--border)">
+                            <div>
+                                <h2>Context</h2>
+                                <p>Extraction and full-text sources</p>
+                            </div>
+                            <span class="button">Close</span>
+                        </div>
+                        <div class="grid">
+                            <span class="badge info">Extraction 86% complete</span>
+                            <span class="badge low">Full-text include</span>
+                            <span class="badge some">Outcome evidence pointer set</span>
+                        </div>
+                        <div class="quote">
+                            Extraction note: primary outcome was clinic-recorded
+                            systolic blood pressure at six months.
+                        </div>
+                        <div class="quote">
+                            Page 4, Methods: sequence generation mentioned;
+                            allocation concealment not described.
+                        </div>
+                        <div class="grid">
+                            <span class="button">Open artifact</span>
+                            <span class="button">Open extraction</span>
+                        </div>
+                    </aside>
+                </div>
+            </section>
+        </main>
+    </body>
+</html>

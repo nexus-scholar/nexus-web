@@ -1,0 +1,814 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>Workflow 9 Wireframes - Data Extraction</title>
+        <style>
+            :root {
+                color-scheme: light;
+                --bg: #f6f7f6;
+                --surface: #ffffff;
+                --surface-soft: #f1f4f3;
+                --border: #d9dedb;
+                --border-strong: #c3cbc7;
+                --text: #141817;
+                --muted: #5a6762;
+                --brand: #087f86;
+                --brand-soft: #dcefee;
+                --ok: #1f6f43;
+                --ok-soft: #dff1e7;
+                --warn: #8a5a12;
+                --warn-soft: #f8ecd2;
+                --risk: #9f2f36;
+                --risk-soft: #f8dddf;
+                --info: #2768b5;
+                --info-soft: #e7f0ff;
+                --purple: #6842a0;
+                --purple-soft: #eee8fb;
+                --shadow: 0 18px 48px rgba(20, 24, 23, 0.08);
+            }
+
+            * {
+                box-sizing: border-box;
+            }
+
+            body {
+                margin: 0;
+                background: var(--bg);
+                color: var(--text);
+                font-family:
+                    Inter, ui-sans-serif, system-ui, -apple-system,
+                    BlinkMacSystemFont, "Segoe UI", sans-serif;
+                letter-spacing: 0;
+            }
+
+            main {
+                max-width: 1460px;
+                margin: 0 auto;
+                padding: 28px;
+            }
+
+            h1,
+            h2,
+            h3,
+            p {
+                margin: 0;
+            }
+
+            h1 {
+                font-size: 30px;
+                line-height: 1.15;
+            }
+
+            h2 {
+                font-size: 18px;
+            }
+
+            h3 {
+                font-size: 14px;
+            }
+
+            p {
+                color: var(--muted);
+                line-height: 1.55;
+            }
+
+            .eyebrow {
+                margin-bottom: 6px;
+                color: var(--brand);
+                font-size: 12px;
+                font-weight: 750;
+                text-transform: uppercase;
+            }
+
+            .intro {
+                max-width: 780px;
+                margin-top: 8px;
+            }
+
+            .screen {
+                margin-top: 26px;
+                overflow: hidden;
+                border: 1px solid var(--border);
+                border-radius: 8px;
+                background: var(--surface);
+                box-shadow: var(--shadow);
+            }
+
+            .app {
+                display: grid;
+                min-height: 800px;
+                grid-template-columns: 250px minmax(0, 1fr);
+            }
+
+            .sidebar {
+                display: flex;
+                flex-direction: column;
+                border-right: 1px solid var(--border);
+                background: #fbfcfb;
+                padding: 18px;
+            }
+
+            .brand {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                font-weight: 750;
+            }
+
+            .brand-mark {
+                display: grid;
+                width: 32px;
+                height: 32px;
+                place-items: center;
+                border-radius: 7px;
+                background: var(--brand);
+                color: white;
+                font-size: 13px;
+            }
+
+            .brand-subtitle,
+            .nav-label,
+            .sub {
+                color: var(--muted);
+                font-size: 12px;
+            }
+
+            .nav-label {
+                margin: 28px 0 8px;
+            }
+
+            .nav {
+                display: grid;
+                gap: 6px;
+            }
+
+            .nav-row {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                border-radius: 7px;
+                padding: 9px 10px;
+                color: var(--muted);
+                font-size: 14px;
+            }
+
+            .nav-row.active {
+                background: var(--brand-soft);
+                color: #075157;
+                font-weight: 700;
+            }
+
+            .dot {
+                width: 10px;
+                height: 10px;
+                flex: 0 0 auto;
+                border-radius: 999px;
+                background: currentColor;
+                opacity: 0.7;
+            }
+
+            .spacer {
+                flex: 1;
+            }
+
+            .content {
+                position: relative;
+                min-width: 0;
+                padding: 26px;
+            }
+
+            .topline {
+                display: flex;
+                align-items: flex-start;
+                justify-content: space-between;
+                gap: 16px;
+                border-bottom: 1px solid var(--border);
+                padding-bottom: 18px;
+            }
+
+            .actions,
+            .badges,
+            .chips {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+
+            .actions {
+                justify-content: flex-end;
+            }
+
+            .button {
+                display: inline-flex;
+                min-height: 34px;
+                align-items: center;
+                justify-content: center;
+                gap: 8px;
+                border: 1px solid var(--border-strong);
+                border-radius: 7px;
+                background: var(--surface);
+                padding: 7px 12px;
+                color: var(--text);
+                font-size: 13px;
+                font-weight: 700;
+            }
+
+            .button.primary {
+                border-color: var(--text);
+                background: var(--text);
+                color: white;
+            }
+
+            .badge {
+                display: inline-flex;
+                min-height: 26px;
+                align-items: center;
+                border-radius: 7px;
+                padding: 4px 9px;
+                background: var(--surface-soft);
+                color: var(--muted);
+                font-size: 12px;
+                font-weight: 700;
+            }
+
+            .badge.ok {
+                background: var(--ok-soft);
+                color: var(--ok);
+            }
+
+            .badge.warn {
+                background: var(--warn-soft);
+                color: var(--warn);
+            }
+
+            .badge.info {
+                background: var(--info-soft);
+                color: var(--info);
+            }
+
+            .badge.purple {
+                background: var(--purple-soft);
+                color: var(--purple);
+            }
+
+            .grid {
+                display: grid;
+                gap: 14px;
+                margin-top: 22px;
+            }
+
+            .metrics {
+                grid-template-columns: repeat(5, minmax(0, 1fr));
+            }
+
+            .metric {
+                min-height: 132px;
+                border: 1px solid var(--border);
+                border-radius: 8px;
+                background: var(--surface);
+                padding: 16px;
+            }
+
+            .metric strong {
+                display: block;
+                margin: 10px 0 6px;
+                font-size: 28px;
+                line-height: 1;
+            }
+
+            .split {
+                grid-template-columns: minmax(0, 1.1fr) minmax(340px, 0.9fr);
+                align-items: start;
+            }
+
+            .panel {
+                border: 1px solid var(--border);
+                border-radius: 8px;
+                background: var(--surface);
+            }
+
+            .panel-head {
+                display: flex;
+                align-items: flex-start;
+                justify-content: space-between;
+                gap: 12px;
+                border-bottom: 1px solid var(--border);
+                padding: 16px;
+            }
+
+            .panel-body {
+                padding: 16px;
+            }
+
+            .template-row,
+            .study-row,
+            .field-row {
+                display: grid;
+                gap: 12px;
+                border-bottom: 1px solid var(--border);
+                padding: 14px 16px;
+            }
+
+            .template-row {
+                grid-template-columns: 1.2fr 0.8fr 0.6fr 0.7fr 0.5fr;
+                align-items: center;
+            }
+
+            .study-row {
+                grid-template-columns: 1.6fr 0.7fr 0.7fr 0.7fr 0.4fr;
+                align-items: center;
+            }
+
+            .field-row {
+                grid-template-columns: 1.1fr 0.7fr 0.55fr 0.55fr 0.6fr;
+                align-items: center;
+            }
+
+            .template-row:last-child,
+            .study-row:last-child,
+            .field-row:last-child {
+                border-bottom: 0;
+            }
+
+            .toolbar {
+                display: flex;
+                gap: 10px;
+                align-items: center;
+                border-bottom: 1px solid var(--border);
+                padding: 12px 16px;
+            }
+
+            .input {
+                min-height: 38px;
+                border: 1px solid var(--border);
+                border-radius: 7px;
+                background: #fff;
+                padding: 9px 11px;
+                color: var(--muted);
+                font-size: 14px;
+            }
+
+            .grow {
+                flex: 1;
+            }
+
+            .workbench {
+                display: grid;
+                grid-template-columns: 280px minmax(0, 1fr) 340px;
+                min-height: 650px;
+            }
+
+            .study-list {
+                border-right: 1px solid var(--border);
+                background: #fbfcfb;
+            }
+
+            .study-item {
+                border-bottom: 1px solid var(--border);
+                padding: 14px;
+            }
+
+            .study-item.active {
+                background: var(--brand-soft);
+            }
+
+            .form-area {
+                min-width: 0;
+                padding: 18px;
+            }
+
+            .field-group {
+                margin-top: 16px;
+                border: 1px solid var(--border);
+                border-radius: 8px;
+            }
+
+            .field {
+                display: grid;
+                grid-template-columns: 190px minmax(0, 1fr) 90px;
+                gap: 12px;
+                align-items: start;
+                border-bottom: 1px solid var(--border);
+                padding: 14px;
+            }
+
+            .field:last-child {
+                border-bottom: 0;
+            }
+
+            .source-sheet {
+                border-left: 1px solid var(--border);
+                background: #fbfcfb;
+                padding: 18px;
+            }
+
+            .quote {
+                border-left: 3px solid var(--brand);
+                margin-top: 12px;
+                padding: 10px 12px;
+                background: var(--surface-soft);
+                color: var(--muted);
+                font-size: 13px;
+                line-height: 1.5;
+            }
+
+            .tabs {
+                display: flex;
+                gap: 8px;
+                margin-top: 16px;
+            }
+
+            .tab {
+                border: 1px solid var(--border);
+                border-radius: 7px;
+                padding: 7px 10px;
+                background: var(--surface);
+                color: var(--muted);
+                font-size: 13px;
+                font-weight: 700;
+            }
+
+            .tab.active {
+                border-color: var(--brand);
+                background: var(--brand-soft);
+                color: #075157;
+            }
+
+            @media (max-width: 1100px) {
+                .app,
+                .workbench {
+                    grid-template-columns: 1fr;
+                }
+
+                .sidebar,
+                .source-sheet,
+                .study-list {
+                    display: none;
+                }
+
+                .metrics,
+                .split {
+                    grid-template-columns: 1fr 1fr;
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <main>
+            <div class="eyebrow">Workflow 9</div>
+            <h1>Data extraction wireframes</h1>
+            <p class="intro">
+                A structured extraction workflow for final full-text includes:
+                template setup, reviewer extraction, source context, conflicts,
+                and dataset readiness.
+            </p>
+
+            <section class="screen">
+                <div class="app">
+                    <aside class="sidebar">
+                        <div class="brand">
+                            <div class="brand-mark">NS</div>
+                            <div>
+                                Nexus Scholar
+                                <div class="brand-subtitle">Evidence reviews</div>
+                            </div>
+                        </div>
+                        <div class="nav-label">Workspace</div>
+                        <div class="nav">
+                            <div class="nav-row active"><span class="dot"></span>Evidence Synthesis Lab</div>
+                            <div class="nav-row"><span class="dot"></span>Dashboard</div>
+                            <div class="nav-row"><span class="dot"></span>Members</div>
+                            <div class="nav-row"><span class="dot"></span>Settings</div>
+                        </div>
+                        <div class="spacer"></div>
+                        <div class="nav-row"><span class="dot"></span>Dr. Lina Haddad</div>
+                    </aside>
+
+                    <div class="content">
+                        <div class="topline">
+                            <div>
+                                <p>Evidence Synthesis Lab / Systematic review</p>
+                                <h1>Data extraction</h1>
+                                <p class="intro">
+                                    Build the official extraction form and assign
+                                    included full-text studies for structured
+                                    evidence capture.
+                                </p>
+                            </div>
+                            <div class="actions">
+                                <span class="badge ok">Full-text includes ready</span>
+                                <span class="badge purple">Template v1 draft</span>
+                                <span class="button">Preview form</span>
+                                <span class="button primary">Lock template</span>
+                            </div>
+                        </div>
+
+                        <div class="grid metrics">
+                            <div class="metric">
+                                <p>Included studies</p>
+                                <strong>43</strong>
+                                <p>Final full-text includes.</p>
+                            </div>
+                            <div class="metric">
+                                <p>Template fields</p>
+                                <strong>28</strong>
+                                <p>12 require evidence pointers.</p>
+                            </div>
+                            <div class="metric">
+                                <p>Assignments</p>
+                                <strong>86</strong>
+                                <p>Dual independent mode.</p>
+                            </div>
+                            <div class="metric">
+                                <p>Open conflicts</p>
+                                <strong>5</strong>
+                                <p>Field-level differences.</p>
+                            </div>
+                            <div class="metric">
+                                <p>Dataset coverage</p>
+                                <strong>64%</strong>
+                                <p>Required fields complete.</p>
+                            </div>
+                        </div>
+
+                        <div class="grid split">
+                            <section class="panel">
+                                <div class="panel-head">
+                                    <div>
+                                        <h2>Template builder</h2>
+                                        <p>Versioned fields before reviewer assignments start.</p>
+                                    </div>
+                                    <span class="button">Add field</span>
+                                </div>
+                                <div class="toolbar">
+                                    <div class="input grow">Search fields</div>
+                                    <div class="button">Group</div>
+                                    <div class="button">Type</div>
+                                </div>
+                                <div class="field-row">
+                                    <strong>Field</strong>
+                                    <strong>Type</strong>
+                                    <strong>Required</strong>
+                                    <strong>Evidence</strong>
+                                    <strong>Status</strong>
+                                </div>
+                                <div class="field-row">
+                                    <div>
+                                        <strong>Study design</strong>
+                                        <p class="sub">Methods</p>
+                                    </div>
+                                    <span>Choice</span>
+                                    <span class="badge ok">Yes</span>
+                                    <span class="badge">No</span>
+                                    <span class="badge ok">Valid</span>
+                                </div>
+                                <div class="field-row">
+                                    <div>
+                                        <strong>Primary outcome</strong>
+                                        <p class="sub">Outcomes</p>
+                                    </div>
+                                    <span>Text</span>
+                                    <span class="badge ok">Yes</span>
+                                    <span class="badge warn">Required</span>
+                                    <span class="badge ok">Valid</span>
+                                </div>
+                                <div class="field-row">
+                                    <div>
+                                        <strong>Effect estimate</strong>
+                                        <p class="sub">Results</p>
+                                    </div>
+                                    <span>Number</span>
+                                    <span class="badge">Optional</span>
+                                    <span class="badge warn">Required</span>
+                                    <span class="badge info">Review</span>
+                                </div>
+                            </section>
+
+                            <section class="panel">
+                                <div class="panel-head">
+                                    <div>
+                                        <h2>Extraction candidates</h2>
+                                        <p>Only final full-text includes enter this queue.</p>
+                                    </div>
+                                    <span class="button primary">Start batch</span>
+                                </div>
+                                <div class="template-row">
+                                    <strong>Study</strong>
+                                    <strong>Full text</strong>
+                                    <strong>Reviewer A</strong>
+                                    <strong>Reviewer B</strong>
+                                    <strong>Detail</strong>
+                                </div>
+                                <div class="template-row">
+                                    <div>
+                                        <strong>Digital coaching in primary care</strong>
+                                        <p class="sub">Final include</p>
+                                    </div>
+                                    <span class="badge ok">Artifact</span>
+                                    <span>Dr. Lina</span>
+                                    <span>Samir</span>
+                                    <span class="button">Open</span>
+                                </div>
+                                <div class="template-row">
+                                    <div>
+                                        <strong>AI risk feedback in clinics</strong>
+                                        <p class="sub">Final include</p>
+                                    </div>
+                                    <span class="badge ok">Artifact</span>
+                                    <span>Maya</span>
+                                    <span>Samir</span>
+                                    <span class="button">Open</span>
+                                </div>
+                                <div class="template-row">
+                                    <div>
+                                        <strong>Remote coaching implementation</strong>
+                                        <p class="sub">Final include</p>
+                                    </div>
+                                    <span class="badge ok">Artifact</span>
+                                    <span>Dr. Lina</span>
+                                    <span>Maya</span>
+                                    <span class="button">Open</span>
+                                </div>
+                            </section>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="screen">
+                <div class="workbench">
+                    <aside class="study-list">
+                        <div class="panel-head">
+                            <div>
+                                <h2>My queue</h2>
+                                <p>12 assigned studies</p>
+                            </div>
+                        </div>
+                        <div class="study-item active">
+                            <strong>Digital coaching in primary care</strong>
+                            <p>7 of 28 fields complete</p>
+                        </div>
+                        <div class="study-item">
+                            <strong>AI risk feedback in clinics</strong>
+                            <p>Not started</p>
+                        </div>
+                        <div class="study-item">
+                            <strong>Care manager dashboards</strong>
+                            <p>Returned for update</p>
+                        </div>
+                    </aside>
+
+                    <section class="form-area">
+                        <div class="topline">
+                            <div>
+                                <p>Reviewer queue</p>
+                                <h1>Digital coaching in primary care</h1>
+                                <p>Extract values against template v1. Evidence pointers are required for outcome fields.</p>
+                            </div>
+                            <div class="actions">
+                                <span class="badge warn">Autosaved 1 min ago</span>
+                                <span class="button">Save</span>
+                                <span class="button primary">Complete assignment</span>
+                            </div>
+                        </div>
+
+                        <div class="tabs">
+                            <span class="tab active">Study</span>
+                            <span class="tab">Methods</span>
+                            <span class="tab">Outcomes</span>
+                            <span class="tab">Notes</span>
+                        </div>
+
+                        <div class="field-group">
+                            <div class="field">
+                                <div>
+                                    <strong>Study design</strong>
+                                    <p>Required</p>
+                                </div>
+                                <div class="input">Randomized controlled trial</div>
+                                <span class="badge ok">Saved</span>
+                            </div>
+                            <div class="field">
+                                <div>
+                                    <strong>Population</strong>
+                                    <p>Required</p>
+                                </div>
+                                <div class="input">Adults with cardiometabolic risk in primary care clinics</div>
+                                <span class="badge ok">Saved</span>
+                            </div>
+                            <div class="field">
+                                <div>
+                                    <strong>Primary outcome</strong>
+                                    <p>Evidence pointer required</p>
+                                </div>
+                                <div class="input">Change in systolic blood pressure at 6 months</div>
+                                <span class="badge warn">Needs pointer</span>
+                            </div>
+                            <div class="field">
+                                <div>
+                                    <strong>Effect estimate</strong>
+                                    <p>Optional</p>
+                                </div>
+                                <div class="input">-4.2 mmHg</div>
+                                <span class="badge ok">Saved</span>
+                            </div>
+                        </div>
+                    </section>
+
+                    <aside class="source-sheet">
+                        <div class="panel-head" style="padding: 0 0 14px; border-bottom: 1px solid var(--border)">
+                            <div>
+                                <h2>Source context</h2>
+                                <p>Full-text artifact and prior decisions</p>
+                            </div>
+                            <span class="button">Close</span>
+                        </div>
+                        <div class="grid">
+                            <span class="badge ok">Full-text include</span>
+                            <span class="badge info">Artifact: PDF</span>
+                            <span class="badge purple">Screened by 2 reviewers</span>
+                        </div>
+                        <div class="quote">
+                            Page 6, Results: "Participants receiving digital
+                            coaching showed lower systolic blood pressure at
+                            six months compared with usual care."
+                        </div>
+                        <div class="quote">
+                            Full-text rationale: eligible adult primary-care
+                            population and reported cardiometabolic outcomes.
+                        </div>
+                        <div class="grid">
+                            <span class="button">Open artifact</span>
+                            <span class="button">Copy pointer</span>
+                        </div>
+                    </aside>
+                </div>
+            </section>
+
+            <section class="screen">
+                <div class="app" style="grid-template-columns: 1fr">
+                    <div class="content">
+                        <div class="topline">
+                            <div>
+                                <p>Extraction conflicts</p>
+                                <h1>Resolve field disagreements</h1>
+                                <p>Reviewer values stay visible while the adjudicator records the official dataset value.</p>
+                            </div>
+                            <div class="actions">
+                                <span class="badge warn">5 open</span>
+                                <span class="badge ok">12 resolved</span>
+                            </div>
+                        </div>
+                        <div class="panel" style="margin-top: 22px">
+                            <div class="toolbar">
+                                <div class="input grow">Search study or field</div>
+                                <div class="button">Field</div>
+                                <div class="button">Reviewer</div>
+                                <div class="button">Status</div>
+                            </div>
+                            <div class="study-row">
+                                <strong>Study</strong>
+                                <strong>Field</strong>
+                                <strong>Reviewer values</strong>
+                                <strong>Status</strong>
+                                <strong>Action</strong>
+                            </div>
+                            <div class="study-row">
+                                <div>
+                                    <strong>AI risk feedback in clinics</strong>
+                                    <p class="sub">Final include</p>
+                                </div>
+                                <span>Study design</span>
+                                <span>RCT vs cluster RCT</span>
+                                <span class="badge warn">Open</span>
+                                <span class="button primary">Resolve</span>
+                            </div>
+                            <div class="study-row">
+                                <div>
+                                    <strong>Digital coaching in primary care</strong>
+                                    <p class="sub">Final include</p>
+                                </div>
+                                <span>Effect estimate</span>
+                                <span>-4.2 vs -4.0</span>
+                                <span class="badge warn">Open</span>
+                                <span class="button primary">Resolve</span>
+                            </div>
+                            <div class="study-row">
+                                <div>
+                                    <strong>Care manager dashboards</strong>
+                                    <p class="sub">Final include</p>
+                                </div>
+                                <span>Population</span>
+                                <span>Adjudicated</span>
+                                <span class="badge ok">Resolved</span>
+                                <span class="button">View</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </body>
+</html>
