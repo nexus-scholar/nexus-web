@@ -2,7 +2,9 @@
 
 Nexus Scholar Web is the hosted Laravel application for the Nexus Scholar product. It is a separate host application that consumes `nexus-scholar/core` for scholarly workflow behavior while owning authentication, workspaces, projects, dashboards, SaaS limits, and product UI.
 
-The current MVP includes authentication, workspaces, project setup, protocol editing, search planning, draft corpus review, deduplication review, and corpus lock.
+The current MVP includes authentication, workspaces, project setup, protocol
+editing, search planning, draft corpus review, deduplication review, corpus
+lock, and title-and-abstract screening.
 
 For developer onboarding, start with [`docs/developer-handoff.md`](docs/developer-handoff.md).
 
