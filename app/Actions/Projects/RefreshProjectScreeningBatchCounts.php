@@ -55,6 +55,7 @@ class RefreshProjectScreeningBatchCounts
             ->where('batch_id', $batch->id)
             ->where('status', ProjectScreeningConflictStatus::Resolved->value)
             ->count();
+        $outcomes = $this->outcomeCounts($batch);
 
         $totalAssignments = array_sum($assignmentCounts);
         $unresolvedAssignments =
@@ -87,6 +88,7 @@ class RefreshProjectScreeningBatchCounts
                 'open' => $openConflicts,
                 'resolved' => $resolvedConflicts,
             ],
+            'outcomes' => $outcomes,
         ];
 
         $batch->forceFill([
@@ -102,5 +104,98 @@ class RefreshProjectScreeningBatchCounts
         }
 
         return $batch->refresh();
+    }
+
+    /**
+     * @return array<string, int>
+     */
+    private function outcomeCounts(ProjectScreeningBatch $batch): array
+    {
+        $assignmentsByWork = DB::table('project_screening_assignments')
+            ->where('batch_id', $batch->id)
+            ->get(['work_id', 'status', 'screening_decision_id'])
+            ->groupBy('work_id');
+
+        $resolvedConflictDecisionIds = ProjectScreeningConflict::query()
+            ->where('batch_id', $batch->id)
+            ->where('status', ProjectScreeningConflictStatus::Resolved->value)
+            ->whereNotNull('resolved_decision_id')
+            ->pluck('resolved_decision_id', 'work_id')
+            ->map(fn (mixed $id): string => (string) $id)
+            ->all();
+
+        $decisionIds = $assignmentsByWork
+            ->flatMap(fn ($assignments) => $assignments->pluck('screening_decision_id'))
+            ->merge(array_values($resolvedConflictDecisionIds))
+            ->filter()
+            ->map(fn (mixed $id): string => (string) $id)
+            ->unique()
+            ->values()
+            ->all();
+
+        $decisionsById = $decisionIds === []
+            ? []
+            : DB::table('screening_decisions')
+                ->whereIn('id', $decisionIds)
+                ->pluck('decision', 'id')
+                ->map(fn (mixed $decision): string => (string) $decision)
+                ->all();
+
+        $decisionOutcomes = [
+            ScreeningDecision::INCLUDE->value => 0,
+            ScreeningDecision::NEEDS_REVIEW->value => 0,
+            ScreeningDecision::EXCLUDE->value => 0,
+        ];
+        $resolvedWorks = 0;
+
+        foreach ($assignmentsByWork as $workId => $assignments) {
+            $finalDecision = null;
+            $resolvedConflictDecisionId = $resolvedConflictDecisionIds[(string) $workId] ?? null;
+
+            if ($resolvedConflictDecisionId) {
+                $finalDecision = $decisionsById[$resolvedConflictDecisionId] ?? null;
+            } else {
+                $linkedDecisionIds = $assignments
+                    ->pluck('screening_decision_id')
+                    ->filter()
+                    ->map(fn (mixed $id): string => (string) $id)
+                    ->values();
+                $allAssignmentsResolved = $assignments->isNotEmpty()
+                    && $assignments->every(
+                        fn (object $assignment): bool => (string) $assignment->status === ProjectScreeningAssignmentStatus::Resolved->value,
+                    );
+
+                if ($allAssignmentsResolved && $linkedDecisionIds->count() >= $batch->required_reviewer_count) {
+                    $uniqueDecisions = $linkedDecisionIds
+                        ->map(fn (string $id): ?string => $decisionsById[$id] ?? null)
+                        ->filter()
+                        ->unique()
+                        ->values();
+
+                    if ($uniqueDecisions->count() === 1) {
+                        $finalDecision = $uniqueDecisions->first();
+                    }
+                }
+            }
+
+            if (is_string($finalDecision) && array_key_exists($finalDecision, $decisionOutcomes)) {
+                $decisionOutcomes[$finalDecision]++;
+                $resolvedWorks++;
+            }
+        }
+
+        $totalWorks = $assignmentsByWork->count();
+
+        return [
+            'total_works' => $totalWorks,
+            'resolved_works' => $resolvedWorks,
+            'unresolved_works' => max(0, $totalWorks - $resolvedWorks),
+            ScreeningDecision::INCLUDE->value => $decisionOutcomes[ScreeningDecision::INCLUDE->value],
+            ScreeningDecision::NEEDS_REVIEW->value => $decisionOutcomes[ScreeningDecision::NEEDS_REVIEW->value],
+            ScreeningDecision::EXCLUDE->value => $decisionOutcomes[ScreeningDecision::EXCLUDE->value],
+            'ready_for_full_text' => $decisionOutcomes[ScreeningDecision::INCLUDE->value]
+                + $decisionOutcomes[ScreeningDecision::NEEDS_REVIEW->value],
+            'excluded' => $decisionOutcomes[ScreeningDecision::EXCLUDE->value],
+        ];
     }
 }

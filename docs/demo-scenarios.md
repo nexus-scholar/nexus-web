@@ -69,6 +69,8 @@ Seeded project states:
 - `Cardiometabolic Title Abstract Screening`: active screening project in
   Evidence Synthesis Lab with a locked representative snapshot, reviewer
   assignments, one open conflict, and one resolved conflict.
+- `Cardiometabolic Screening Handoff`: completed screening project in Evidence
+  Synthesis Lab with final include, maybe, exclude, and adjudicated outcomes.
 - Owner has the project `owner` role.
 - Reviewer has the project `reviewer` role.
 - Viewer has the project `viewer` role.
@@ -447,7 +449,9 @@ Implemented first-slice browser scenarios:
    without setup, queue, or conflict-resolution mutation controls.
 6. Workspace admin or adjudicator opens the conflict panel and resolves an open
    conflict with an audit reason.
-7. Completed or resolved assignments cannot be submitted again from the UI.
+7. Owner opens `Cardiometabolic Screening Handoff` and verifies the full-text
+   readiness panel shows final outcome counts and a handoff-ready state.
+8. Completed or resolved assignments cannot be submitted again from the UI.
 
 Expected signals:
 
@@ -455,6 +459,9 @@ Expected signals:
   membership.
 - `include`, `maybe`, and `exclude` labels map to core decision values:
   `include`, `needs_review`, and `exclude`.
+- Final outcome counts are per work, not raw reviewer-vote counts.
+- The full-text readiness card counts `include` plus `needs_review` as ready
+  for the next workflow and keeps excluded records separate.
 - Conflict resolution stays in a right-side sheet with source reviewer
   rationales visible.
 - All mutations require role-appropriate access and a reviewer/adjudicator
@@ -477,6 +484,7 @@ Screenshot targets:
 - `output/playwright/workflow-6-reviewer-decision-submitted.png`
 - `output/playwright/workflow-6-conflict-resolution.png`
 - `output/playwright/workflow-6-conflict-resolved.png`
+- `output/playwright/workflow-6-handoff-ready.png`
 - `output/playwright/workflow-6-viewer-readonly.png`
 
 ## UI Hardening: Brand Tokens

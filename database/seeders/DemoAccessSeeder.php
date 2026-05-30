@@ -96,6 +96,16 @@ class DemoAccessSeeder extends Seeder
         $this->demoCorpus($screeningProject, $owner, locked: true);
         $this->demoScreening($screeningProject, $owner, $reviewer, $admin);
 
+        $completedScreeningProject = $this->completedScreeningProject($lab, $owner);
+        $this->projectMembership($completedScreeningProject, $owner, ProjectRole::Owner);
+        $this->projectMembership($completedScreeningProject, $admin, ProjectRole::Adjudicator);
+        $this->projectMembership($completedScreeningProject, $reviewer, ProjectRole::Reviewer);
+        $this->projectMembership($completedScreeningProject, $viewer, ProjectRole::Viewer);
+        $this->completedProjectProtocol($completedScreeningProject, $owner);
+        $this->searchPlan($completedScreeningProject, $owner);
+        $this->demoCorpus($completedScreeningProject, $owner, locked: true);
+        $this->demoCompletedScreening($completedScreeningProject, $owner, $reviewer, $admin);
+
         $suspended = $this->workspace('Suspended Review Group', 'suspended-review-group', $owner);
         $suspended->forceFill([
             'suspended_at' => $suspended->suspended_at ?? now(),
@@ -140,6 +150,7 @@ class DemoAccessSeeder extends Seeder
         $this->audit('project.created', $searchProject, $owner, $lab, 'Demo search-ready project created.', $searchProject);
         $this->audit('project.created', $lockedProject, $owner, $lab, 'Demo locked corpus project created.', $lockedProject);
         $this->audit('project.created', $screeningProject, $owner, $lab, 'Demo screening project created.', $screeningProject);
+        $this->audit('project.created', $completedScreeningProject, $owner, $lab, 'Demo completed screening project created.', $completedScreeningProject);
     }
 
     private function user(
@@ -283,6 +294,27 @@ class DemoAccessSeeder extends Seeder
                 'locked_at' => now()->subHours(4),
                 'locked_by' => (string) $owner->id,
                 'lock_reason' => 'Demo locked snapshot for title and abstract screening.',
+                'metadata' => ['source' => 'demo-seeder'],
+            ],
+        );
+    }
+
+    private function completedScreeningProject(Workspace $workspace, User $owner): Project
+    {
+        return Project::updateOrCreate(
+            [
+                'workspace_id' => $workspace->id,
+                'slug' => 'cardiometabolic-screening-handoff-ready',
+            ],
+            [
+                'name' => 'Cardiometabolic Screening Handoff',
+                'owner_user_id' => $owner->id,
+                'description' => 'Demo project with completed title and abstract screening outcomes.',
+                'review_type' => ReviewType::SystematicReview,
+                'status' => ProjectStatus::LockedCorpus,
+                'locked_at' => now()->subHours(3),
+                'locked_by' => (string) $owner->id,
+                'lock_reason' => 'Demo locked snapshot for completed screening handoff.',
                 'metadata' => ['source' => 'demo-seeder'],
             ],
         );
@@ -840,6 +872,89 @@ class DemoAccessSeeder extends Seeder
                 'Route to full text because the abstract does not settle eligibility.',
                 uncertainty: ['Outcome reporting unclear'],
             );
+        }
+    }
+
+    private function demoCompletedScreening(Project $project, User $owner, User $reviewer, User $adjudicator): void
+    {
+        $this->resetDemoScreeningState($project);
+
+        $batch = app(StartProjectScreeningBatch::class)->handle(
+            $project,
+            $owner,
+            [$reviewer->id, $adjudicator->id],
+            2,
+            'Demo completed title and abstract screening',
+        );
+
+        $workGroups = ProjectScreeningAssignment::query()
+            ->where('batch_id', $batch->id)
+            ->orderBy('sort_order')
+            ->get()
+            ->groupBy('work_id')
+            ->values();
+
+        foreach ($workGroups as $index => $assignments) {
+            [$firstDecision, $secondDecision, $firstReason, $secondReason, $resolutionDecision, $resolutionReason] = match ($index % 4) {
+                0 => [
+                    ScreeningDecision::INCLUDE,
+                    ScreeningDecision::INCLUDE,
+                    'Eligible adult primary care digital intervention.',
+                    'Meets population, intervention, and outcome criteria.',
+                    null,
+                    null,
+                ],
+                1 => [
+                    ScreeningDecision::NEEDS_REVIEW,
+                    ScreeningDecision::NEEDS_REVIEW,
+                    'Abstract does not settle outcome eligibility.',
+                    'Route to full text for eligibility confirmation.',
+                    null,
+                    null,
+                ],
+                2 => [
+                    ScreeningDecision::EXCLUDE,
+                    ScreeningDecision::EXCLUDE,
+                    'No patient-level cardiometabolic outcome.',
+                    'Implementation-only record without eligible outcomes.',
+                    null,
+                    null,
+                ],
+                default => [
+                    ScreeningDecision::INCLUDE,
+                    ScreeningDecision::EXCLUDE,
+                    'Possible eligible intervention from the abstract.',
+                    'No eligible primary outcome is visible.',
+                    ScreeningDecision::NEEDS_REVIEW,
+                    'Resolve to full text because title and abstract are inconclusive.',
+                ],
+            };
+
+            $this->recordScreeningPair(
+                $assignments,
+                $firstDecision,
+                $secondDecision,
+                $firstReason,
+                $secondReason,
+            );
+
+            $workId = $assignments->first()?->work_id;
+            $conflict = $workId
+                ? ProjectScreeningConflict::query()
+                    ->where('batch_id', $batch->id)
+                    ->where('work_id', $workId)
+                    ->first()
+                : null;
+
+            if ($conflict instanceof ProjectScreeningConflict && $resolutionDecision instanceof ScreeningDecision) {
+                app(ResolveProjectScreeningConflict::class)->handle(
+                    $conflict,
+                    $adjudicator,
+                    $resolutionDecision->value,
+                    $resolutionReason,
+                    uncertainty: ['Title and abstract are inconclusive'],
+                );
+            }
         }
     }
 

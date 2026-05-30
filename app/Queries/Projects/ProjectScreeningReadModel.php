@@ -7,6 +7,7 @@ use App\Enums\ProjectScreeningAssignmentStatus;
 use App\Enums\ProjectScreeningBatchStatus;
 use App\Enums\ProjectScreeningConflictStatus;
 use App\Models\Project;
+use App\Models\ProjectScreeningAssignment;
 use App\Models\ProjectScreeningBatch;
 use App\Models\ProjectScreeningConflict;
 use App\Models\User;
@@ -40,7 +41,9 @@ final class ProjectScreeningReadModel
             'conflicts' => $conflicts->values()->all(),
             'selectedConflict' => $selectedConflict,
             'recentAuditEvents' => $this->recentAuditEvents($project),
-            'nextReviewerAssignmentUrl' => $batch ? route('projects.screening.queue', $project, absolute: false) : null,
+            'nextReviewerAssignmentUrl' => $batch && $this->actorHasAssignments($batch, $actor)
+                ? route('projects.screening.queue', $project, absolute: false)
+                : null,
             'actor' => [
                 'id' => $actor->id,
                 'project_role' => $actor->projectRole($project)?->value,
@@ -131,6 +134,14 @@ final class ProjectScreeningReadModel
             'counts' => $counts,
             'progress_percent' => $total > 0 ? (int) round(($resolved / $total) * 100) : 0,
         ];
+    }
+
+    private function actorHasAssignments(ProjectScreeningBatch $batch, User $actor): bool
+    {
+        return ProjectScreeningAssignment::query()
+            ->where('batch_id', $batch->id)
+            ->where('assigned_to', $actor->id)
+            ->exists();
     }
 
     /**
@@ -359,6 +370,16 @@ final class ProjectScreeningReadModel
             'conflicts' => [
                 'open' => (int) data_get($counts, 'conflicts.open', 0),
                 'resolved' => (int) data_get($counts, 'conflicts.resolved', 0),
+            ],
+            'outcomes' => [
+                'total_works' => (int) data_get($counts, 'outcomes.total_works', 0),
+                'resolved_works' => (int) data_get($counts, 'outcomes.resolved_works', 0),
+                'unresolved_works' => (int) data_get($counts, 'outcomes.unresolved_works', 0),
+                ScreeningDecision::INCLUDE->value => (int) data_get($counts, 'outcomes.include', 0),
+                ScreeningDecision::NEEDS_REVIEW->value => (int) data_get($counts, 'outcomes.needs_review', 0),
+                ScreeningDecision::EXCLUDE->value => (int) data_get($counts, 'outcomes.exclude', 0),
+                'ready_for_full_text' => (int) data_get($counts, 'outcomes.ready_for_full_text', 0),
+                'excluded' => (int) data_get($counts, 'outcomes.excluded', 0),
             ],
         ];
     }

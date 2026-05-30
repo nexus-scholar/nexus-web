@@ -33,13 +33,13 @@ export function ScreeningQueueTable({
 
     return (
         <div className="overflow-hidden rounded-lg border bg-card shadow-xs">
-            <Table className="min-w-[48rem]">
+            <Table className="w-full table-fixed">
                 <TableHeader>
                     <TableRow>
-                        <TableHead className="min-w-[22rem]">Record</TableHead>
-                        <TableHead className="w-28">Status</TableHead>
-                        <TableHead className="w-28">Decision</TableHead>
-                        <TableHead className="w-28 text-right">Open</TableHead>
+                        <TableHead>Record</TableHead>
+                        <TableHead className="w-24">Status</TableHead>
+                        <TableHead className="w-24">Decision</TableHead>
+                        <TableHead className="w-20 text-right">Open</TableHead>
                     </TableRow>
                 </TableHeader>
                 <TableBody>

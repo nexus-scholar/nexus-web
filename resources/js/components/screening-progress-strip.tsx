@@ -32,9 +32,9 @@ export function ScreeningProgressStrip({
                     icon={Clock3}
                 />
                 <MetricCard
-                    label="Maybe"
-                    value={counts.decisions.needs_review}
-                    description="Records marked for further review."
+                    label="Ready"
+                    value={counts.outcomes.ready_for_full_text}
+                    description="Final include or maybe outcomes."
                     icon={GitPullRequest}
                 />
                 <MetricCard
