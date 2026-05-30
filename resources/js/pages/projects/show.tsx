@@ -2,6 +2,7 @@ import { Head, Link } from '@inertiajs/react';
 import {
     Activity,
     FileText,
+    GitMerge,
     LockKeyhole,
     LibraryBig,
     SearchCheck,
@@ -55,6 +56,7 @@ type ProjectPayload = {
         search_plan: string;
         activity: string;
         corpus: string;
+        deduplication: string;
     };
     corpus: {
         available: boolean;
@@ -93,6 +95,7 @@ type Props = {
         update_search_plan: boolean;
         run_search: boolean;
         view_corpus: boolean;
+        view_deduplication: boolean;
         view_activity: boolean;
     };
 };
@@ -145,6 +148,14 @@ export default function ProjectOverview({
                                     </Link>
                                 </Button>
                             )}
+                            {can.view_deduplication &&
+                                project.corpus.available && (
+                                    <Button variant="outline" size="sm" asChild>
+                                        <Link href={project.urls.deduplication}>
+                                            Deduplication
+                                        </Link>
+                                    </Button>
+                                )}
                             {can.view_activity && (
                                 <Button variant="outline" size="sm" asChild>
                                     <Link href={project.urls.activity}>
@@ -296,7 +307,11 @@ export default function ProjectOverview({
                             title="Corpus review"
                             description="Inspect works, metadata gaps, and provider provenance."
                             status={
-                                project.corpus.available ? 'current' : 'pending'
+                                project.locked_at
+                                    ? 'complete'
+                                    : project.corpus.available
+                                      ? 'complete'
+                                      : 'pending'
                             }
                             action={
                                 can.view_corpus &&
@@ -305,6 +320,29 @@ export default function ProjectOverview({
                                         <Link href={project.urls.corpus}>
                                             <LibraryBig className="size-4" />
                                             Open corpus
+                                        </Link>
+                                    </Button>
+                                )
+                            }
+                        />
+                        <WorkflowStepCard
+                            step={5}
+                            title="Deduplicate and lock"
+                            description="Review duplicate clusters and create the representative corpus snapshot."
+                            status={
+                                project.locked_at
+                                    ? 'complete'
+                                    : project.corpus.available
+                                      ? 'current'
+                                      : 'pending'
+                            }
+                            action={
+                                can.view_deduplication &&
+                                project.corpus.available && (
+                                    <Button size="sm" variant="outline" asChild>
+                                        <Link href={project.urls.deduplication}>
+                                            <GitMerge className="size-4" />
+                                            Open deduplication
                                         </Link>
                                     </Button>
                                 )

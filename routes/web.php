@@ -6,6 +6,9 @@ use App\Http\Controllers\Operator\WorkspacesController as OperatorWorkspacesCont
 use App\Http\Controllers\Projects\ProjectActivityController;
 use App\Http\Controllers\Projects\ProjectController;
 use App\Http\Controllers\Projects\ProjectCorpusController;
+use App\Http\Controllers\Projects\ProjectCorpusDeduplicateController;
+use App\Http\Controllers\Projects\ProjectCorpusDeduplicationController;
+use App\Http\Controllers\Projects\ProjectCorpusLockController;
 use App\Http\Controllers\Projects\ProjectProtocolController;
 use App\Http\Controllers\Projects\ProjectSearchPlanController;
 use App\Http\Controllers\Projects\ProjectSearchRunController;
@@ -40,6 +43,9 @@ Route::middleware(['auth', 'verified', 'not_disabled', 'workspace.ready'])->grou
     Route::post('projects/{project}/search-runs', [ProjectSearchRunController::class, 'store'])->name('projects.search-runs.store');
     Route::get('projects/{project}/search-runs/{searchRun}', [ProjectSearchRunController::class, 'show'])->name('projects.search-runs.show');
     Route::get('projects/{project}/corpus', [ProjectCorpusController::class, 'index'])->name('projects.corpus.index');
+    Route::get('projects/{project}/deduplication', [ProjectCorpusDeduplicationController::class, 'index'])->name('projects.deduplication.index');
+    Route::post('projects/{project}/corpus/deduplicate', ProjectCorpusDeduplicateController::class)->name('projects.corpus.deduplicate');
+    Route::post('projects/{project}/corpus/lock', ProjectCorpusLockController::class)->name('projects.corpus.lock');
     Route::get('projects/{project}/activity', [ProjectActivityController::class, 'index'])->name('projects.activity.index');
 });
 

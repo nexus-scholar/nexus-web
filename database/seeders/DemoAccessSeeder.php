@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Actions\Projects\ProjectCorpusMembershipHasher;
 use App\Actions\Workspaces\CreatePersonalWorkspace;
 use App\Enums\ProjectMembershipStatus;
 use App\Enums\ProjectRole;
@@ -14,6 +15,7 @@ use App\Enums\WorkspaceType;
 use App\Models\AuditEvent;
 use App\Models\OauthIdentity;
 use App\Models\Project;
+use App\Models\ProjectCorpusDedupRun;
 use App\Models\ProjectMembership;
 use App\Models\ProjectProtocol;
 use App\Models\ProjectProtocolVersion;
@@ -519,6 +521,11 @@ class DemoAccessSeeder extends Seeder
             );
 
             foreach ($work['identifiers'] as $identifier) {
+                DB::table('work_external_ids')
+                    ->where('work_id', $work['id'])
+                    ->whereNotIn('namespace', collect($work['identifiers'])->pluck('namespace')->all())
+                    ->delete();
+
                 DB::table('work_external_ids')->updateOrInsert(
                     [
                         'work_id' => $work['id'],
@@ -617,6 +624,8 @@ class DemoAccessSeeder extends Seeder
             );
         }
 
+        $this->demoDedupRun($project, $owner, $works);
+
         if ($locked) {
             $this->demoCorpusSnapshot($project, $owner, $works, $queryIds);
         } else {
@@ -639,6 +648,10 @@ class DemoAccessSeeder extends Seeder
             ->where('project_id', $project->id)
             ->delete();
 
+        ProjectCorpusDedupRun::query()
+            ->where('project_id', $project->id)
+            ->delete();
+
         DB::table('dedup_clusters')
             ->where('project_id', $project->id)
             ->delete();
@@ -652,17 +665,21 @@ class DemoAccessSeeder extends Seeder
     {
         $snapshotId = $this->demoUuid("{$project->slug}:corpus-snapshot:locked");
         $now = now();
+        $snapshotWorks = collect($works)
+            ->reject(fn (array $work): bool => $work['slug'] === 'digital-coaching-duplicate')
+            ->values();
 
         DB::table('corpus_snapshots')->updateOrInsert(
             ['id' => $snapshotId],
             [
                 'project_id' => $project->id,
                 'locked_at' => $project->locked_at ?? $now->copy()->subHours(6),
-                'work_count' => count($works),
+                'work_count' => $snapshotWorks->count(),
                 'created_by' => (string) $owner->id,
                 'lock_reason' => 'Demo locked snapshot for corpus review.',
                 'metadata' => json_encode([
                     'source' => 'demo-seeder',
+                    'representative_snapshot' => true,
                     'query_ids' => array_values($queryIds),
                 ]),
                 'created_at' => $now,
@@ -670,9 +687,20 @@ class DemoAccessSeeder extends Seeder
             ],
         );
 
-        foreach ($works as $work) {
-            $providers = $work['providers'];
-            $searchQueryId = $queryIds[$work['query_key']];
+        foreach ($snapshotWorks as $work) {
+            $sourceWorks = $work['slug'] === 'digital-coaching-risk'
+                ? collect($works)->whereIn('slug', ['digital-coaching-risk', 'digital-coaching-duplicate'])->values()
+                : collect([$work]);
+            $providers = $sourceWorks
+                ->flatMap(fn (array $sourceWork): array => $sourceWork['providers'])
+                ->unique()
+                ->values()
+                ->all();
+            $searchQueryIds = $sourceWorks
+                ->map(fn (array $sourceWork): string => $queryIds[$sourceWork['query_key']])
+                ->unique()
+                ->values()
+                ->all();
 
             DB::table('corpus_snapshot_works')->updateOrInsert(
                 [
@@ -681,19 +709,22 @@ class DemoAccessSeeder extends Seeder
                 ],
                 [
                     'id' => $this->demoUuid("{$project->slug}:snapshot-work:{$work['slug']}"),
-                    'search_query_ids' => json_encode([$searchQueryId]),
+                    'search_query_ids' => json_encode($searchQueryIds),
                     'provider_aliases' => json_encode($providers),
-                    'provenance' => json_encode(collect($providers)
-                        ->map(fn (string $provider, int $index): array => [
-                            'search_query_id' => $searchQueryId,
-                            'query_label' => $work['query_key'] === 'primary-search'
-                                ? 'Primary intervention search'
-                                : 'Implementation and adherence search',
-                            'provider_alias' => $provider,
-                            'provider_work_id' => $this->providerWorkId($provider, $work['slug']),
-                            'rank' => $index + 1,
-                            'seen_at' => now()->subMinutes(20 - $index)->toISOString(),
-                        ])
+                    'provenance' => json_encode($sourceWorks
+                        ->flatMap(fn (array $sourceWork): array => collect($sourceWork['providers'])
+                            ->map(fn (string $provider, int $index): array => [
+                                'source_work_id' => $sourceWork['id'],
+                                'search_query_id' => $queryIds[$sourceWork['query_key']],
+                                'query_label' => $sourceWork['query_key'] === 'primary-search'
+                                    ? 'Primary intervention search'
+                                    : 'Implementation and adherence search',
+                                'provider_alias' => $provider,
+                                'provider_work_id' => $this->providerWorkId($provider, $sourceWork['slug']),
+                                'rank' => $index + 1,
+                                'seen_at' => now()->subMinutes(20 - $index)->toISOString(),
+                            ])
+                            ->all())
                         ->all()),
                     'included_at' => $project->locked_at ?? now()->subHours(6),
                     'created_at' => $now,
@@ -708,6 +739,36 @@ class DemoAccessSeeder extends Seeder
             'locked_by' => (string) $owner->id,
             'lock_reason' => 'Demo locked snapshot for corpus review.',
         ])->save();
+    }
+
+    private function demoDedupRun(Project $project, User $owner, array $works): void
+    {
+        $now = now();
+        $digest = app(ProjectCorpusMembershipHasher::class)->handle($project);
+        $uniqueWorks = count($digest['unique_work_ids']) ?: count($works);
+
+        ProjectCorpusDedupRun::updateOrCreate(
+            ['id' => $this->demoUuid("{$project->slug}:dedup-run:latest")],
+            [
+                'project_id' => $project->id,
+                'ran_by' => $owner->id,
+                'status' => 'completed',
+                'membership_hash' => $digest['hash'],
+                'input_count' => $uniqueWorks,
+                'representative_count' => $uniqueWorks - 1,
+                'duplicate_cluster_count' => 1,
+                'duplicate_member_count' => 1,
+                'duplicates_removed' => 1,
+                'duration_ms' => 12,
+                'policy_stats' => ['demo_title_doi' => 1],
+                'metadata' => [
+                    'source' => 'demo-seeder',
+                    'raw_query_links' => $digest['raw_query_links'],
+                    'cluster_strategy' => 'demo-title-doi',
+                ],
+                'completed_at' => $now->copy()->subMinutes(8),
+            ],
+        );
     }
 
     private function demoAuthors(string $slug): array
@@ -728,12 +789,12 @@ class DemoAccessSeeder extends Seeder
             ['telehealth-monitoring', 'Telehealth monitoring for adults with metabolic syndrome', 'Remote monitoring was associated with improved follow-up completion in primary care clinics.', 2021, 'Telemedicine Evidence Review', false, ['openalex'], [], 'primary-search', 27],
             ['pharmacy-blood-pressure', 'Community pharmacy blood pressure follow-up after digital referral', 'A pragmatic cohort study of pharmacy referral and blood pressure follow-up.', 2023, 'Implementation Science in Care', false, ['crossref', 'pubmed'], [['doi', '10.1000/nexus.004', true]], 'primary-search', 13],
             ['remote-lifestyle-app', 'Remote lifestyle app engagement and cardiometabolic outcomes', 'Engagement with a lifestyle application was tracked alongside cardiometabolic outcomes.', 2020, 'Digital Therapeutics Quarterly', false, ['pubmed'], [['pubmed', '39000005', true]], 'primary-search', 31],
-            ['digital-coaching-duplicate', 'Digital health coaching for cardiometabolic risk in primary care', 'A near-duplicate record from another provider with overlapping title and DOI evidence.', 2024, 'Primary Care Digital Health', false, ['semantic_scholar', 'openalex'], [['doi', '10.1000/nexus.001', true], ['semantic_scholar', 'S2-DEMO-006', false]], 'primary-search', 39],
-            ['ai-risk-feedback', 'AI-assisted cardiometabolic risk feedback in clinics', 'Risk feedback generated by a clinical AI assistant was reviewed by primary care teams.', 2025, 'Clinical Decision Support', false, ['semantic_scholar'], [['semantic_scholar', 'S2-DEMO-007', true]], 'implementation-search', 9],
+            ['digital-coaching-duplicate', 'Digital health coaching for cardiometabolic risk in primary care', 'A near-duplicate record from another provider with overlapping title and DOI evidence.', 2024, 'Primary Care Digital Health', false, ['semantic_scholar', 'openalex'], [['doi', '10.1000/nexus.001', true], ['s2', 'S2-DEMO-006', false]], 'primary-search', 39],
+            ['ai-risk-feedback', 'AI-assisted cardiometabolic risk feedback in clinics', 'Risk feedback generated by a clinical AI assistant was reviewed by primary care teams.', 2025, 'Clinical Decision Support', false, ['semantic_scholar'], [['s2', 'S2-DEMO-007', true]], 'implementation-search', 9],
             ['implementation-barriers', 'Implementation barriers for digital cardiometabolic interventions', 'Qualitative evidence about workflow barriers, staffing, and patient engagement.', 2021, 'Implementation Reports', false, ['semantic_scholar', 'crossref'], [['doi', '10.1000/nexus.008', true]], 'implementation-search', 16],
             ['sms-adherence', 'SMS adherence support for hypertension and diabetes reviews', 'SMS support was evaluated in a mixed chronic disease primary care cohort.', 2020, 'Chronic Care Informatics', false, ['pubmed', 'crossref'], [['pubmed', '39000009', true]], 'primary-search', 22],
             ['patient-portal-followup', 'Patient portal follow-up for cardiometabolic laboratory monitoring', 'Portal reminders improved laboratory monitoring completion in a multicenter cohort.', 2023, 'Ambulatory Care Informatics', false, ['openalex', 'semantic_scholar'], [['openalex', 'W-DEMO-010', true]], 'implementation-search', 25],
-            ['retracted-telehealth-trial', 'Retracted telehealth intervention trial for cardiometabolic outcomes', 'This record is marked retracted in the demo corpus to test audit visibility.', 2025, 'Retracted Clinical Trials', true, ['semantic_scholar'], [['semantic_scholar', 'S2-DEMO-011', true]], 'implementation-search', 2],
+            ['retracted-telehealth-trial', 'Retracted telehealth intervention trial for cardiometabolic outcomes', 'This record is marked retracted in the demo corpus to test audit visibility.', 2025, 'Retracted Clinical Trials', true, ['semantic_scholar'], [['s2', 'S2-DEMO-011', true]], 'implementation-search', 2],
             ['care-manager-dashboard', 'Care manager dashboard use during cardiometabolic follow-up', 'Care managers used a dashboard to prioritize follow-up for high-risk adult patients.', 2022, 'Care Management Systems', false, ['openalex', 'pubmed'], [['doi', '10.1000/nexus.012', true], ['pubmed', '39000012', false]], 'primary-search', 34],
         ];
 

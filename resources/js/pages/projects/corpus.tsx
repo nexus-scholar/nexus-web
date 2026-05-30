@@ -1,5 +1,5 @@
 import { Head, Link, router } from '@inertiajs/react';
-import { FileSearch, LockKeyhole, Search } from 'lucide-react';
+import { FileSearch, GitMerge, LockKeyhole, Search } from 'lucide-react';
 import { CorpusFilterBar } from '@/components/corpus-filter-bar';
 import { CorpusMetricStrip } from '@/components/corpus-metric-strip';
 import { CorpusRecordDetail } from '@/components/corpus-record-detail';
@@ -51,6 +51,7 @@ type ProjectPayload = {
         protocol: string;
         search_plan: string;
         corpus: string;
+        deduplication: string;
         activity: string;
     };
 };
@@ -71,10 +72,11 @@ type Props = {
     corpus: CorpusPayload;
     can: {
         view_corpus: boolean;
+        view_deduplication: boolean;
     };
 };
 
-export default function ProjectCorpus({ corpus, project }: Props) {
+export default function ProjectCorpus({ can, corpus, project }: Props) {
     const selectedWorkId = corpus.selectedRecord?.id ?? null;
 
     const applyFilters = (filters: Partial<CorpusFilters>) => {
@@ -122,6 +124,14 @@ export default function ProjectCorpus({ corpus, project }: Props) {
                         <>
                             <ProjectStatusBadge status={project.status} />
                             <CorpusStatusBadge source={corpus.source} />
+                            {can.view_deduplication && (
+                                <Button variant="outline" size="sm" asChild>
+                                    <Link href={project.urls.deduplication}>
+                                        <GitMerge className="size-4" />
+                                        Deduplication
+                                    </Link>
+                                </Button>
+                            )}
                             <Button variant="outline" size="sm" asChild>
                                 <Link href={project.urls.search_plan}>
                                     Search plan

@@ -59,6 +59,26 @@ class ProjectPolicy
         return $this->view($user, $project);
     }
 
+    public function viewDeduplication(User $user, Project $project): bool
+    {
+        return $this->viewCorpus($user, $project);
+    }
+
+    public function deduplicateCorpus(User $user, Project $project): bool
+    {
+        if ($project->isLocked() || $project->workspace?->isSuspended()) {
+            return false;
+        }
+
+        return $user->projectRole($project) === ProjectRole::Owner
+            || $this->administersProjectWorkspace($user, $project);
+    }
+
+    public function lockCorpus(User $user, Project $project): bool
+    {
+        return $this->deduplicateCorpus($user, $project);
+    }
+
     public function viewActivity(User $user, Project $project): bool
     {
         return $this->view($user, $project);

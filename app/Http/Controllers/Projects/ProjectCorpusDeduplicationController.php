@@ -4,29 +4,32 @@ namespace App\Http\Controllers\Projects;
 
 use App\Http\Controllers\Controller;
 use App\Models\Project;
-use App\Queries\Projects\CorpusFilters;
-use App\Queries\Projects\ProjectCorpusReadModel;
+use App\Queries\Projects\ProjectDeduplicationReadModel;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
-class ProjectCorpusController extends Controller
+class ProjectCorpusDeduplicationController extends Controller
 {
     public function index(
         Request $request,
         Project $project,
-        ProjectCorpusReadModel $corpus,
+        ProjectDeduplicationReadModel $deduplication,
     ): Response {
         $project->load('workspace');
 
-        $this->authorize('viewCorpus', $project);
+        $this->authorize('viewDeduplication', $project);
 
-        return Inertia::render('projects/corpus', [
+        return Inertia::render('projects/deduplication', [
             'project' => $this->projectPayload($project),
-            'corpus' => $corpus->forProject($project, CorpusFilters::fromRequest($request)),
+            'deduplication' => $deduplication->forProject(
+                $project,
+                $request->query('cluster') ? (string) $request->query('cluster') : null,
+            ),
             'can' => [
-                'view_corpus' => $request->user()->can('viewCorpus', $project),
                 'view_deduplication' => $request->user()->can('viewDeduplication', $project),
+                'deduplicate_corpus' => $request->user()->can('deduplicateCorpus', $project),
+                'lock_corpus' => $request->user()->can('lockCorpus', $project),
             ],
         ]);
     }
@@ -50,10 +53,11 @@ class ProjectCorpusController extends Controller
             ],
             'urls' => [
                 'overview' => route('projects.show', $project, absolute: false),
-                'protocol' => route('projects.protocol.edit', $project, absolute: false),
                 'search_plan' => route('projects.search-plan.edit', $project, absolute: false),
                 'corpus' => route('projects.corpus.index', $project, absolute: false),
                 'deduplication' => route('projects.deduplication.index', $project, absolute: false),
+                'deduplicate' => route('projects.corpus.deduplicate', $project, absolute: false),
+                'lock' => route('projects.corpus.lock', $project, absolute: false),
                 'activity' => route('projects.activity.index', $project, absolute: false),
             ],
         ];
