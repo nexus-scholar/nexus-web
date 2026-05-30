@@ -25,9 +25,16 @@ laravel new repos/nexus-web --react --pest --database=sqlite --git --branch=mast
 
 The scaffold uses the official Laravel React starter kit with Inertia, TypeScript, Tailwind, and starter UI components.
 
-## Local Core Dependency
+## Core Dependency
 
-The app uses Composer path repositories for local Nexus packages:
+The app now uses the published Packagist package for CI and default local
+development:
+
+```text
+nexus-scholar/core:^1.0
+```
+
+Composer path repositories were used only during early scaffold work:
 
 ```text
 ../core
@@ -35,10 +42,11 @@ The app uses Composer path repositories for local Nexus packages:
 ../graph-algorithms
 ```
 
-The installed package baseline is:
+Use local path repositories only for deliberate package development. The normal
+web-app setup should install the published package:
 
 ```powershell
-composer update nexus-scholar/core nexus-scholar/graph-core nexus-scholar/graph-algorithms --with-dependencies
+composer install
 ```
 
 ## Published Core Assets

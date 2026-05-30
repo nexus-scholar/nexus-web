@@ -2,8 +2,8 @@
 
 Prepared on 2026-05-29.
 
-Status: preparation only. This document defines the next implementation slice
-and its dependencies before code is written.
+Status: implemented and merged. This document records the first implementation
+slice and its dependencies.
 
 ## Goal
 
@@ -461,4 +461,3 @@ Before implementation starts, confirm:
 - corpus lock remains deferred from the first slice,
 - browser scenario names match this document,
 - the page is read-only for every actor in this slice.
-

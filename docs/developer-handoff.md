@@ -11,8 +11,8 @@ data, validation commands, and the next implementation boundary.
 - Default branch: `master`.
 - Current application: hosted Laravel/Inertia SaaS-style app for Nexus Scholar.
 - Package dependency: `nexus-scholar/core:^1.0` from Packagist.
-- Latest merged workflow: workflow 6, title and abstract screening, merged in
-  PR #11.
+- Latest merged workflow: workflow 7, full-text retrieval and artifact audit,
+  merged in PR #13.
 - Local demo data is deterministic and lives in `Database\Seeders\DemoAccessSeeder`.
 - Browser scenario source of truth is `docs/demo-scenarios.md`.
 
@@ -103,7 +103,36 @@ php -r '$pdo=new PDO("sqlite:database/database.sqlite"); $pdo->exec("delete from
 | 4. Draft corpus review | Done | `docs/workflow-4-draft-corpus-review.md` |
 | 5. Deduplication and corpus lock | Done | `docs/workflow-5-dedup-corpus-lock.md` |
 | 6. Title and abstract screening | Done | `docs/workflow-6-title-abstract-screening.md` |
-| 7. Full-text retrieval and artifact audit | Prepared | `docs/workflow-7-full-text-retrieval.md` |
+| 7. Full-text retrieval and artifact audit | Done | `docs/workflow-7-full-text-retrieval.md` |
+| 8. Full-text screening | Prepared | `docs/workflow-8-full-text-screening.md` |
+
+## Workflow 7 Notes
+
+Workflow 7 is integrated in the app flow, not only covered by tests.
+
+The owner can start legal open-access full-text retrieval from a completed
+title-and-abstract screening handoff, the queue job records success, failure,
+skipped, and manual-needed item states, and reviewers can inspect status and
+artifact audit details without mutation controls.
+
+Hardening already in place:
+
+- candidates come from final Workflow 6 include plus maybe outcomes, not draft
+  corpus membership;
+- final exclude outcomes are not queued for automatic retrieval;
+- retrieval dispatches through the background queue;
+- artifact routes require project access;
+- source audit is read through core full-text read APIs;
+- manual-upload-only protocol blocks automatic retrieval.
+
+Key files:
+
+- `app/Actions/Projects/BuildProjectFullTextCandidates.php`
+- `app/Actions/Projects/StartProjectFullTextBatch.php`
+- `app/Jobs/RunProjectFullTextBatchJob.php`
+- `app/Queries/Projects/ProjectFullTextReadModel.php`
+- `resources/js/pages/projects/full-text.tsx`
+- `tests/Feature/ProjectFullTextWorkflowTest.php`
 
 ## Workflow 6 Notes
 
@@ -158,23 +187,20 @@ CI currently runs:
 - tests on PHP 8.4;
 - tests on PHP 8.5.
 
-The workflow 6 merge passed all of them.
+The workflow 7 merge passed all of them.
 
 ## Browser Verification
 
 Use `docs/demo-scenarios.md` as the living browser script. Store local
 screenshots under `output/playwright/`; the folder is ignored by Git.
 
-Workflow 6 screenshot targets:
+Workflow 7 screenshot targets:
 
-- `output/playwright/workflow-6-screening-overview.png`
-- `output/playwright/workflow-6-screening-setup.png`
-- `output/playwright/workflow-6-reviewer-queue.png`
-- `output/playwright/workflow-6-reviewer-decision-submitted.png`
-- `output/playwright/workflow-6-conflict-resolution.png`
-- `output/playwright/workflow-6-conflict-resolved.png`
-- `output/playwright/workflow-6-handoff-ready.png`
-- `output/playwright/workflow-6-viewer-readonly.png`
+- `output/playwright/workflow-7-full-text-ready.png`
+- `output/playwright/workflow-7-full-text-running.png`
+- `output/playwright/workflow-7-full-text-completed.png`
+- `output/playwright/workflow-7-full-text-artifact-detail.png`
+- `output/playwright/workflow-7-reviewer-readonly.png`
 
 When changing UI, also check:
 
@@ -185,24 +211,22 @@ When changing UI, also check:
 
 ## Next Workflow Boundary
 
-The next product workflow should be full-text retrieval and artifact audit.
+The next product workflow should be full-text screening.
 
 Recommended first slice:
 
-1. Start from `docs/workflow-7-full-text-retrieval.md`.
-2. Add web-owned full-text batch and item migrations.
-3. Build candidates from completed Workflow 6 outcomes: include plus maybe,
-   never exclude by default.
-4. Add full-text policy methods and project routes.
-5. Implement an overview page with readiness, progress, candidate table, and a
-   right-side artifact audit sheet.
-6. Dispatch retrieval in a queue job and call core `RetrieveFullTextHandler`
-   with the project id.
-7. Read source audit through `FullTextFetchReaderPort`.
-8. Extend `DemoAccessSeeder` with no-batch, running, completed, failed, and
-   skipped full-text states using fake artifacts.
-9. Add Pest, component, and Python Playwright coverage from
-   `docs/demo-scenarios.md`.
+1. Start from `docs/workflow-8-full-text-screening.md`.
+2. Keep Workflow 6 and Workflow 8 separated by explicit `ScreeningStage`
+   filters.
+3. Build candidates from Workflow 7 successful artifact items.
+4. Keep failed, skipped, and manual-needed items in follow-up.
+5. Add artifact-linked reviewer assignments for `full_text` screening.
+6. Require artifact-inspected confirmation, rationale, and exclusion reason
+   when excluding.
+7. Add conflict resolution with audit reason.
+8. Extend `DemoAccessSeeder` with active, conflict, resolved, completed, and
+   read-only full-text screening states.
+9. Add Pest, component, and browser coverage from `docs/demo-scenarios.md`.
 
-Do not start full-text screening, exports, citation graphs, AI assistance, or
-billing before retrieval status and artifact audit are stable.
+Do not start data extraction, quality appraisal, exports, citation graphs, AI
+assistance, or billing before full-text screening decisions are stable.
