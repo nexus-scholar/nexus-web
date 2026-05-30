@@ -2,7 +2,9 @@
 
 Nexus Scholar Web is the hosted Laravel application for the Nexus Scholar product. It is a separate host application that consumes `nexus-scholar/core` for scholarly workflow behavior while owning authentication, workspaces, projects, dashboards, SaaS limits, and product UI.
 
-This repository is currently in Phase 0: scaffold and local development setup.
+The current MVP includes authentication, workspaces, project setup, protocol editing, search planning, draft corpus review, deduplication review, and corpus lock.
+
+For developer onboarding, start with [`docs/developer-handoff.md`](docs/developer-handoff.md).
 
 ## Stack
 
@@ -30,16 +32,9 @@ php artisan storage:link
 npm run build
 ```
 
-The app expects the sibling Nexus Scholar repositories to exist in the parent `repos` folder:
-
-```text
-repos/core
-repos/graph-core
-repos/graph-algorithms
-repos/nexus-web
-```
-
-The Composer path repositories in `composer.json` load these packages locally.
+The app consumes the published `nexus-scholar/core:^1.0` package from
+Packagist. Use a local path repository only for deliberate package development,
+not for the default web-app setup or CI.
 
 ## Development Server
 
@@ -62,14 +57,15 @@ The default Laravel URL is:
 http://localhost:8000
 ```
 
-## Phase 0 Validation
+## Validation
 
-Use these commands before committing scaffold changes:
+Use these commands before committing product changes:
 
 ```powershell
 composer validate --strict
 composer test
-npm run build
+npm run test:ui
+npm run build:check
 ```
 
 ## Product Boundary
