@@ -14,6 +14,8 @@ const filters: CorpusFilters = {
     q: null,
     retracted: false,
     search_query: null,
+    direction: 'desc',
+    sort: 'year',
     work: null,
     year_from: null,
     year_to: null,
@@ -51,6 +53,7 @@ describe('CorpusFilterBar', () => {
         );
 
         await user.type(screen.getByLabelText('Search'), 'telehealth');
+        await user.click(screen.getByRole('button', { name: /Filters/ }));
         await user.selectOptions(screen.getByLabelText('Provider'), 'pubmed');
         await user.selectOptions(
             screen.getByLabelText('Search query'),
@@ -89,5 +92,25 @@ describe('CorpusFilterBar', () => {
         await user.click(screen.getByRole('button', { name: 'Reset' }));
 
         expect(onReset).toHaveBeenCalledOnce();
+    });
+
+    it('summarizes active filters as compact chips', () => {
+        render(
+            <CorpusFilterBar
+                filters={{
+                    ...filters,
+                    missing_identifier: true,
+                    provider: 'openalex',
+                    q: 'adherence',
+                }}
+                options={options}
+                onApply={vi.fn()}
+                onReset={vi.fn()}
+            />,
+        );
+
+        expect(screen.getByText('Search: adherence')).toBeVisible();
+        expect(screen.getByText('Provider: openalex')).toBeVisible();
+        expect(screen.getByText('Missing identifier')).toBeVisible();
     });
 });
