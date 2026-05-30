@@ -4,32 +4,34 @@ namespace App\Http\Controllers\Projects;
 
 use App\Http\Controllers\Controller;
 use App\Models\Project;
-use App\Queries\Projects\ProjectDeduplicationReadModel;
+use App\Queries\Projects\ProjectScreeningReadModel;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
-class ProjectCorpusDeduplicationController extends Controller
+class ProjectScreeningController extends Controller
 {
     public function index(
         Request $request,
         Project $project,
-        ProjectDeduplicationReadModel $deduplication,
+        ProjectScreeningReadModel $screening,
     ): Response {
         $project->load('workspace');
 
-        $this->authorize('viewDeduplication', $project);
+        $this->authorize('viewScreening', $project);
 
-        return Inertia::render('projects/deduplication', [
+        return Inertia::render('projects/screening', [
             'project' => $this->projectPayload($project),
-            'deduplication' => $deduplication->forProject(
+            'screening' => $screening->forProject(
                 $project,
-                $request->query('cluster') ? (string) $request->query('cluster') : null,
+                $request->user(),
+                $request->query('conflict') ? (string) $request->query('conflict') : null,
             ),
             'can' => [
-                'view_deduplication' => $request->user()->can('viewDeduplication', $project),
-                'deduplicate_corpus' => $request->user()->can('deduplicateCorpus', $project),
-                'lock_corpus' => $request->user()->can('lockCorpus', $project),
+                'view_screening' => $request->user()->can('viewScreening', $project),
+                'manage_screening' => $request->user()->can('manageScreening', $project),
+                'screen_assigned_work' => $request->user()->can('screenAssignedWork', $project),
+                'resolve_screening_conflict' => $request->user()->can('resolveScreeningConflict', $project),
             ],
         ]);
     }
@@ -53,12 +55,12 @@ class ProjectCorpusDeduplicationController extends Controller
             ],
             'urls' => [
                 'overview' => route('projects.show', $project, absolute: false),
-                'search_plan' => route('projects.search-plan.edit', $project, absolute: false),
+                'protocol' => route('projects.protocol.edit', $project, absolute: false),
                 'corpus' => route('projects.corpus.index', $project, absolute: false),
                 'deduplication' => route('projects.deduplication.index', $project, absolute: false),
-                'deduplicate' => route('projects.corpus.deduplicate', $project, absolute: false),
-                'lock' => route('projects.corpus.lock', $project, absolute: false),
                 'screening' => route('projects.screening.index', $project, absolute: false),
+                'screening_queue' => route('projects.screening.queue', $project, absolute: false),
+                'screening_batches' => route('projects.screening.batches.store', $project, absolute: false),
                 'activity' => route('projects.activity.index', $project, absolute: false),
             ],
         ];

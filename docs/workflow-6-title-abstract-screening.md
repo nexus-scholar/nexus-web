@@ -2,8 +2,10 @@
 
 Prepared on 2026-05-30.
 
-Status: preparation only. This document defines the next implementation slice
-before code is written.
+Status: first UI slice implemented and verified. The backend foundation is
+merged; this implementation adds the owner overview/setup surface, reviewer
+queue, decision panel, conflict-resolution sheet, seeded demo states, and
+automated coverage for the human title-and-abstract path.
 
 ## Goal
 

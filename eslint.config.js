@@ -105,6 +105,7 @@ export default [
     {
         ignores: [
             'vendor',
+            '.venv',
             'node_modules',
             'public',
             'bootstrap/ssr',

@@ -3,6 +3,9 @@
 namespace Database\Seeders;
 
 use App\Actions\Projects\ProjectCorpusMembershipHasher;
+use App\Actions\Projects\RecordProjectScreeningDecision;
+use App\Actions\Projects\ResolveProjectScreeningConflict;
+use App\Actions\Projects\StartProjectScreeningBatch;
 use App\Actions\Workspaces\CreatePersonalWorkspace;
 use App\Enums\ProjectMembershipStatus;
 use App\Enums\ProjectRole;
@@ -19,6 +22,8 @@ use App\Models\ProjectCorpusDedupRun;
 use App\Models\ProjectMembership;
 use App\Models\ProjectProtocol;
 use App\Models\ProjectProtocolVersion;
+use App\Models\ProjectScreeningAssignment;
+use App\Models\ProjectScreeningConflict;
 use App\Models\ProjectSearchPlan;
 use App\Models\ProjectSearchRun;
 use App\Models\ProjectSearchRunItem;
@@ -31,6 +36,7 @@ use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
+use Nexus\Screening\Domain\ScreeningDecision;
 use Ramsey\Uuid\Uuid;
 
 class DemoAccessSeeder extends Seeder
@@ -80,6 +86,16 @@ class DemoAccessSeeder extends Seeder
         $this->searchPlan($lockedProject, $owner);
         $this->demoCorpus($lockedProject, $owner, locked: true);
 
+        $screeningProject = $this->screeningProject($lab, $owner);
+        $this->projectMembership($screeningProject, $owner, ProjectRole::Owner);
+        $this->projectMembership($screeningProject, $admin, ProjectRole::Adjudicator);
+        $this->projectMembership($screeningProject, $reviewer, ProjectRole::Reviewer);
+        $this->projectMembership($screeningProject, $viewer, ProjectRole::Viewer);
+        $this->completedProjectProtocol($screeningProject, $owner);
+        $this->searchPlan($screeningProject, $owner);
+        $this->demoCorpus($screeningProject, $owner, locked: true);
+        $this->demoScreening($screeningProject, $owner, $reviewer, $admin);
+
         $suspended = $this->workspace('Suspended Review Group', 'suspended-review-group', $owner);
         $suspended->forceFill([
             'suspended_at' => $suspended->suspended_at ?? now(),
@@ -123,6 +139,7 @@ class DemoAccessSeeder extends Seeder
         $this->audit('project.created', $demoProject, $owner, $lab, 'Demo project created.', $demoProject);
         $this->audit('project.created', $searchProject, $owner, $lab, 'Demo search-ready project created.', $searchProject);
         $this->audit('project.created', $lockedProject, $owner, $lab, 'Demo locked corpus project created.', $lockedProject);
+        $this->audit('project.created', $screeningProject, $owner, $lab, 'Demo screening project created.', $screeningProject);
     }
 
     private function user(
@@ -245,6 +262,27 @@ class DemoAccessSeeder extends Seeder
                 'locked_at' => now()->subHours(6),
                 'locked_by' => (string) $owner->id,
                 'lock_reason' => 'Demo locked snapshot for corpus review.',
+                'metadata' => ['source' => 'demo-seeder'],
+            ],
+        );
+    }
+
+    private function screeningProject(Workspace $workspace, User $owner): Project
+    {
+        return Project::updateOrCreate(
+            [
+                'workspace_id' => $workspace->id,
+                'slug' => 'cardiometabolic-title-abstract-screening',
+            ],
+            [
+                'name' => 'Cardiometabolic Title Abstract Screening',
+                'owner_user_id' => $owner->id,
+                'description' => 'Demo project with active title and abstract screening assignments.',
+                'review_type' => ReviewType::SystematicReview,
+                'status' => ProjectStatus::LockedCorpus,
+                'locked_at' => now()->subHours(4),
+                'locked_by' => (string) $owner->id,
+                'lock_reason' => 'Demo locked snapshot for title and abstract screening.',
                 'metadata' => ['source' => 'demo-seeder'],
             ],
         );
@@ -640,6 +678,8 @@ class DemoAccessSeeder extends Seeder
 
     private function resetDemoCorpusState(Project $project): void
     {
+        $this->resetDemoScreeningState($project);
+
         DB::table('project_search_runs')
             ->where('project_id', $project->id)
             ->delete();
@@ -739,6 +779,120 @@ class DemoAccessSeeder extends Seeder
             'locked_by' => (string) $owner->id,
             'lock_reason' => 'Demo locked snapshot for corpus review.',
         ])->save();
+    }
+
+    private function demoScreening(Project $project, User $owner, User $reviewer, User $adjudicator): void
+    {
+        $this->resetDemoScreeningState($project);
+
+        $batch = app(StartProjectScreeningBatch::class)->handle(
+            $project,
+            $owner,
+            [$reviewer->id, $adjudicator->id],
+            2,
+            'Demo title and abstract screening',
+        );
+
+        $workGroups = ProjectScreeningAssignment::query()
+            ->where('batch_id', $batch->id)
+            ->orderBy('sort_order')
+            ->get()
+            ->groupBy('work_id')
+            ->values();
+
+        $this->recordScreeningPair(
+            $workGroups->get(0, collect()),
+            ScreeningDecision::INCLUDE,
+            ScreeningDecision::INCLUDE,
+            'Eligible primary care digital intervention.',
+            'Matches the intervention and setting.',
+        );
+
+        $this->recordScreeningPair(
+            $workGroups->get(1, collect()),
+            ScreeningDecision::INCLUDE,
+            ScreeningDecision::EXCLUDE,
+            'Potentially eligible patient-facing intervention.',
+            'No patient outcome is visible from the abstract.',
+        );
+
+        $this->recordScreeningPair(
+            $workGroups->get(2, collect()),
+            ScreeningDecision::EXCLUDE,
+            ScreeningDecision::NEEDS_REVIEW,
+            'Implementation-only report without outcomes.',
+            'Unclear whether outcomes are reported in full text.',
+        );
+
+        $resolvedWorkId = $workGroups->get(2, collect())->first()?->work_id;
+        $resolvedConflict = $resolvedWorkId
+            ? ProjectScreeningConflict::query()
+                ->where('batch_id', $batch->id)
+                ->where('work_id', $resolvedWorkId)
+                ->first()
+            : null;
+
+        if ($resolvedConflict instanceof ProjectScreeningConflict) {
+            app(ResolveProjectScreeningConflict::class)->handle(
+                $resolvedConflict,
+                $adjudicator,
+                ScreeningDecision::NEEDS_REVIEW->value,
+                'Route to full text because the abstract does not settle eligibility.',
+                uncertainty: ['Outcome reporting unclear'],
+            );
+        }
+    }
+
+    private function resetDemoScreeningState(Project $project): void
+    {
+        DB::table('project_screening_conflicts')
+            ->where('project_id', $project->id)
+            ->delete();
+
+        DB::table('project_screening_assignments')
+            ->where('project_id', $project->id)
+            ->delete();
+
+        DB::table('project_screening_batches')
+            ->where('project_id', $project->id)
+            ->delete();
+
+        DB::table('screening_decisions')
+            ->where('project_id', $project->id)
+            ->delete();
+
+        DB::table('screening_runs')
+            ->where('project_id', $project->id)
+            ->delete();
+    }
+
+    private function recordScreeningPair(
+        mixed $assignments,
+        ScreeningDecision $firstDecision,
+        ScreeningDecision $secondDecision,
+        string $firstReason,
+        string $secondReason,
+    ): void {
+        $first = $assignments->first();
+        $second = $assignments->skip(1)->first();
+
+        if (! $first instanceof ProjectScreeningAssignment || ! $second instanceof ProjectScreeningAssignment) {
+            return;
+        }
+
+        app(RecordProjectScreeningDecision::class)->handle(
+            $first,
+            $first->assignedTo,
+            $firstDecision->value,
+            $firstReason,
+        );
+
+        app(RecordProjectScreeningDecision::class)->handle(
+            $second,
+            $second->assignedTo,
+            $secondDecision->value,
+            $secondReason,
+        );
     }
 
     private function demoDedupRun(Project $project, User $owner, array $works): void

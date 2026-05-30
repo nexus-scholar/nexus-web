@@ -91,6 +91,7 @@ class ProjectController extends Controller
                 'run_search' => $request->user()->can('runSearch', $project),
                 'view_corpus' => $request->user()->can('viewCorpus', $project),
                 'view_deduplication' => $request->user()->can('viewDeduplication', $project),
+                'view_screening' => $request->user()->can('viewScreening', $project),
                 'view_activity' => $request->user()->can('viewActivity', $project),
             ],
         ]);
@@ -122,6 +123,7 @@ class ProjectController extends Controller
                 'search_runs' => route('projects.search-runs.store', $project, absolute: false),
                 'corpus' => route('projects.corpus.index', $project, absolute: false),
                 'deduplication' => route('projects.deduplication.index', $project, absolute: false),
+                'screening' => route('projects.screening.index', $project, absolute: false),
                 'activity' => route('projects.activity.index', $project, absolute: false),
             ],
             'corpus' => $this->corpusSummary($project),
