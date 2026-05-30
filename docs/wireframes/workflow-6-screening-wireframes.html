@@ -1,0 +1,1215 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>Workflow 6 Wireframes - Title And Abstract Screening</title>
+        <style>
+            :root {
+                color-scheme: light;
+                --bg: #f6f7f6;
+                --surface: #ffffff;
+                --surface-soft: #f1f4f3;
+                --surface-strong: #e9eeeb;
+                --border: #d9dedb;
+                --border-strong: #c3cbc7;
+                --text: #141817;
+                --muted: #5a6762;
+                --brand: #087f86;
+                --brand-soft: #dcefee;
+                --include: #1f6f43;
+                --include-soft: #dff1e7;
+                --exclude: #9a3412;
+                --exclude-soft: #f8dfd2;
+                --conflict: #6842a0;
+                --conflict-soft: #eee8fb;
+                --audit: #8a5a12;
+                --audit-soft: #f8ecd2;
+                --info: #2768b5;
+                --info-soft: #e7f0ff;
+                --shadow: 0 18px 48px rgba(20, 24, 23, 0.08);
+            }
+
+            * {
+                box-sizing: border-box;
+            }
+
+            body {
+                margin: 0;
+                background: var(--bg);
+                color: var(--text);
+                font-family:
+                    Inter, ui-sans-serif, system-ui, -apple-system,
+                    BlinkMacSystemFont, "Segoe UI", sans-serif;
+                letter-spacing: 0;
+            }
+
+            main {
+                max-width: 1480px;
+                margin: 0 auto;
+                padding: 28px;
+            }
+
+            h1,
+            h2,
+            h3,
+            p {
+                margin: 0;
+            }
+
+            h1 {
+                font-size: 30px;
+                line-height: 1.15;
+            }
+
+            h2 {
+                font-size: 18px;
+            }
+
+            h3 {
+                font-size: 14px;
+            }
+
+            p {
+                color: var(--muted);
+                line-height: 1.55;
+            }
+
+            .eyebrow {
+                margin-bottom: 6px;
+                color: var(--brand);
+                font-size: 12px;
+                font-weight: 750;
+                text-transform: uppercase;
+            }
+
+            .intro {
+                max-width: 760px;
+                margin-top: 8px;
+            }
+
+            .screen {
+                margin-top: 26px;
+                overflow: hidden;
+                border: 1px solid var(--border);
+                border-radius: 8px;
+                background: var(--surface);
+                box-shadow: var(--shadow);
+            }
+
+            .app {
+                display: grid;
+                min-height: 820px;
+                grid-template-columns: 260px minmax(0, 1fr);
+            }
+
+            .sidebar {
+                display: flex;
+                min-width: 0;
+                flex-direction: column;
+                border-right: 1px solid var(--border);
+                background: #fbfcfb;
+                padding: 18px;
+            }
+
+            .brand {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                font-weight: 750;
+            }
+
+            .brand-mark {
+                display: grid;
+                width: 32px;
+                height: 32px;
+                place-items: center;
+                border-radius: 7px;
+                background: var(--brand);
+                color: white;
+                font-size: 13px;
+            }
+
+            .brand-subtitle {
+                color: var(--muted);
+                font-size: 12px;
+                font-weight: 500;
+            }
+
+            .nav-label {
+                margin: 28px 0 8px;
+                color: var(--muted);
+                font-size: 12px;
+            }
+
+            .nav {
+                display: grid;
+                gap: 6px;
+            }
+
+            .nav-row {
+                display: flex;
+                min-width: 0;
+                align-items: center;
+                gap: 10px;
+                border-radius: 7px;
+                padding: 9px 10px;
+                color: var(--muted);
+                font-size: 14px;
+            }
+
+            .nav-row.active {
+                background: var(--brand-soft);
+                color: #075157;
+                font-weight: 700;
+            }
+
+            .dot {
+                width: 10px;
+                height: 10px;
+                flex: 0 0 auto;
+                border-radius: 999px;
+                background: currentColor;
+                opacity: 0.7;
+            }
+
+            .nav-text {
+                min-width: 0;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+            }
+
+            .account {
+                margin-top: auto;
+                border-top: 1px solid var(--border);
+                padding-top: 18px;
+                color: var(--muted);
+                font-size: 13px;
+            }
+
+            .topbar {
+                display: flex;
+                height: 54px;
+                align-items: center;
+                gap: 12px;
+                border-bottom: 1px solid var(--border);
+                padding: 0 22px;
+                background: rgba(255, 255, 255, 0.72);
+            }
+
+            .content {
+                min-width: 0;
+                padding: 22px;
+            }
+
+            .page-header {
+                display: flex;
+                align-items: flex-start;
+                justify-content: space-between;
+                gap: 22px;
+                border-bottom: 1px solid var(--border);
+                padding-bottom: 16px;
+                margin-bottom: 18px;
+            }
+
+            .crumb {
+                margin-bottom: 6px;
+                color: var(--muted);
+                font-size: 13px;
+                font-weight: 650;
+            }
+
+            .actions {
+                display: flex;
+                flex-wrap: wrap;
+                justify-content: flex-end;
+                gap: 8px;
+            }
+
+            .button {
+                display: inline-flex;
+                min-height: 34px;
+                align-items: center;
+                justify-content: center;
+                border: 1px solid var(--border);
+                border-radius: 6px;
+                background: white;
+                color: var(--text);
+                padding: 0 12px;
+                font-size: 13px;
+                font-weight: 700;
+                white-space: nowrap;
+            }
+
+            .button.primary {
+                border-color: #111719;
+                background: #111719;
+                color: white;
+            }
+
+            .button.brand {
+                border-color: var(--brand);
+                background: var(--brand);
+                color: white;
+            }
+
+            .button.disabled {
+                color: #98a29d;
+                background: #f7f8f7;
+            }
+
+            .badge {
+                display: inline-flex;
+                min-height: 24px;
+                align-items: center;
+                border-radius: 999px;
+                padding: 0 9px;
+                background: var(--surface-soft);
+                color: var(--muted);
+                font-size: 12px;
+                font-weight: 750;
+                white-space: nowrap;
+            }
+
+            .badge.brand {
+                background: var(--brand-soft);
+                color: #075157;
+            }
+
+            .badge.include {
+                background: var(--include-soft);
+                color: var(--include);
+            }
+
+            .badge.exclude {
+                background: var(--exclude-soft);
+                color: var(--exclude);
+            }
+
+            .badge.conflict {
+                background: var(--conflict-soft);
+                color: var(--conflict);
+            }
+
+            .badge.audit {
+                background: var(--audit-soft);
+                color: var(--audit);
+            }
+
+            .badge.info {
+                background: var(--info-soft);
+                color: var(--info);
+            }
+
+            .metrics {
+                display: grid;
+                grid-template-columns: repeat(4, minmax(0, 1fr));
+                gap: 12px;
+                margin-bottom: 16px;
+            }
+
+            .metric {
+                min-width: 0;
+                border: 1px solid var(--border);
+                border-radius: 8px;
+                background: var(--surface);
+                padding: 13px;
+            }
+
+            .metric span {
+                color: var(--muted);
+                font-size: 12px;
+            }
+
+            .metric strong {
+                display: block;
+                margin-top: 6px;
+                font-size: 24px;
+                line-height: 1.1;
+            }
+
+            .metric small {
+                display: block;
+                margin-top: 4px;
+                color: var(--muted);
+                line-height: 1.35;
+            }
+
+            .layout {
+                display: grid;
+                grid-template-columns: minmax(0, 1fr) 360px;
+                gap: 16px;
+            }
+
+            .layout.queue {
+                grid-template-columns: 310px minmax(0, 1fr) 340px;
+                align-items: stretch;
+            }
+
+            .panel {
+                min-width: 0;
+                border: 1px solid var(--border);
+                border-radius: 8px;
+                background: var(--surface);
+            }
+
+            .panel-head {
+                display: flex;
+                align-items: flex-start;
+                justify-content: space-between;
+                gap: 12px;
+                border-bottom: 1px solid var(--border);
+                padding: 14px 16px;
+            }
+
+            .panel-body {
+                padding: 16px;
+            }
+
+            .stack {
+                display: grid;
+                gap: 14px;
+            }
+
+            .toolbar {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                border-bottom: 1px solid var(--border);
+                padding: 12px 14px;
+            }
+
+            .search {
+                display: flex;
+                min-height: 36px;
+                flex: 1;
+                align-items: center;
+                border: 1px solid var(--border);
+                border-radius: 6px;
+                color: var(--muted);
+                padding: 0 12px;
+                font-size: 13px;
+            }
+
+            table {
+                width: 100%;
+                border-collapse: collapse;
+                font-size: 13px;
+            }
+
+            th,
+            td {
+                border-bottom: 1px solid var(--border);
+                padding: 11px 14px;
+                text-align: left;
+                vertical-align: top;
+            }
+
+            th {
+                color: var(--muted);
+                font-size: 12px;
+                font-weight: 750;
+            }
+
+            td strong {
+                display: block;
+                line-height: 1.35;
+            }
+
+            .muted {
+                color: var(--muted);
+            }
+
+            .rail {
+                display: grid;
+                gap: 10px;
+            }
+
+            .rail-cell {
+                border: 1px solid var(--border);
+                border-radius: 8px;
+                background: var(--surface);
+                padding: 12px;
+            }
+
+            .rail-cell span {
+                color: var(--muted);
+                font-size: 12px;
+                font-weight: 650;
+            }
+
+            .rail-cell strong {
+                display: block;
+                margin-top: 4px;
+                font-size: 18px;
+            }
+
+            .rail-cell small {
+                display: block;
+                margin-top: 4px;
+                color: var(--muted);
+                line-height: 1.4;
+            }
+
+            .check-row,
+            .reviewer-row,
+            .queue-row,
+            .decision-row {
+                display: grid;
+                grid-template-columns: auto minmax(0, 1fr) auto;
+                gap: 12px;
+                align-items: center;
+                border: 1px solid var(--border);
+                border-radius: 8px;
+                padding: 11px;
+            }
+
+            .check,
+            .avatar,
+            .icon {
+                display: grid;
+                width: 30px;
+                height: 30px;
+                place-items: center;
+                border-radius: 7px;
+                background: var(--surface-soft);
+                color: var(--muted);
+                font-size: 12px;
+                font-weight: 800;
+            }
+
+            .check.ok,
+            .avatar.ok {
+                background: var(--include-soft);
+                color: var(--include);
+            }
+
+            .check.warn,
+            .avatar.warn {
+                background: var(--audit-soft);
+                color: var(--audit);
+            }
+
+            .check.conflict,
+            .avatar.conflict {
+                background: var(--conflict-soft);
+                color: var(--conflict);
+            }
+
+            .field-grid {
+                display: grid;
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                gap: 12px;
+            }
+
+            .field,
+            .textarea {
+                border: 1px solid var(--border);
+                border-radius: 7px;
+                background: white;
+                padding: 10px 12px;
+                color: var(--muted);
+                font-size: 13px;
+                line-height: 1.45;
+            }
+
+            .textarea {
+                min-height: 88px;
+            }
+
+            .progress {
+                overflow: hidden;
+                height: 8px;
+                border-radius: 999px;
+                background: var(--surface-strong);
+            }
+
+            .progress span {
+                display: block;
+                height: 100%;
+                border-radius: inherit;
+                background: var(--brand);
+            }
+
+            .work-card {
+                border: 1px solid var(--border);
+                border-radius: 8px;
+                background: #fcfdfc;
+                padding: 16px;
+            }
+
+            .work-card h2 {
+                margin-top: 8px;
+                font-size: 22px;
+                line-height: 1.25;
+            }
+
+            .abstract {
+                margin-top: 14px;
+                border-top: 1px solid var(--border);
+                padding-top: 14px;
+                color: #2b3330;
+                line-height: 1.65;
+            }
+
+            .criteria {
+                display: grid;
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                gap: 10px;
+                margin-top: 14px;
+            }
+
+            .criteria-item {
+                border: 1px solid var(--border);
+                border-radius: 7px;
+                background: white;
+                padding: 10px;
+            }
+
+            .decision-options {
+                display: grid;
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+                gap: 8px;
+            }
+
+            .decision-option {
+                display: grid;
+                min-height: 70px;
+                place-items: center;
+                border: 1px solid var(--border);
+                border-radius: 8px;
+                background: white;
+                font-size: 13px;
+                font-weight: 750;
+            }
+
+            .decision-option.include {
+                border-color: rgba(31, 111, 67, 0.35);
+                background: var(--include-soft);
+                color: var(--include);
+            }
+
+            .decision-option.maybe {
+                border-color: rgba(104, 66, 160, 0.35);
+                background: var(--conflict-soft);
+                color: var(--conflict);
+            }
+
+            .decision-option.exclude {
+                border-color: rgba(154, 52, 18, 0.35);
+                background: var(--exclude-soft);
+                color: var(--exclude);
+            }
+
+            .queue-list {
+                display: grid;
+                gap: 8px;
+            }
+
+            .queue-row {
+                grid-template-columns: minmax(0, 1fr) auto;
+                cursor: default;
+            }
+
+            .queue-row.active {
+                border-color: rgba(8, 127, 134, 0.32);
+                background: var(--brand-soft);
+            }
+
+            .queue-row p,
+            .reviewer-row p,
+            .decision-row p {
+                font-size: 12px;
+                line-height: 1.4;
+            }
+
+            .split {
+                display: grid;
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                gap: 12px;
+            }
+
+            .sheet-screen {
+                position: relative;
+                min-height: 820px;
+                background: #eef2f0;
+            }
+
+            .sheet-backdrop {
+                position: absolute;
+                inset: 0;
+                display: grid;
+                grid-template-columns: minmax(0, 1fr) 520px;
+            }
+
+            .sheet-base {
+                min-width: 0;
+                padding: 22px;
+                opacity: 0.86;
+            }
+
+            .sheet-panel {
+                min-width: 0;
+                border-left: 1px solid var(--border-strong);
+                background: white;
+                box-shadow: -18px 0 48px rgba(20, 24, 23, 0.12);
+                padding: 22px;
+            }
+
+            .callout {
+                border: 1px solid rgba(138, 90, 18, 0.28);
+                border-radius: 8px;
+                background: var(--audit-soft);
+                color: var(--audit);
+                padding: 12px;
+                font-size: 13px;
+                line-height: 1.45;
+            }
+
+            @media (max-width: 1100px) {
+                main {
+                    padding: 18px;
+                }
+
+                .app,
+                .layout,
+                .layout.queue,
+                .sheet-backdrop {
+                    grid-template-columns: 1fr;
+                }
+
+                .sidebar {
+                    display: none;
+                }
+
+                .metrics,
+                .criteria,
+                .split,
+                .field-grid {
+                    grid-template-columns: 1fr;
+                }
+
+                .sheet-panel {
+                    border-left: 0;
+                    box-shadow: none;
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <main>
+            <div class="eyebrow">Nexus Scholar wireframes</div>
+            <h1>Workflow 6: Title And Abstract Screening</h1>
+            <p class="intro">
+                First visual pass for the human screening workflow. The screens
+                keep the locked-corpus contract visible, give reviewers a fast
+                queue, and route disagreement into an auditable resolution
+                sheet.
+            </p>
+
+            <section class="screen" aria-label="Owner screening setup">
+                <div class="app">
+                    <aside class="sidebar">
+                        <div class="brand">
+                            <div class="brand-mark">NS</div>
+                            <div>
+                                <div>Nexus Scholar</div>
+                                <div class="brand-subtitle">Evidence reviews</div>
+                            </div>
+                        </div>
+                        <div class="nav-label">Workspaces</div>
+                        <div class="nav">
+                            <div class="nav-row">
+                                <span class="dot"></span>
+                                <span class="nav-text">Dr. Lina Haddad's Workspace</span>
+                            </div>
+                            <div class="nav-row active">
+                                <span class="dot"></span>
+                                <span class="nav-text">Evidence Synthesis Lab</span>
+                            </div>
+                        </div>
+                        <div class="nav-label">Workspace</div>
+                        <div class="nav">
+                            <div class="nav-row"><span class="dot"></span><span class="nav-text">Dashboard</span></div>
+                            <div class="nav-row"><span class="dot"></span><span class="nav-text">Workspace settings</span></div>
+                            <div class="nav-row"><span class="dot"></span><span class="nav-text">Members</span></div>
+                        </div>
+                        <div class="account">Dr. Lina Haddad<br />Owner</div>
+                    </aside>
+
+                    <div>
+                        <div class="topbar">
+                            <span class="button">Back</span>
+                            <strong>Screening</strong>
+                            <span class="badge brand">Locked corpus</span>
+                        </div>
+                        <div class="content">
+                            <div class="page-header">
+                                <div>
+                                    <div class="crumb">Evidence Synthesis Lab / Systematic review</div>
+                                    <h1>Title and abstract screening</h1>
+                                    <p>
+                                        Start a human screening batch from the
+                                        locked representative snapshot.
+                                    </p>
+                                </div>
+                                <div class="actions">
+                                    <span class="button">Corpus</span>
+                                    <span class="button">Activity</span>
+                                    <span class="button primary">Start screening</span>
+                                </div>
+                            </div>
+
+                            <div class="metrics">
+                                <div class="metric">
+                                    <span>Snapshot works</span>
+                                    <strong>144</strong>
+                                    <small>Representative records only</small>
+                                </div>
+                                <div class="metric">
+                                    <span>Required reviewers</span>
+                                    <strong>2</strong>
+                                    <small>Protocol default</small>
+                                </div>
+                                <div class="metric">
+                                    <span>Assignments</span>
+                                    <strong>288</strong>
+                                    <small>Balanced across reviewers</small>
+                                </div>
+                                <div class="metric">
+                                    <span>Status</span>
+                                    <strong>Ready</strong>
+                                    <small>Human-only first slice</small>
+                                </div>
+                            </div>
+
+                            <div class="layout">
+                                <div class="panel">
+                                    <div class="panel-head">
+                                        <div>
+                                            <h2>Setup batch</h2>
+                                            <p>Choose reviewers and confirm the locked snapshot contract.</p>
+                                        </div>
+                                        <span class="badge brand">title_abstract</span>
+                                    </div>
+                                    <div class="panel-body stack">
+                                        <div class="field-grid">
+                                            <div>
+                                                <h3>Reviewer count</h3>
+                                                <div class="field">2 reviewers per work</div>
+                                            </div>
+                                            <div>
+                                                <h3>Assignment policy</h3>
+                                                <div class="field">Round-robin, no duplicate reviewer per work</div>
+                                            </div>
+                                        </div>
+
+                                        <div class="split">
+                                            <div class="reviewer-row">
+                                                <div class="avatar ok">MR</div>
+                                                <div>
+                                                    <strong>Maya Reviewer</strong>
+                                                    <p>Reviewer, 72 assigned works</p>
+                                                </div>
+                                                <span class="badge include">Selected</span>
+                                            </div>
+                                            <div class="reviewer-row">
+                                                <div class="avatar ok">OA</div>
+                                                <div>
+                                                    <strong>Omar Admin</strong>
+                                                    <p>Workspace admin, 72 assigned works</p>
+                                                </div>
+                                                <span class="badge include">Selected</span>
+                                            </div>
+                                            <div class="reviewer-row">
+                                                <div class="avatar warn">LH</div>
+                                                <div>
+                                                    <strong>Dr. Lina Haddad</strong>
+                                                    <p>Owner, reserve adjudicator</p>
+                                                </div>
+                                                <span class="badge audit">Adjudicator</span>
+                                            </div>
+                                            <div class="reviewer-row">
+                                                <div class="avatar">VV</div>
+                                                <div>
+                                                    <strong>Vera Viewer</strong>
+                                                    <p>Viewer, cannot screen</p>
+                                                </div>
+                                                <span class="badge">Read-only</span>
+                                            </div>
+                                        </div>
+
+                                        <div class="panel">
+                                            <div class="panel-head">
+                                                <h2>Locked corpus contract</h2>
+                                                <span class="badge include">Pass</span>
+                                            </div>
+                                            <div class="panel-body stack">
+                                                <div class="check-row">
+                                                    <div class="check ok">OK</div>
+                                                    <div>
+                                                        <strong>Snapshot is representative-aware</strong>
+                                                        <p>Duplicate members remain in provenance, not as screenable rows.</p>
+                                                    </div>
+                                                    <span class="badge include">144 works</span>
+                                                </div>
+                                                <div class="check-row">
+                                                    <div class="check ok">OK</div>
+                                                    <div>
+                                                        <strong>Criteria hash is ready</strong>
+                                                        <p>Protocol version, inclusion criteria, and exclusion criteria are normalized.</p>
+                                                    </div>
+                                                    <span class="badge info">sha256</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <aside class="panel">
+                                    <div class="panel-head">
+                                        <h2>Start summary</h2>
+                                        <span class="badge audit">Audit event</span>
+                                    </div>
+                                    <div class="panel-body rail">
+                                        <div class="rail-cell">
+                                            <span>Batch name</span>
+                                            <strong>TA screening v1</strong>
+                                            <small>Human screening run stays active until all conflicts close.</small>
+                                        </div>
+                                        <div class="rail-cell">
+                                            <span>Workload preview</span>
+                                            <strong>72 / 72</strong>
+                                            <small>Maya Reviewer and Omar Admin receive balanced queues.</small>
+                                        </div>
+                                        <div class="rail-cell">
+                                            <span>Blocked states</span>
+                                            <strong>0</strong>
+                                            <small>Workspace active, project locked, snapshot present.</small>
+                                        </div>
+                                        <div class="callout">
+                                            The batch does not call LLM screening. AI-related fields remain invisible
+                                            until the human loop is stable.
+                                        </div>
+                                    </div>
+                                </aside>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="screen" aria-label="Reviewer screening queue">
+                <div class="app">
+                    <aside class="sidebar">
+                        <div class="brand">
+                            <div class="brand-mark">NS</div>
+                            <div>
+                                <div>Nexus Scholar</div>
+                                <div class="brand-subtitle">Evidence reviews</div>
+                            </div>
+                        </div>
+                        <div class="nav-label">Workspace</div>
+                        <div class="nav">
+                            <div class="nav-row"><span class="dot"></span><span class="nav-text">Dashboard</span></div>
+                            <div class="nav-row active"><span class="dot"></span><span class="nav-text">Screening queue</span></div>
+                            <div class="nav-row"><span class="dot"></span><span class="nav-text">Corpus</span></div>
+                        </div>
+                        <div class="account">Maya Reviewer<br />Reviewer</div>
+                    </aside>
+
+                    <div>
+                        <div class="topbar">
+                            <span class="button">Back</span>
+                            <strong>My queue</strong>
+                            <span class="badge info">43 pending</span>
+                        </div>
+                        <div class="content">
+                            <div class="page-header">
+                                <div>
+                                    <div class="crumb">Locked Cardiometabolic Evidence Snapshot</div>
+                                    <h1>Review assigned records</h1>
+                                    <p>
+                                        Record a title and abstract decision with a short rationale.
+                                    </p>
+                                </div>
+                                <div class="actions">
+                                    <span class="badge brand">42% complete</span>
+                                    <span class="button">Skip for later</span>
+                                </div>
+                            </div>
+
+                            <div class="layout queue">
+                                <div class="panel">
+                                    <div class="toolbar">
+                                        <div class="search">Search assigned records</div>
+                                    </div>
+                                    <div class="panel-body queue-list">
+                                        <div class="queue-row active">
+                                            <div>
+                                                <strong>Digital coaching for cardiometabolic risk</strong>
+                                                <p>Primary Care Digital Health, 2026</p>
+                                            </div>
+                                            <span class="badge">Open</span>
+                                        </div>
+                                        <div class="queue-row">
+                                            <div>
+                                                <strong>Community pharmacy blood pressure follow-up</strong>
+                                                <p>Implementation Science in Care, 2025</p>
+                                            </div>
+                                            <span class="badge audit">Maybe</span>
+                                        </div>
+                                        <div class="queue-row">
+                                            <div>
+                                                <strong>Wearable glucose monitoring intervention</strong>
+                                                <p>Digital Therapeutics Journal, 2024</p>
+                                            </div>
+                                            <span class="badge include">Done</span>
+                                        </div>
+                                        <div class="queue-row">
+                                            <div>
+                                                <strong>Telehealth monitoring for metabolic syndrome</strong>
+                                                <p>Telemedicine Evidence Review, 2026</p>
+                                            </div>
+                                            <span class="badge">Open</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="panel">
+                                    <div class="panel-head">
+                                        <div>
+                                            <h2>Digital coaching for cardiometabolic risk in primary care</h2>
+                                            <p>Screenable representative record with duplicate provenance attached.</p>
+                                        </div>
+                                        <span class="badge brand">2 providers</span>
+                                    </div>
+                                    <div class="panel-body">
+                                        <div class="work-card">
+                                            <div class="actions" style="justify-content: flex-start">
+                                                <span class="badge info">OpenAlex</span>
+                                                <span class="badge info">Crossref</span>
+                                                <span class="badge">DOI present</span>
+                                                <span class="badge">2026</span>
+                                            </div>
+                                            <h2>
+                                                Digital coaching for cardiometabolic risk in primary care:
+                                                a pragmatic randomized review
+                                            </h2>
+                                            <p class="abstract">
+                                                This study evaluates a structured digital coaching program in
+                                                primary care clinics for adults with cardiometabolic risk. Outcomes
+                                                include blood pressure control, medication adherence, and patient
+                                                engagement across six months of follow-up.
+                                            </p>
+                                            <div class="criteria">
+                                                <div class="criteria-item">
+                                                    <strong>Include if</strong>
+                                                    <p>Primary care, digital intervention, cardiometabolic outcome.</p>
+                                                </div>
+                                                <div class="criteria-item">
+                                                    <strong>Exclude if</strong>
+                                                    <p>Editorial, protocol only, no patient outcome, non-human study.</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <aside class="panel">
+                                    <div class="panel-head">
+                                        <h2>Decision</h2>
+                                        <span class="badge audit">Rationale required</span>
+                                    </div>
+                                    <div class="panel-body stack">
+                                        <div class="decision-options">
+                                            <div class="decision-option include">Include</div>
+                                            <div class="decision-option maybe">Maybe</div>
+                                            <div class="decision-option exclude">Exclude</div>
+                                        </div>
+                                        <div>
+                                            <h3>Rationale</h3>
+                                            <div class="textarea">
+                                                Primary care setting and digital coaching intervention match
+                                                inclusion criteria. Outcomes appear patient-facing.
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <h3>Uncertainty</h3>
+                                            <div class="field">Need full text to confirm trial design and comparator.</div>
+                                        </div>
+                                        <div class="callout">
+                                            Other reviewer decisions stay hidden until this assignment is submitted.
+                                        </div>
+                                        <div class="actions">
+                                            <span class="button">Save draft</span>
+                                            <span class="button primary">Submit decision</span>
+                                        </div>
+                                    </div>
+                                </aside>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="screen" aria-label="Conflict resolution sheet">
+                <div class="sheet-screen">
+                    <div class="sheet-backdrop">
+                        <div class="sheet-base">
+                            <div class="page-header">
+                                <div>
+                                    <div class="crumb">Title and abstract screening</div>
+                                    <h1>Conflicts</h1>
+                                    <p>Resolve disagreements before completing the screening batch.</p>
+                                </div>
+                                <div class="actions">
+                                    <span class="button">Export view</span>
+                                    <span class="badge conflict">4 open</span>
+                                </div>
+                            </div>
+
+                            <div class="metrics">
+                                <div class="metric">
+                                    <span>Completed decisions</span>
+                                    <strong>216</strong>
+                                    <small>75% of assignments</small>
+                                </div>
+                                <div class="metric">
+                                    <span>Agreements</span>
+                                    <strong>102</strong>
+                                    <small>Ready for next stage</small>
+                                </div>
+                                <div class="metric">
+                                    <span>Open conflicts</span>
+                                    <strong>4</strong>
+                                    <small>Need adjudication</small>
+                                </div>
+                                <div class="metric">
+                                    <span>Resolved</span>
+                                    <strong>2</strong>
+                                    <small>Audit reason stored</small>
+                                </div>
+                            </div>
+
+                            <div class="panel">
+                                <div class="toolbar">
+                                    <div class="search">Search conflicts</div>
+                                    <span class="button">Filters</span>
+                                    <span class="button">Columns</span>
+                                </div>
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Record</th>
+                                            <th>Decisions</th>
+                                            <th>Reviewers</th>
+                                            <th>Status</th>
+                                            <th>Detail</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>
+                                                <strong>Community pharmacy blood pressure follow-up</strong>
+                                                <span class="muted">Implementation Science in Care, 2025</span>
+                                            </td>
+                                            <td>
+                                                <span class="badge include">Include</span>
+                                                <span class="badge exclude">Exclude</span>
+                                            </td>
+                                            <td>Maya Reviewer, Omar Admin</td>
+                                            <td><span class="badge conflict">Open</span></td>
+                                            <td><span class="button primary">Resolve</span></td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <strong>Remote coaching adherence for hypertension</strong>
+                                                <span class="muted">Preventive Care Reports, 2024</span>
+                                            </td>
+                                            <td>
+                                                <span class="badge audit">Maybe</span>
+                                                <span class="badge exclude">Exclude</span>
+                                            </td>
+                                            <td>Maya Reviewer, Dr. Lina Haddad</td>
+                                            <td><span class="badge conflict">Open</span></td>
+                                            <td><span class="button">View</span></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <aside class="sheet-panel">
+                            <div class="page-header">
+                                <div>
+                                    <div class="crumb">Conflict resolution</div>
+                                    <h1>Community pharmacy follow-up</h1>
+                                    <p>Choose the final title and abstract decision and record why.</p>
+                                </div>
+                                <span class="button">Close</span>
+                            </div>
+
+                            <div class="stack">
+                                <div class="panel">
+                                    <div class="panel-head">
+                                        <h2>Source decisions</h2>
+                                        <span class="badge conflict">Disagreement</span>
+                                    </div>
+                                    <div class="panel-body stack">
+                                        <div class="decision-row">
+                                            <div class="avatar ok">MR</div>
+                                            <div>
+                                                <strong>Include</strong>
+                                                <p>Primary care follow-up and blood pressure outcome are in scope.</p>
+                                            </div>
+                                            <span class="badge include">include</span>
+                                        </div>
+                                        <div class="decision-row">
+                                            <div class="avatar warn">OA</div>
+                                            <div>
+                                                <strong>Exclude</strong>
+                                                <p>Abstract suggests service evaluation without comparative outcome.</p>
+                                            </div>
+                                            <span class="badge exclude">exclude</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="panel">
+                                    <div class="panel-head">
+                                        <h2>Resolve</h2>
+                                        <span class="badge audit">Audit reason required</span>
+                                    </div>
+                                    <div class="panel-body stack">
+                                        <div class="decision-options">
+                                            <div class="decision-option include">Include</div>
+                                            <div class="decision-option maybe">Maybe</div>
+                                            <div class="decision-option exclude">Exclude</div>
+                                        </div>
+                                        <div>
+                                            <h3>Resolution reason</h3>
+                                            <div class="textarea">
+                                                Mark as maybe. The abstract suggests a relevant primary care
+                                                intervention but does not confirm study design or eligible outcomes.
+                                            </div>
+                                        </div>
+                                        <div class="callout">
+                                            Resolution creates a human adjudication decision linked to the source
+                                            decisions and closes the conflict.
+                                        </div>
+                                        <div class="actions">
+                                            <span class="button">Cancel</span>
+                                            <span class="button primary">Resolve conflict</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </aside>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </body>
+</html>
