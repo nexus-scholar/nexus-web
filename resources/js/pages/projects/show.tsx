@@ -61,6 +61,7 @@ type ProjectPayload = {
         deduplication: string;
         screening: string;
         full_text: string;
+        full_text_screening: string;
     };
     corpus: {
         available: boolean;
@@ -102,6 +103,7 @@ type Props = {
         view_deduplication: boolean;
         view_screening: boolean;
         view_full_text: boolean;
+        view_full_text_screening: boolean;
         view_activity: boolean;
     };
 };
@@ -176,6 +178,18 @@ export default function ProjectOverview({
                                     </Link>
                                 </Button>
                             )}
+                            {can.view_full_text_screening &&
+                                project.locked_at && (
+                                    <Button variant="outline" size="sm" asChild>
+                                        <Link
+                                            href={
+                                                project.urls.full_text_screening
+                                            }
+                                        >
+                                            Full-text screening
+                                        </Link>
+                                    </Button>
+                                )}
                             {can.view_activity && (
                                 <Button variant="outline" size="sm" asChild>
                                     <Link href={project.urls.activity}>
@@ -404,6 +418,27 @@ export default function ProjectOverview({
                                         <Link href={project.urls.full_text}>
                                             <FileDown className="size-4" />
                                             Open full text
+                                        </Link>
+                                    </Button>
+                                )
+                            }
+                        />
+                        <WorkflowStepCard
+                            step={8}
+                            title="Full-text screening"
+                            description="Assign retrieved artifacts and record final eligibility decisions."
+                            status={project.locked_at ? 'current' : 'pending'}
+                            action={
+                                can.view_full_text_screening &&
+                                project.locked_at && (
+                                    <Button size="sm" variant="outline" asChild>
+                                        <Link
+                                            href={
+                                                project.urls.full_text_screening
+                                            }
+                                        >
+                                            <ClipboardList className="size-4" />
+                                            Open full-text screening
                                         </Link>
                                     </Button>
                                 )

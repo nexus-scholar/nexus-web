@@ -49,6 +49,7 @@ type ProjectPayload = {
         screening: string;
         full_text: string;
         full_text_batches: string;
+        full_text_screening: string;
         activity: string;
     };
 };
@@ -60,6 +61,7 @@ type Props = {
         view_full_text: boolean;
         manage_full_text: boolean;
         download_full_text_artifact: boolean;
+        view_full_text_screening: boolean;
     };
 };
 
@@ -123,6 +125,19 @@ export default function ProjectFullText({ can, fullText, project }: Props) {
                                     Start retrieval
                                 </Button>
                             )}
+                            {can.view_full_text_screening &&
+                                fullText.batch &&
+                                !hasOpenBatch && (
+                                    <Button variant="outline" size="sm" asChild>
+                                        <Link
+                                            href={
+                                                project.urls.full_text_screening
+                                            }
+                                        >
+                                            Full-text screening
+                                        </Link>
+                                    </Button>
+                                )}
                             <Button variant="outline" size="sm" asChild>
                                 <Link href={project.urls.screening}>
                                     Screening

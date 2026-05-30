@@ -4,31 +4,35 @@ namespace App\Http\Controllers\Projects;
 
 use App\Http\Controllers\Controller;
 use App\Models\Project;
-use App\Queries\Projects\ProjectFullTextReadModel;
+use App\Queries\Projects\ProjectFullTextScreeningReadModel;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
-class ProjectFullTextController extends Controller
+class ProjectFullTextScreeningController extends Controller
 {
-    public function index(Request $request, Project $project, ProjectFullTextReadModel $fullText): Response
-    {
+    public function index(
+        Request $request,
+        Project $project,
+        ProjectFullTextScreeningReadModel $screening,
+    ): Response {
         $project->load('workspace');
 
-        $this->authorize('viewFullText', $project);
+        $this->authorize('viewFullTextScreening', $project);
 
-        return Inertia::render('projects/full-text', [
+        return Inertia::render('projects/full-text-screening', [
             'project' => $this->projectPayload($project),
-            'fullText' => $fullText->forProject(
+            'screening' => $screening->forProject(
                 $project,
                 $request->user(),
-                $request->query('item') ? (string) $request->query('item') : null,
+                $request->query('conflict') ? (string) $request->query('conflict') : null,
             ),
             'can' => [
-                'view_full_text' => $request->user()->can('viewFullText', $project),
-                'manage_full_text' => $request->user()->can('manageFullText', $project),
-                'download_full_text_artifact' => $request->user()->can('downloadFullTextArtifact', $project),
                 'view_full_text_screening' => $request->user()->can('viewFullTextScreening', $project),
+                'manage_full_text_screening' => $request->user()->can('manageFullTextScreening', $project),
+                'screen_assigned_full_text' => $request->user()->can('screenAssignedFullText', $project),
+                'resolve_full_text_screening_conflict' => $request->user()->can('resolveFullTextScreeningConflict', $project),
+                'view_full_text' => $request->user()->can('viewFullText', $project),
             ],
         ]);
     }
@@ -52,12 +56,12 @@ class ProjectFullTextController extends Controller
             ],
             'urls' => [
                 'overview' => route('projects.show', $project, absolute: false),
-                'corpus' => route('projects.corpus.index', $project, absolute: false),
-                'deduplication' => route('projects.deduplication.index', $project, absolute: false),
                 'screening' => route('projects.screening.index', $project, absolute: false),
+                'screening_queue' => route('projects.screening.queue', $project, absolute: false),
                 'full_text' => route('projects.full-text.index', $project, absolute: false),
-                'full_text_batches' => route('projects.full-text.batches.store', $project, absolute: false),
                 'full_text_screening' => route('projects.full-text-screening.index', $project, absolute: false),
+                'full_text_screening_queue' => route('projects.full-text-screening.queue', $project, absolute: false),
+                'full_text_screening_batches' => route('projects.full-text-screening.batches.store', $project, absolute: false),
                 'activity' => route('projects.activity.index', $project, absolute: false),
             ],
         ];

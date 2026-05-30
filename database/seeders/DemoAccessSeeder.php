@@ -3,10 +3,14 @@
 namespace Database\Seeders;
 
 use App\Actions\Projects\BuildProjectFullTextCandidates;
+use App\Actions\Projects\BuildProjectFullTextScreeningCandidates;
 use App\Actions\Projects\ProjectCorpusMembershipHasher;
+use App\Actions\Projects\RecordProjectFullTextScreeningDecision;
 use App\Actions\Projects\RecordProjectScreeningDecision;
 use App\Actions\Projects\RefreshProjectFullTextBatchCounts;
+use App\Actions\Projects\ResolveProjectFullTextScreeningConflict;
 use App\Actions\Projects\ResolveProjectScreeningConflict;
+use App\Actions\Projects\StartProjectFullTextScreeningBatch;
 use App\Actions\Projects\StartProjectScreeningBatch;
 use App\Actions\Workspaces\CreatePersonalWorkspace;
 use App\Enums\ProjectFullTextBatchStatus;
@@ -44,6 +48,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Nexus\Screening\Domain\ScreeningDecision;
+use Nexus\Screening\Domain\ScreeningStage;
 use Ramsey\Uuid\Uuid;
 
 class DemoAccessSeeder extends Seeder
@@ -135,6 +140,30 @@ class DemoAccessSeeder extends Seeder
         $this->demoCompletedScreening($completedFullTextProject, $owner, $reviewer, $admin);
         $this->demoFullTextBatch($completedFullTextProject, $owner, 'completed');
 
+        $fullTextScreeningProject = $this->fullTextScreeningProject($lab, $owner);
+        $this->projectMembership($fullTextScreeningProject, $owner, ProjectRole::Owner);
+        $this->projectMembership($fullTextScreeningProject, $admin, ProjectRole::Adjudicator);
+        $this->projectMembership($fullTextScreeningProject, $reviewer, ProjectRole::Reviewer);
+        $this->projectMembership($fullTextScreeningProject, $viewer, ProjectRole::Viewer);
+        $this->completedProjectProtocol($fullTextScreeningProject, $owner);
+        $this->searchPlan($fullTextScreeningProject, $owner);
+        $this->demoCorpus($fullTextScreeningProject, $owner, locked: true);
+        $this->demoCompletedScreening($fullTextScreeningProject, $owner, $reviewer, $admin);
+        $this->demoFullTextBatch($fullTextScreeningProject, $owner, 'completed');
+        $this->demoFullTextScreening($fullTextScreeningProject, $owner, $reviewer, $admin, 'active');
+
+        $completedFullTextScreeningProject = $this->fullTextScreeningCompletedProject($lab, $owner);
+        $this->projectMembership($completedFullTextScreeningProject, $owner, ProjectRole::Owner);
+        $this->projectMembership($completedFullTextScreeningProject, $admin, ProjectRole::Adjudicator);
+        $this->projectMembership($completedFullTextScreeningProject, $reviewer, ProjectRole::Reviewer);
+        $this->projectMembership($completedFullTextScreeningProject, $viewer, ProjectRole::Viewer);
+        $this->completedProjectProtocol($completedFullTextScreeningProject, $owner);
+        $this->searchPlan($completedFullTextScreeningProject, $owner);
+        $this->demoCorpus($completedFullTextScreeningProject, $owner, locked: true);
+        $this->demoCompletedScreening($completedFullTextScreeningProject, $owner, $reviewer, $admin);
+        $this->demoFullTextBatch($completedFullTextScreeningProject, $owner, 'completed');
+        $this->demoFullTextScreening($completedFullTextScreeningProject, $owner, $reviewer, $admin, 'completed');
+
         $suspended = $this->workspace('Suspended Review Group', 'suspended-review-group', $owner);
         $suspended->forceFill([
             'suspended_at' => $suspended->suspended_at ?? now(),
@@ -182,6 +211,8 @@ class DemoAccessSeeder extends Seeder
         $this->audit('project.created', $completedScreeningProject, $owner, $lab, 'Demo completed screening project created.', $completedScreeningProject);
         $this->audit('project.created', $runningFullTextProject, $owner, $lab, 'Demo running full-text project created.', $runningFullTextProject);
         $this->audit('project.created', $completedFullTextProject, $owner, $lab, 'Demo completed full-text project created.', $completedFullTextProject);
+        $this->audit('project.created', $fullTextScreeningProject, $owner, $lab, 'Demo active full-text screening project created.', $fullTextScreeningProject);
+        $this->audit('project.created', $completedFullTextScreeningProject, $owner, $lab, 'Demo completed full-text screening project created.', $completedFullTextScreeningProject);
     }
 
     private function user(
@@ -388,6 +419,48 @@ class DemoAccessSeeder extends Seeder
                 'locked_at' => now()->subHour(),
                 'locked_by' => (string) $owner->id,
                 'lock_reason' => 'Demo locked snapshot for full-text artifact audit.',
+                'metadata' => ['source' => 'demo-seeder'],
+            ],
+        );
+    }
+
+    private function fullTextScreeningProject(Workspace $workspace, User $owner): Project
+    {
+        return Project::updateOrCreate(
+            [
+                'workspace_id' => $workspace->id,
+                'slug' => 'cardiometabolic-full-text-screening',
+            ],
+            [
+                'name' => 'Cardiometabolic Full-Text Screening',
+                'owner_user_id' => $owner->id,
+                'description' => 'Demo project with active full-text reviewer assignments and an open conflict.',
+                'review_type' => ReviewType::SystematicReview,
+                'status' => ProjectStatus::LockedCorpus,
+                'locked_at' => now()->subMinutes(45),
+                'locked_by' => (string) $owner->id,
+                'lock_reason' => 'Demo locked snapshot for full-text screening.',
+                'metadata' => ['source' => 'demo-seeder'],
+            ],
+        );
+    }
+
+    private function fullTextScreeningCompletedProject(Workspace $workspace, User $owner): Project
+    {
+        return Project::updateOrCreate(
+            [
+                'workspace_id' => $workspace->id,
+                'slug' => 'cardiometabolic-full-text-eligibility-handoff',
+            ],
+            [
+                'name' => 'Cardiometabolic Full-Text Eligibility Handoff',
+                'owner_user_id' => $owner->id,
+                'description' => 'Demo project with completed full-text eligibility decisions.',
+                'review_type' => ReviewType::SystematicReview,
+                'status' => ProjectStatus::LockedCorpus,
+                'locked_at' => now()->subMinutes(35),
+                'locked_by' => (string) $owner->id,
+                'lock_reason' => 'Demo locked snapshot for full-text eligibility handoff.',
                 'metadata' => ['source' => 'demo-seeder'],
             ],
         );
@@ -1076,10 +1149,11 @@ class DemoAccessSeeder extends Seeder
             $status = $state === 'completed'
                 ? [
                     ProjectFullTextItemStatus::Success,
+                    ProjectFullTextItemStatus::Success,
                     ProjectFullTextItemStatus::Failed,
                     ProjectFullTextItemStatus::Skipped,
                     ProjectFullTextItemStatus::ManualNeeded,
-                ][$index % 4]
+                ][$index % 5]
                 : match ($index) {
                     0 => ProjectFullTextItemStatus::Success,
                     1 => ProjectFullTextItemStatus::Running,
@@ -1142,6 +1216,128 @@ class DemoAccessSeeder extends Seeder
 
         if ($state === 'completed') {
             $this->audit('project.full_text.batch_completed', $batch, $owner, $project->workspace, 'Demo full-text retrieval completed with audit outcomes.', $project);
+        }
+    }
+
+    private function demoFullTextScreening(
+        Project $project,
+        User $owner,
+        User $reviewer,
+        User $adjudicator,
+        string $state,
+    ): void {
+        $this->resetDemoFullTextScreeningState($project);
+
+        $candidateSet = app(BuildProjectFullTextScreeningCandidates::class)->handle($project->refresh()->load('protocol'));
+
+        if (! $candidateSet['ready'] || $candidateSet['candidates'] === []) {
+            return;
+        }
+
+        $batch = app(StartProjectFullTextScreeningBatch::class)->handle(
+            $project,
+            $owner,
+            [$reviewer->id, $adjudicator->id],
+            2,
+            'Demo full-text screening',
+        );
+
+        $workGroups = ProjectScreeningAssignment::query()
+            ->where('batch_id', $batch->id)
+            ->orderBy('sort_order')
+            ->get()
+            ->groupBy('work_id')
+            ->values();
+
+        foreach ($workGroups as $index => $assignments) {
+            if ($state === 'active' && $index > 1) {
+                continue;
+            }
+
+            [$firstDecision, $secondDecision, $firstReason, $secondReason, $resolutionDecision, $resolutionReason] = $state === 'active'
+                ? match ($index) {
+                    0 => [
+                        ScreeningDecision::INCLUDE,
+                        ScreeningDecision::EXCLUDE,
+                        'Full text supports the intervention and outcome criteria.',
+                        'Full text appears to use an ineligible study design.',
+                        null,
+                        null,
+                    ],
+                    default => [
+                        ScreeningDecision::INCLUDE,
+                        ScreeningDecision::INCLUDE,
+                        'Eligible primary care intervention after full-text review.',
+                        'Full text confirms the required outcome and setting.',
+                        null,
+                        null,
+                    ],
+                }
+            : match ($index % 4) {
+                0 => [
+                    ScreeningDecision::INCLUDE,
+                    ScreeningDecision::INCLUDE,
+                    'Full text confirms population, intervention, and outcome eligibility.',
+                    'Methods and results satisfy the protocol criteria.',
+                    null,
+                    null,
+                ],
+                1 => [
+                    ScreeningDecision::EXCLUDE,
+                    ScreeningDecision::EXCLUDE,
+                    'The full text uses an ineligible study design.',
+                    'Wrong study design after methods review.',
+                    null,
+                    null,
+                ],
+                2 => [
+                    ScreeningDecision::NEEDS_REVIEW,
+                    ScreeningDecision::NEEDS_REVIEW,
+                    'Eligibility remains uncertain after artifact review.',
+                    'Team discussion needed for outcome applicability.',
+                    null,
+                    null,
+                ],
+                default => [
+                    ScreeningDecision::INCLUDE,
+                    ScreeningDecision::EXCLUDE,
+                    'The full text appears eligible from intervention and outcomes.',
+                    'Comparator and publication type do not match the protocol.',
+                    ScreeningDecision::EXCLUDE,
+                    'Adjudicator confirmed exclusion after comparing full-text methods and comparator.',
+                ],
+            };
+
+            $this->recordFullTextScreeningPair(
+                $assignments,
+                $firstDecision,
+                $secondDecision,
+                $firstReason,
+                $secondReason,
+            );
+
+            $workId = $assignments->first()?->work_id;
+            $conflict = $workId
+                ? ProjectScreeningConflict::query()
+                    ->where('batch_id', $batch->id)
+                    ->where('work_id', $workId)
+                    ->where('stage', ScreeningStage::FULL_TEXT->value)
+                    ->first()
+                : null;
+
+            if ($conflict instanceof ProjectScreeningConflict
+                && $resolutionDecision instanceof ScreeningDecision
+                && $state === 'completed') {
+                app(ResolveProjectFullTextScreeningConflict::class)->handle(
+                    $conflict,
+                    $adjudicator,
+                    $resolutionDecision->value,
+                    $resolutionReason,
+                    exclusionBasis: $resolutionDecision === ScreeningDecision::EXCLUDE
+                        ? ['Wrong comparator']
+                        : [],
+                );
+            }
         }
     }
 
@@ -1215,6 +1411,8 @@ class DemoAccessSeeder extends Seeder
 
     private function resetDemoFullTextState(Project $project): void
     {
+        $this->resetDemoFullTextScreeningState($project);
+
         $workIds = DB::table('corpus_snapshot_works')
             ->join('corpus_snapshots', 'corpus_snapshots.id', '=', 'corpus_snapshot_works.snapshot_id')
             ->where('corpus_snapshots.project_id', $project->id)
@@ -1239,6 +1437,81 @@ class DemoAccessSeeder extends Seeder
             ->where('project_id', $project->id)
             ->where('event_type', 'like', 'project.full_text.%')
             ->delete();
+    }
+
+    private function resetDemoFullTextScreeningState(Project $project): void
+    {
+        $batchIds = DB::table('project_screening_batches')
+            ->where('project_id', $project->id)
+            ->where('stage', ScreeningStage::FULL_TEXT->value)
+            ->pluck('id')
+            ->all();
+
+        if ($batchIds !== []) {
+            DB::table('project_screening_conflicts')
+                ->whereIn('batch_id', $batchIds)
+                ->delete();
+
+            DB::table('project_screening_assignments')
+                ->whereIn('batch_id', $batchIds)
+                ->delete();
+
+            DB::table('project_screening_batches')
+                ->whereIn('id', $batchIds)
+                ->delete();
+        }
+
+        DB::table('screening_decisions')
+            ->where('project_id', $project->id)
+            ->where('stage', ScreeningStage::FULL_TEXT->value)
+            ->delete();
+
+        DB::table('screening_runs')
+            ->where('project_id', $project->id)
+            ->where('stage', ScreeningStage::FULL_TEXT->value)
+            ->delete();
+
+        DB::table('audit_events')
+            ->where('project_id', $project->id)
+            ->where('event_type', 'like', 'project.full_text_screening.%')
+            ->delete();
+    }
+
+    private function recordFullTextScreeningPair(
+        mixed $assignments,
+        ScreeningDecision $firstDecision,
+        ScreeningDecision $secondDecision,
+        string $firstReason,
+        string $secondReason,
+    ): void {
+        $first = $assignments->first();
+        $second = $assignments->skip(1)->first();
+
+        if (! $first instanceof ProjectScreeningAssignment || ! $second instanceof ProjectScreeningAssignment) {
+            return;
+        }
+
+        app(RecordProjectFullTextScreeningDecision::class)->handle(
+            $first,
+            $first->assignedTo,
+            $firstDecision->value,
+            $firstReason,
+            true,
+            exclusionBasis: $firstDecision === ScreeningDecision::EXCLUDE
+                ? ['Wrong study design']
+                : [],
+        );
+
+        app(RecordProjectFullTextScreeningDecision::class)->handle(
+            $second,
+            $second->assignedTo,
+            $secondDecision->value,
+            $secondReason,
+            true,
+            exclusionBasis: $secondDecision === ScreeningDecision::EXCLUDE
+                ? ['Wrong study design']
+                : [],
+        );
     }
 
     private function recordScreeningPair(

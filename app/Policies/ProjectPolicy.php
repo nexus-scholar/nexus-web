@@ -147,6 +147,26 @@ class ProjectPolicy
         return $this->viewFullText($user, $project);
     }
 
+    public function viewFullTextScreening(User $user, Project $project): bool
+    {
+        return $this->viewFullText($user, $project);
+    }
+
+    public function manageFullTextScreening(User $user, Project $project): bool
+    {
+        return $this->manageScreening($user, $project);
+    }
+
+    public function screenAssignedFullText(User $user, Project $project): bool
+    {
+        return $this->screenAssignedWork($user, $project);
+    }
+
+    public function resolveFullTextScreeningConflict(User $user, Project $project): bool
+    {
+        return $this->resolveScreeningConflict($user, $project);
+    }
+
     public function viewActivity(User $user, Project $project): bool
     {
         return $this->view($user, $project);

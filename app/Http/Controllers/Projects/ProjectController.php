@@ -93,6 +93,7 @@ class ProjectController extends Controller
                 'view_deduplication' => $request->user()->can('viewDeduplication', $project),
                 'view_screening' => $request->user()->can('viewScreening', $project),
                 'view_full_text' => $request->user()->can('viewFullText', $project),
+                'view_full_text_screening' => $request->user()->can('viewFullTextScreening', $project),
                 'view_activity' => $request->user()->can('viewActivity', $project),
             ],
         ]);
@@ -126,6 +127,7 @@ class ProjectController extends Controller
                 'deduplication' => route('projects.deduplication.index', $project, absolute: false),
                 'screening' => route('projects.screening.index', $project, absolute: false),
                 'full_text' => route('projects.full-text.index', $project, absolute: false),
+                'full_text_screening' => route('projects.full-text-screening.index', $project, absolute: false),
                 'activity' => route('projects.activity.index', $project, absolute: false),
             ],
             'corpus' => $this->corpusSummary($project),

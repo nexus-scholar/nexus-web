@@ -1,10 +1,11 @@
 # Workflow 8: Full-Text Screening
 
-Prepared on 2026-05-30.
+Prepared on 2026-05-30. First implementation slice added on 2026-05-30.
 
-Status: preparation only. Workflow 7 is merged and provides full-text retrieval
-batches, artifact status, and source audit. Workflow 8 turns retrieved or
-manually followed-up records into a human full-text eligibility decision loop.
+Status: first implementation slice complete. Workflow 8 turns successfully
+retrieved artifacts into a human full-text eligibility decision loop while
+leaving failed, skipped, and manual-needed artifacts as visible follow-up
+states.
 
 Wireframes: `docs/wireframes/workflow-8-full-text-screening-wireframes.html`.
 
