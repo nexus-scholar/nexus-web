@@ -377,6 +377,42 @@ Expected signals:
 - Snapshot metadata includes locked time, actor, reason, and work count.
 - Search and snowballing mutation actions are not available while locked.
 
+## Workflow 5: Deduplication And Corpus Lock
+
+Preparation lives in `docs/workflow-5-dedup-corpus-lock.md`. Wireframes live in
+`docs/wireframes/workflow-5-dedup-lock-wireframes.html`.
+
+The implementation must prove that screening will not receive duplicate members
+by accident. When duplicate clusters exist, the lock path should create a
+representative-aware snapshot and preserve duplicate-member provenance in the
+snapshot metadata.
+
+Implemented first-slice browser scenarios:
+
+1. Owner opens deduplication readiness from the corpus page.
+2. Owner runs deduplication and sees persisted cluster counts.
+3. Owner opens a duplicate cluster and compares representative vs members.
+4. Reviewer opens deduplication and sees read-only evidence.
+5. Viewer opens deduplication and sees no mutation controls.
+6. Owner attempts to lock without a reason and sees validation.
+7. Owner locks with a reason and sees snapshot metadata.
+8. Locked project blocks rerun deduplication and search mutation.
+9. Stale deduplication blocks lock until rerun.
+
+Automated coverage:
+
+- `tests/Feature/ProjectDeduplicationWorkflowTest.php`
+- `resources/js/components/dedup-readiness-rail.test.tsx`
+- `resources/js/components/dedup-cluster-table.test.tsx`
+
+Screenshot targets:
+
+- `output/playwright/workflow-5-dedup-readiness.png`
+- `output/playwright/workflow-5-dedup-cluster-detail.png`
+- `output/playwright/workflow-5-lock-confirmation.png`
+- `output/playwright/workflow-5-locked-snapshot.png`
+- `output/playwright/workflow-5-reviewer-readonly.png`
+
 ## UI Hardening: Brand Tokens
 
 Run this after global token or shared component changes.

@@ -1,0 +1,885 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>Workflow 5 Wireframes - Deduplication And Corpus Lock</title>
+        <style>
+            :root {
+                color-scheme: light;
+                --bg: #f6f7f6;
+                --surface: #ffffff;
+                --surface-soft: #f1f4f3;
+                --border: #d9dedb;
+                --border-strong: #c3cbc7;
+                --text: #141817;
+                --muted: #5a6762;
+                --brand: #087f86;
+                --brand-soft: #dcefee;
+                --success: #1f6f43;
+                --success-soft: #dff1e7;
+                --warning: #8a5a12;
+                --warning-soft: #f8ecd2;
+                --danger: #9a3412;
+                --danger-soft: #f8dfd2;
+                --info: #2768b5;
+                --info-soft: #e7f0ff;
+                --shadow: 0 18px 48px rgba(20, 24, 23, 0.08);
+            }
+
+            * {
+                box-sizing: border-box;
+            }
+
+            body {
+                margin: 0;
+                background: var(--bg);
+                color: var(--text);
+                font-family:
+                    Inter, ui-sans-serif, system-ui, -apple-system,
+                    BlinkMacSystemFont, "Segoe UI", sans-serif;
+                letter-spacing: 0;
+            }
+
+            main {
+                max-width: 1460px;
+                margin: 0 auto;
+                padding: 28px;
+            }
+
+            h1,
+            h2,
+            h3,
+            p {
+                margin: 0;
+            }
+
+            h1 {
+                font-size: 30px;
+                line-height: 1.15;
+            }
+
+            h2 {
+                font-size: 18px;
+            }
+
+            h3 {
+                font-size: 14px;
+            }
+
+            p {
+                color: var(--muted);
+                line-height: 1.55;
+            }
+
+            .eyebrow {
+                margin-bottom: 6px;
+                color: var(--brand);
+                font-size: 12px;
+                font-weight: 750;
+                text-transform: uppercase;
+            }
+
+            .intro {
+                max-width: 760px;
+                margin-top: 8px;
+            }
+
+            .screen {
+                margin-top: 26px;
+                overflow: hidden;
+                border: 1px solid var(--border);
+                border-radius: 8px;
+                background: var(--surface);
+                box-shadow: var(--shadow);
+            }
+
+            .app {
+                display: grid;
+                min-height: 820px;
+                grid-template-columns: 260px minmax(0, 1fr);
+            }
+
+            .sidebar {
+                display: flex;
+                flex-direction: column;
+                border-right: 1px solid var(--border);
+                background: #fbfcfb;
+                padding: 18px;
+            }
+
+            .brand {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                font-weight: 750;
+            }
+
+            .brand-mark {
+                display: grid;
+                width: 32px;
+                height: 32px;
+                place-items: center;
+                border-radius: 7px;
+                background: var(--brand);
+                color: white;
+                font-size: 13px;
+            }
+
+            .brand-subtitle {
+                color: var(--muted);
+                font-size: 12px;
+                font-weight: 500;
+            }
+
+            .nav-label {
+                margin: 28px 0 8px;
+                color: var(--muted);
+                font-size: 12px;
+            }
+
+            .nav {
+                display: grid;
+                gap: 6px;
+            }
+
+            .nav-row {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                border-radius: 7px;
+                padding: 9px 10px;
+                color: var(--muted);
+                font-size: 14px;
+            }
+
+            .nav-row.active {
+                background: var(--brand-soft);
+                color: #075157;
+                font-weight: 700;
+            }
+
+            .dot {
+                width: 10px;
+                height: 10px;
+                border-radius: 999px;
+                background: currentColor;
+                opacity: 0.7;
+            }
+
+            .account {
+                margin-top: auto;
+                border-top: 1px solid var(--border);
+                padding-top: 18px;
+                color: var(--muted);
+                font-size: 13px;
+            }
+
+            .topbar {
+                display: flex;
+                height: 54px;
+                align-items: center;
+                gap: 12px;
+                border-bottom: 1px solid var(--border);
+                padding: 0 22px;
+                background: rgba(255, 255, 255, 0.66);
+            }
+
+            .content {
+                min-width: 0;
+                padding: 22px;
+            }
+
+            .page-header {
+                display: flex;
+                align-items: flex-start;
+                justify-content: space-between;
+                gap: 22px;
+                border-bottom: 1px solid var(--border);
+                padding-bottom: 16px;
+                margin-bottom: 18px;
+            }
+
+            .crumb {
+                margin-bottom: 6px;
+                color: var(--muted);
+                font-size: 13px;
+                font-weight: 650;
+            }
+
+            .actions {
+                display: flex;
+                flex-wrap: wrap;
+                justify-content: flex-end;
+                gap: 8px;
+            }
+
+            .button {
+                display: inline-flex;
+                min-height: 34px;
+                align-items: center;
+                justify-content: center;
+                border: 1px solid var(--border);
+                border-radius: 6px;
+                background: white;
+                color: var(--text);
+                padding: 0 12px;
+                font-size: 13px;
+                font-weight: 700;
+            }
+
+            .button.primary {
+                border-color: #111719;
+                background: #111719;
+                color: white;
+            }
+
+            .button.brand {
+                border-color: var(--brand);
+                background: var(--brand);
+                color: white;
+            }
+
+            .button.disabled {
+                color: #98a29d;
+                background: #f7f8f7;
+            }
+
+            .badges {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 8px;
+                justify-content: flex-end;
+            }
+
+            .badge {
+                display: inline-flex;
+                min-height: 24px;
+                align-items: center;
+                border-radius: 999px;
+                padding: 0 9px;
+                font-size: 12px;
+                font-weight: 700;
+            }
+
+            .badge.info {
+                background: var(--info-soft);
+                color: var(--info);
+            }
+
+            .badge.success {
+                background: var(--success-soft);
+                color: var(--success);
+            }
+
+            .badge.warning {
+                background: var(--warning-soft);
+                color: var(--warning);
+            }
+
+            .badge.danger {
+                background: var(--danger-soft);
+                color: var(--danger);
+            }
+
+            .rail {
+                display: grid;
+                overflow: hidden;
+                grid-template-columns: repeat(6, minmax(0, 1fr));
+                border: 1px solid var(--border);
+                border-radius: 8px;
+                background: var(--border);
+                gap: 1px;
+                margin-bottom: 16px;
+            }
+
+            .rail-cell {
+                min-width: 0;
+                background: var(--surface);
+                padding: 14px;
+            }
+
+            .rail-cell span {
+                color: var(--muted);
+                font-size: 12px;
+                font-weight: 650;
+            }
+
+            .rail-cell strong {
+                display: block;
+                margin-top: 7px;
+                font-size: 23px;
+                line-height: 1;
+            }
+
+            .rail-cell small {
+                display: block;
+                margin-top: 8px;
+                overflow: hidden;
+                color: var(--muted);
+                font-size: 12px;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+            }
+
+            .grid {
+                display: grid;
+                grid-template-columns: minmax(0, 1fr) 370px;
+                gap: 16px;
+            }
+
+            .panel {
+                border: 1px solid var(--border);
+                border-radius: 8px;
+                background: var(--surface);
+            }
+
+            .panel-head {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 14px;
+                border-bottom: 1px solid var(--border);
+                padding: 14px 16px;
+            }
+
+            .panel-body {
+                padding: 14px 16px;
+            }
+
+            .toolbar {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 12px;
+                border-bottom: 1px solid var(--border);
+                padding: 12px 14px;
+            }
+
+            .search {
+                display: flex;
+                min-height: 34px;
+                flex: 1;
+                align-items: center;
+                border: 1px solid var(--border);
+                border-radius: 6px;
+                color: var(--muted);
+                padding: 0 10px;
+                font-size: 13px;
+            }
+
+            table {
+                width: 100%;
+                border-collapse: collapse;
+                font-size: 13px;
+            }
+
+            th,
+            td {
+                border-bottom: 1px solid var(--border);
+                padding: 12px 14px;
+                text-align: left;
+                vertical-align: top;
+            }
+
+            th {
+                color: var(--muted);
+                font-size: 12px;
+                font-weight: 750;
+            }
+
+            td strong {
+                display: block;
+                max-width: 560px;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+            }
+
+            .muted {
+                color: var(--muted);
+            }
+
+            .stack {
+                display: grid;
+                gap: 12px;
+            }
+
+            .check-row {
+                display: grid;
+                grid-template-columns: 22px minmax(0, 1fr) auto;
+                align-items: start;
+                gap: 10px;
+                border-bottom: 1px solid var(--border);
+                padding: 11px 0;
+            }
+
+            .check-row:last-child {
+                border-bottom: 0;
+            }
+
+            .check {
+                display: grid;
+                width: 20px;
+                height: 20px;
+                place-items: center;
+                border-radius: 999px;
+                background: var(--success-soft);
+                color: var(--success);
+                font-size: 12px;
+                font-weight: 800;
+            }
+
+            .check.warn {
+                background: var(--warning-soft);
+                color: var(--warning);
+            }
+
+            .compare {
+                display: grid;
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+                gap: 10px;
+            }
+
+            .record-card {
+                border: 1px solid var(--border);
+                border-radius: 7px;
+                background: var(--surface);
+                padding: 12px;
+            }
+
+            .record-card.selected {
+                border-color: var(--brand);
+                box-shadow: inset 0 0 0 1px var(--brand);
+            }
+
+            .evidence-list {
+                display: grid;
+                gap: 8px;
+                margin-top: 12px;
+            }
+
+            .evidence {
+                display: grid;
+                grid-template-columns: 140px minmax(0, 1fr) 70px;
+                gap: 10px;
+                border: 1px solid var(--border);
+                border-radius: 7px;
+                padding: 10px;
+                font-size: 12px;
+            }
+
+            .sheet {
+                position: relative;
+                min-height: 820px;
+                background:
+                    linear-gradient(
+                        90deg,
+                        rgba(20, 24, 23, 0.04),
+                        transparent 120px
+                    ),
+                    var(--surface-soft);
+            }
+
+            .sheet-panel {
+                width: 520px;
+                min-height: 820px;
+                margin-left: auto;
+                border-left: 1px solid var(--border);
+                background: white;
+                padding: 20px;
+                box-shadow: -18px 0 42px rgba(20, 24, 23, 0.1);
+            }
+
+            .dialog-wrap {
+                display: grid;
+                min-height: 760px;
+                place-items: center;
+                background: rgba(20, 24, 23, 0.08);
+                padding: 26px;
+            }
+
+            .dialog {
+                width: min(720px, 100%);
+                border: 1px solid var(--border);
+                border-radius: 8px;
+                background: white;
+                box-shadow: var(--shadow);
+            }
+
+            .textarea {
+                min-height: 98px;
+                border: 1px solid var(--border);
+                border-radius: 7px;
+                color: var(--muted);
+                padding: 12px;
+                font-size: 13px;
+            }
+
+            .summary-grid {
+                display: grid;
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+                gap: 10px;
+            }
+
+            .callout {
+                border: 1px solid var(--warning-soft);
+                border-radius: 7px;
+                background: var(--warning-soft);
+                color: var(--warning);
+                padding: 12px;
+                font-size: 13px;
+                font-weight: 650;
+            }
+
+            @media (max-width: 1100px) {
+                .app {
+                    grid-template-columns: 1fr;
+                }
+
+                .sidebar {
+                    display: none;
+                }
+
+                .grid {
+                    grid-template-columns: 1fr;
+                }
+
+                .rail {
+                    grid-template-columns: repeat(2, minmax(0, 1fr));
+                }
+
+                .compare,
+                .summary-grid {
+                    grid-template-columns: 1fr;
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <main>
+            <div class="eyebrow">Workflow 5 wireframes</div>
+            <h1>Deduplication and corpus lock</h1>
+            <p class="intro">
+                First visual pass for the screen that turns a draft corpus into
+                a deduplicated, snapshot-backed corpus. The lock path assumes a
+                representative-aware snapshot so screening does not process
+                duplicate members.
+            </p>
+
+            <section class="screen" aria-label="Deduplication readiness">
+                <div class="app">
+                    <aside class="sidebar">
+                        <div class="brand">
+                            <div class="brand-mark">NS</div>
+                            <div>
+                                <div>Nexus Scholar</div>
+                                <div class="brand-subtitle">Evidence reviews</div>
+                            </div>
+                        </div>
+                        <div class="nav-label">Workspaces</div>
+                        <div class="nav">
+                            <div class="nav-row">
+                                <span class="dot"></span> Dr. Lina Haddad
+                            </div>
+                            <div class="nav-row active">
+                                <span class="dot"></span> Evidence Synthesis Lab
+                            </div>
+                        </div>
+                        <div class="nav-label">Workspace</div>
+                        <div class="nav">
+                            <div class="nav-row"><span class="dot"></span> Dashboard</div>
+                            <div class="nav-row active"><span class="dot"></span> Corpus</div>
+                            <div class="nav-row"><span class="dot"></span> Activity</div>
+                            <div class="nav-row"><span class="dot"></span> Members</div>
+                        </div>
+                        <div class="account">DH Dr. Lina Haddad</div>
+                    </aside>
+
+                    <div>
+                        <div class="topbar">Corpus</div>
+                        <div class="content">
+                            <div class="page-header">
+                                <div>
+                                    <div class="crumb">
+                                        Evidence Synthesis Lab / Systematic review
+                                    </div>
+                                    <h1>Deduplication review</h1>
+                                    <p>
+                                        Inspect duplicate clusters, representative
+                                        works, and lock readiness before screening.
+                                    </p>
+                                </div>
+                                <div class="stack">
+                                    <div class="badges">
+                                        <span class="badge warning">Duplicates found</span>
+                                        <span class="badge info">Draft corpus</span>
+                                    </div>
+                                    <div class="actions">
+                                        <span class="button">Back to corpus</span>
+                                        <span class="button">Run deduplication</span>
+                                        <span class="button primary">Lock corpus</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="rail">
+                                <div class="rail-cell">
+                                    <span>Input works</span>
+                                    <strong>147</strong>
+                                    <small>Draft query-work membership</small>
+                                </div>
+                                <div class="rail-cell">
+                                    <span>Representatives</span>
+                                    <strong>144</strong>
+                                    <small>Expected locked snapshot</small>
+                                </div>
+                                <div class="rail-cell">
+                                    <span>Duplicate groups</span>
+                                    <strong>3</strong>
+                                    <small>5 duplicate members</small>
+                                </div>
+                                <div class="rail-cell">
+                                    <span>Policy hits</span>
+                                    <strong>7</strong>
+                                    <small>DOI, PubMed, title fuzzy</small>
+                                </div>
+                                <div class="rail-cell">
+                                    <span>Metadata blockers</span>
+                                    <strong>0</strong>
+                                    <small>Ready after reason</small>
+                                </div>
+                                <div class="rail-cell">
+                                    <span>Last run</span>
+                                    <strong>2m</strong>
+                                    <small>Membership is fresh</small>
+                                </div>
+                            </div>
+
+                            <div class="grid">
+                                <div class="panel">
+                                    <div class="toolbar">
+                                        <div class="search">Search clusters or records</div>
+                                        <span class="button">Filters</span>
+                                        <span class="button">Columns</span>
+                                    </div>
+                                    <table>
+                                        <thead>
+                                            <tr>
+                                                <th>Representative</th>
+                                                <th>Members</th>
+                                                <th>Evidence</th>
+                                                <th>Status</th>
+                                                <th>Detail</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td>
+                                                    <strong>
+                                                        Digital coaching for cardiometabolic risk
+                                                        in primary care
+                                                    </strong>
+                                                    <span class="muted">Primary Care Digital Health</span>
+                                                </td>
+                                                <td>3 works</td>
+                                                <td>DOI match, provider overlap</td>
+                                                <td><span class="badge success">Representative selected</span></td>
+                                                <td><span class="button">View</span></td>
+                                            </tr>
+                                            <tr>
+                                                <td>
+                                                    <strong>
+                                                        Telehealth monitoring for adults with
+                                                        metabolic syndrome
+                                                    </strong>
+                                                    <span class="muted">Telemedicine Evidence Review</span>
+                                                </td>
+                                                <td>2 works</td>
+                                                <td>PubMed ID match</td>
+                                                <td><span class="badge success">Representative selected</span></td>
+                                                <td><span class="button">View</span></td>
+                                            </tr>
+                                            <tr>
+                                                <td>
+                                                    <strong>
+                                                        Community pharmacy blood pressure follow-up
+                                                    </strong>
+                                                    <span class="muted">Implementation Science in Care</span>
+                                                </td>
+                                                <td>2 works</td>
+                                                <td>Title fuzzy 97%</td>
+                                                <td><span class="badge warning">Review evidence</span></td>
+                                                <td><span class="button">View</span></td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                                <aside class="panel">
+                                    <div class="panel-head">
+                                        <h2>Lock readiness</h2>
+                                        <span class="badge warning">Needs reason</span>
+                                    </div>
+                                    <div class="panel-body">
+                                        <div class="check-row">
+                                            <div class="check">✓</div>
+                                            <div>
+                                                <strong>Deduplication run is current</strong>
+                                                <p>No query-work membership changes since run.</p>
+                                            </div>
+                                            <span class="badge success">Pass</span>
+                                        </div>
+                                        <div class="check-row">
+                                            <div class="check">✓</div>
+                                            <div>
+                                                <strong>Representatives selected</strong>
+                                                <p>Every duplicate group has an elected representative.</p>
+                                            </div>
+                                            <span class="badge success">Pass</span>
+                                        </div>
+                                        <div class="check-row">
+                                            <div class="check warn">!</div>
+                                            <div>
+                                                <strong>Audit reason required</strong>
+                                                <p>Locking freezes the corpus for screening and final export.</p>
+                                            </div>
+                                            <span class="badge warning">Required</span>
+                                        </div>
+                                        <div class="callout">
+                                            Locked snapshot will contain 144 representative works,
+                                            with provenance from all 147 draft records retained.
+                                        </div>
+                                    </div>
+                                </aside>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="screen" aria-label="Cluster detail sheet">
+                <div class="sheet">
+                    <div class="sheet-panel">
+                        <div class="page-header">
+                            <div>
+                                <div class="crumb">Duplicate group</div>
+                                <h1>Digital coaching cluster</h1>
+                                <p>Compare candidate records before accepting the elected representative.</p>
+                            </div>
+                            <span class="button">Close</span>
+                        </div>
+
+                        <div class="compare">
+                            <div class="record-card selected">
+                                <span class="badge success">Representative</span>
+                                <h3>Digital coaching for cardiometabolic risk in primary care</h3>
+                                <p>DOI present, 2 providers, abstract present.</p>
+                            </div>
+                            <div class="record-card">
+                                <span class="badge info">Member</span>
+                                <h3>Digital health coaching for cardiometabolic risk in primary care</h3>
+                                <p>OpenAlex and Semantic Scholar record.</p>
+                            </div>
+                            <div class="record-card">
+                                <span class="badge info">Member</span>
+                                <h3>Primary care digital coaching intervention</h3>
+                                <p>Crossref record with matching DOI.</p>
+                            </div>
+                        </div>
+
+                        <div class="panel" style="margin-top: 16px">
+                            <div class="panel-head">
+                                <h2>Duplicate evidence</h2>
+                                <span class="badge success">High confidence</span>
+                            </div>
+                            <div class="panel-body">
+                                <div class="evidence-list">
+                                    <div class="evidence">
+                                        <strong>DOI match</strong>
+                                        <span>10.5555/cardio-coach shared by 2 records</span>
+                                        <span>1.000</span>
+                                    </div>
+                                    <div class="evidence">
+                                        <strong>Provider overlap</strong>
+                                        <span>OpenAlex and Crossref point to same canonical work</span>
+                                        <span>0.980</span>
+                                    </div>
+                                    <div class="evidence">
+                                        <strong>Title fuzzy</strong>
+                                        <span>Normalized title similarity after punctuation removal</span>
+                                        <span>0.970</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="panel" style="margin-top: 16px">
+                            <div class="panel-head">
+                                <h2>Snapshot effect</h2>
+                            </div>
+                            <div class="panel-body">
+                                <p>
+                                    The locked snapshot keeps the representative
+                                    work as the screenable record. Query provenance,
+                                    providers, and identifiers from the duplicate
+                                    members remain attached to the audit metadata.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="screen" aria-label="Lock confirmation">
+                <div class="dialog-wrap">
+                    <div class="dialog">
+                        <div class="panel-head">
+                            <div>
+                                <h1>Lock corpus snapshot</h1>
+                                <p>
+                                    Record why this corpus is ready for screening.
+                                    This action freezes the snapshot membership.
+                                </p>
+                            </div>
+                            <span class="badge warning">Audit required</span>
+                        </div>
+                        <div class="panel-body stack">
+                            <div class="summary-grid">
+                                <div class="record-card">
+                                    <span class="muted">Draft works</span>
+                                    <h2>147</h2>
+                                </div>
+                                <div class="record-card">
+                                    <span class="muted">Snapshot works</span>
+                                    <h2>144</h2>
+                                </div>
+                                <div class="record-card">
+                                    <span class="muted">Duplicate groups</span>
+                                    <h2>3</h2>
+                                </div>
+                            </div>
+                            <div>
+                                <h3>Lock reason</h3>
+                                <div class="textarea">
+                                    Title/abstract screening corpus approved after
+                                    deduplication review. Representative snapshot
+                                    preserves duplicate provenance.
+                                </div>
+                            </div>
+                            <div class="callout">
+                                Search and corpus mutation will be blocked after
+                                lock. Screening, adjudication, full text, graph,
+                                and final exports will use this snapshot.
+                            </div>
+                            <div class="actions">
+                                <span class="button">Cancel</span>
+                                <span class="button primary">Lock corpus</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </body>
+</html>

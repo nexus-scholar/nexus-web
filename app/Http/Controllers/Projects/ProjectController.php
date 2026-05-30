@@ -90,6 +90,7 @@ class ProjectController extends Controller
                 'update_search_plan' => $request->user()->can('updateSearchPlan', $project),
                 'run_search' => $request->user()->can('runSearch', $project),
                 'view_corpus' => $request->user()->can('viewCorpus', $project),
+                'view_deduplication' => $request->user()->can('viewDeduplication', $project),
                 'view_activity' => $request->user()->can('viewActivity', $project),
             ],
         ]);
@@ -120,6 +121,7 @@ class ProjectController extends Controller
                 'search_plan' => route('projects.search-plan.edit', $project, absolute: false),
                 'search_runs' => route('projects.search-runs.store', $project, absolute: false),
                 'corpus' => route('projects.corpus.index', $project, absolute: false),
+                'deduplication' => route('projects.deduplication.index', $project, absolute: false),
                 'activity' => route('projects.activity.index', $project, absolute: false),
             ],
             'corpus' => $this->corpusSummary($project),
