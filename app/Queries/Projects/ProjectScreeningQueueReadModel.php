@@ -137,6 +137,10 @@ final class ProjectScreeningQueueReadModel
     private function assignmentDetail(ProjectScreeningAssignment $assignment): array
     {
         $assignment->loadMissing(['batch.project']);
+        $batchAcceptsDecisions = in_array($assignment->batch->status, [
+            ProjectScreeningBatchStatus::Active,
+            ProjectScreeningBatchStatus::Conflicts,
+        ], true);
         $work = DB::table('scholarly_works')
             ->where('id', $assignment->work_id)
             ->first();
@@ -149,7 +153,7 @@ final class ProjectScreeningQueueReadModel
             'status' => $assignment->status->value,
             'status_label' => $this->assignmentStatusLabel($assignment->status->value),
             'decision_url' => route('projects.screening.assignments.decision', [$assignment->project_id, $assignment->id], absolute: false),
-            'can_record_decision' => in_array($assignment->status, [
+            'can_record_decision' => $batchAcceptsDecisions && in_array($assignment->status, [
                 ProjectScreeningAssignmentStatus::Pending,
                 ProjectScreeningAssignmentStatus::InProgress,
                 ProjectScreeningAssignmentStatus::Decided,

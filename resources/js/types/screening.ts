@@ -66,6 +66,16 @@ export type ScreeningCounts = {
         open: number;
         resolved: number;
     };
+    outcomes: {
+        total_works: number;
+        resolved_works: number;
+        unresolved_works: number;
+        include: number;
+        needs_review: number;
+        exclude: number;
+        ready_for_full_text: number;
+        excluded: number;
+    };
 };
 
 export type ScreeningBatch = {

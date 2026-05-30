@@ -12,6 +12,7 @@ import { DecisionBadge } from '@/components/decision-badge';
 import { PageHeader, PageShell } from '@/components/page-shell';
 import { ProjectStatusBadge } from '@/components/project-status-badge';
 import { ReviewerWorkloadList } from '@/components/reviewer-workload-list';
+import { ScreeningHandoffCard } from '@/components/screening-handoff-card';
 import { ScreeningProgressStrip } from '@/components/screening-progress-strip';
 import { ScreeningSetupPanel } from '@/components/screening-setup-panel';
 import { ScreeningStatusBadge } from '@/components/screening-status-badge';
@@ -142,6 +143,7 @@ export default function ProjectScreening({ can, project, screening }: Props) {
                             counts={screening.batch.counts}
                             progressPercent={screening.batch.progress_percent}
                         />
+                        <ScreeningHandoffCard batch={screening.batch} />
 
                         <div className="grid items-start gap-4 xl:grid-cols-[minmax(0,1fr)_24rem]">
                             <section className="space-y-4">

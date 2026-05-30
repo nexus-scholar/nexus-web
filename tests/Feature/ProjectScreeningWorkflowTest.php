@@ -24,6 +24,7 @@ use App\Models\ProjectScreeningAssignment;
 use App\Models\ProjectScreeningConflict;
 use App\Models\User;
 use App\Models\Workspace;
+use App\Queries\Projects\ProjectScreeningQueueReadModel;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
@@ -203,6 +204,9 @@ class ProjectScreeningWorkflowTest extends TestCase
         $batch->refresh();
         $this->assertSame(ProjectScreeningBatchStatus::Completed, $batch->status);
         $this->assertSame(1, $batch->counts['decisions']['include']);
+        $this->assertSame(1, $batch->counts['outcomes']['include']);
+        $this->assertSame(1, $batch->counts['outcomes']['ready_for_full_text']);
+        $this->assertSame(0, $batch->counts['outcomes']['unresolved_works']);
         $this->assertDatabaseHas('screening_runs', [
             'id' => $batch->screening_run_id,
             'status' => 'completed',
@@ -383,6 +387,9 @@ class ProjectScreeningWorkflowTest extends TestCase
         $batch->refresh();
         $this->assertSame(ProjectScreeningBatchStatus::Completed, $batch->status);
         $this->assertSame(1, $batch->counts['conflicts']['resolved']);
+        $this->assertSame(1, $batch->counts['outcomes']['needs_review']);
+        $this->assertSame(1, $batch->counts['outcomes']['ready_for_full_text']);
+        $this->assertSame(0, $batch->counts['outcomes']['unresolved_works']);
         $this->assertDatabaseHas('audit_events', [
             'project_id' => $project->id,
             'event_type' => 'project.screening.conflict_resolved',
@@ -452,6 +459,12 @@ class ProjectScreeningWorkflowTest extends TestCase
 
         $batch = $project->screeningBatches()->firstOrFail();
 
+        $this->actingAs($owner)
+            ->withHeaders($this->inertiaHeaders())
+            ->get(route('projects.screening.index', $project))
+            ->assertOk()
+            ->assertJsonPath('props.screening.nextReviewerAssignmentUrl', null);
+
         $this->actingAs($reviewer)
             ->withHeaders($this->inertiaHeaders())
             ->get(route('projects.screening.queue', $project))
@@ -460,6 +473,12 @@ class ProjectScreeningWorkflowTest extends TestCase
             ->assertJsonPath('props.queue.batch.id', $batch->id)
             ->assertJsonPath('props.queue.assignments.0.status', 'pending')
             ->assertJsonPath('props.can.screen_assigned_work', true);
+
+        $this->actingAs($reviewer)
+            ->withHeaders($this->inertiaHeaders())
+            ->get(route('projects.screening.index', $project))
+            ->assertOk()
+            ->assertJsonPath('props.screening.nextReviewerAssignmentUrl', route('projects.screening.queue', $project, false));
     }
 
     public function test_reviewer_records_decision_from_route(): void
@@ -488,6 +507,45 @@ class ProjectScreeningWorkflowTest extends TestCase
             'project_id' => $project->id,
             'decision' => ScreeningDecision::INCLUDE->value,
             'reason' => 'Route submission matches title and abstract criteria.',
+        ]);
+    }
+
+    public function test_completed_screening_queue_is_read_only_and_rejects_resubmission(): void
+    {
+        [$project, $owner] = $this->lockedScreeningProject(workCount: 1);
+        $reviewer = $this->projectMember($project, ProjectRole::Reviewer);
+        $batch = app(StartProjectScreeningBatch::class)->handle($project, $owner, [$reviewer->id], 1);
+        $assignment = $batch->assignments()->firstOrFail();
+
+        app(RecordProjectScreeningDecision::class)->handle(
+            $assignment,
+            $reviewer,
+            ScreeningDecision::INCLUDE->value,
+            'Initial reviewer decision is final for a one-reviewer batch.',
+        );
+
+        $queue = app(ProjectScreeningQueueReadModel::class)->forReviewer($project, $reviewer, $assignment->id);
+
+        $this->assertSame('completed', $queue['batch']['status']);
+        $this->assertFalse($queue['selectedAssignment']['can_record_decision']);
+
+        $this->actingAs($reviewer)
+            ->from(route('projects.screening.queue', ['project' => $project, 'assignment' => $assignment->id]))
+            ->post(route('projects.screening.assignments.decision', [$project, $assignment]), [
+                'decision' => ScreeningDecision::EXCLUDE->value,
+                'reason' => 'Trying to change a closed assignment.',
+            ])
+            ->assertRedirect(route('projects.screening.queue', ['project' => $project, 'assignment' => $assignment->id]))
+            ->assertSessionHasErrors('assignment');
+
+        $this->assertDatabaseHas('project_screening_assignments', [
+            'id' => $assignment->id,
+            'status' => ProjectScreeningAssignmentStatus::Resolved->value,
+        ]);
+        $this->assertDatabaseMissing('screening_decisions', [
+            'project_id' => $project->id,
+            'decision' => ScreeningDecision::EXCLUDE->value,
+            'reason' => 'Trying to change a closed assignment.',
         ]);
     }
 

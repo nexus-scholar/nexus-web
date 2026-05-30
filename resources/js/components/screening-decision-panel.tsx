@@ -83,6 +83,9 @@ export function ScreeningDecisionPanel({
         event.preventDefault();
         form.post(assignment.decision_url, { preserveScroll: true });
     };
+    const lockMessage = assignment.can_record_decision
+        ? null
+        : decisionLockMessage(assignment.status);
 
     return (
         <Card>
@@ -91,7 +94,9 @@ export function ScreeningDecisionPanel({
                     <div className="space-y-1">
                         <CardTitle>Decision</CardTitle>
                         <CardDescription>
-                            Record a title and abstract decision with rationale.
+                            {lockMessage
+                                ? 'Review the recorded title and abstract decision.'
+                                : 'Record a title and abstract decision with rationale.'}
                         </CardDescription>
                     </div>
                     <DecisionBadge
@@ -101,6 +106,14 @@ export function ScreeningDecisionPanel({
                 </div>
             </CardHeader>
             <CardContent>
+                {lockMessage && (
+                    <div className="mb-5 rounded-md border border-status-audit/30 bg-status-audit-bg p-3 text-sm text-status-audit">
+                        <div className="font-medium">Decision locked</div>
+                        <div className="mt-1 text-status-audit/85">
+                            {lockMessage}
+                        </div>
+                    </div>
+                )}
                 <form className="space-y-5" onSubmit={submit}>
                     <div className="grid gap-2 md:grid-cols-3">
                         {choices.map((choice) => {
@@ -190,12 +203,28 @@ export function ScreeningDecisionPanel({
                             !form.data.decision
                         }
                     >
-                        Record decision
+                        {assignment.can_record_decision
+                            ? 'Record decision'
+                            : 'Decision closed'}
                     </Button>
                 </form>
             </CardContent>
         </Card>
     );
+}
+
+function decisionLockMessage(
+    status: ScreeningSelectedAssignment['status'],
+): string {
+    if (status === 'conflict') {
+        return 'This record has a disagreement and must be handled from conflict review.';
+    }
+
+    if (status === 'resolved') {
+        return 'The team decision is finalized for this record.';
+    }
+
+    return 'This screening batch is no longer accepting reviewer decisions.';
 }
 
 function NotesField({

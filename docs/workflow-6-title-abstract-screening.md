@@ -2,10 +2,9 @@
 
 Prepared on 2026-05-30.
 
-Status: first UI slice implemented and verified. The backend foundation is
-merged; this implementation adds the owner overview/setup surface, reviewer
-queue, decision panel, conflict-resolution sheet, seeded demo states, and
-automated coverage for the human title-and-abstract path.
+Status: first UI slice implemented and verified. The lifecycle gate now records
+final per-work outcomes for full-text handoff readiness while keeping full-text
+retrieval itself out of Workflow 6.
 
 ## Goal
 
@@ -587,9 +586,10 @@ resolution sheet. Do not hide the audit reason requirement.
 
 ### Completed Screening
 
-Show final counts and disable assignment mutation. The next workflow can be
-full-text retrieval or export preparation, but that action should not be
-implemented in this slice.
+Show final per-work outcome counts and disable assignment mutation. The
+full-text readiness card counts final `include` plus final `needs_review`
+outcomes as ready for the next workflow, keeps final `exclude` outcomes
+separate, and does not expose a full-text retrieval action in this slice.
 
 ## Demo Data
 
@@ -602,6 +602,7 @@ Required seeded states:
 - active batch with completed agreement,
 - active batch with one open conflict,
 - resolved conflict with audit reason,
+- completed batch with final include, maybe, exclude, and adjudicated outcomes,
 - reviewer queue for `reviewer@nexusscholar.test`,
 - viewer read-only screening overview.
 
@@ -621,7 +622,8 @@ Add these to `docs/demo-scenarios.md` during implementation:
 7. Owner sees workload and progress update after reviewer decisions.
 8. Conflicting reviewer decisions create an open conflict.
 9. Adjudicator resolves a conflict with an audit reason.
-10. Completed screening disables setup mutation.
+10. Completed screening shows full-text readiness counts and disables setup or
+    reviewer mutation.
 
 Screenshot targets:
 
