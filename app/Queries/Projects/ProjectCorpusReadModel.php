@@ -17,17 +17,15 @@ final class ProjectCorpusReadModel
     {
         $snapshot = $this->activeSnapshot($project);
         $source = $snapshot ? 'locked' : 'draft';
-        $query = $this->corpusQuery($project, $snapshot, $filters)
-            ->orderByDesc('works.year')
-            ->orderBy('works.title');
+        $query = $this->applySorting($this->corpusQuery($project, $snapshot, $filters), $filters);
 
         /** @var LengthAwarePaginator $paginator */
         $paginator = $query
             ->paginate($filters->perPage)
             ->appends($filters->queryParameters());
 
-        $pageRecords = $this->recordsForRows($project, $snapshot, $paginator->getCollection());
-        $selectedRecord = $this->selectedRecord($project, $snapshot, $filters, $pageRecords);
+        $pageRecords = $this->recordsForRows($project, $snapshot, $paginator->getCollection(), false);
+        $selectedRecord = $this->selectedRecord($project, $snapshot, $filters);
 
         return [
             'source' => $source,
@@ -139,6 +137,24 @@ final class ProjectCorpusReadModel
         return $query;
     }
 
+    private function applySorting(Builder $query, CorpusFilters $filters): Builder
+    {
+        $direction = $filters->direction === 'asc' ? 'asc' : 'desc';
+
+        match ($filters->sort) {
+            'title' => $query->orderBy('works.title', $direction),
+            'cited_by_count' => $query->orderBy('works.cited_by_count', $direction),
+            'retrieved_at' => $query->orderBy('works.retrieved_at', $direction),
+            default => $query->orderBy('works.year', $direction),
+        };
+
+        if ($filters->sort !== 'title') {
+            $query->orderBy('works.title');
+        }
+
+        return $query->orderBy('works.id');
+    }
+
     private function baseCorpusQuery(Project $project, ?object $snapshot): Builder
     {
         $query = DB::table('scholarly_works as works')
@@ -242,7 +258,7 @@ final class ProjectCorpusReadModel
      * @param  Collection<int, object>  $rows
      * @return Collection<int, array<string, mixed>>
      */
-    private function recordsForRows(Project $project, ?object $snapshot, Collection $rows): Collection
+    private function recordsForRows(Project $project, ?object $snapshot, Collection $rows, bool $includeDetail): Collection
     {
         $workIds = $rows->pluck('id')->values()->all();
 
@@ -250,14 +266,16 @@ final class ProjectCorpusReadModel
             return collect();
         }
 
-        $authors = $this->authorsByWork($workIds);
+        $authors = $includeDetail ? $this->authorsByWork($workIds) : [];
+        $authorCounts = $includeDetail ? [] : $this->authorCountsByWork($workIds);
         $identifiers = $this->identifiersByWork($workIds);
         $providers = $this->providersByWork($workIds);
         $duplicates = $this->duplicatesByWork($project, $workIds);
         $queryLabels = $this->queryLabels($project);
-        $provenance = $snapshot
+        $provenance = $includeDetail ? ($snapshot
             ? $this->lockedProvenanceByWork($snapshot, $workIds, $queryLabels)
-            : $this->draftProvenanceByWork($project, $workIds, $queryLabels);
+            : $this->draftProvenanceByWork($project, $workIds, $queryLabels)) : [];
+        $provenanceCounts = $includeDetail ? [] : $this->provenanceCountsByWork($project, $snapshot, $workIds);
 
         return $rows->map(fn (object $row): array => $this->workPayload(
             $row,
@@ -266,6 +284,11 @@ final class ProjectCorpusReadModel
             $providers[$row->id] ?? [],
             $provenance[$row->id] ?? [],
             $duplicates[$row->id] ?? null,
+            $includeDetail,
+            [
+                'authors' => $authorCounts[$row->id] ?? null,
+                'provenance' => $provenanceCounts[$row->id] ?? null,
+            ],
         ));
     }
 
@@ -277,23 +300,16 @@ final class ProjectCorpusReadModel
         Project $project,
         ?object $snapshot,
         CorpusFilters $filters,
-        Collection $pageRecords,
     ): ?array {
-        if ($filters->work) {
-            $selected = $pageRecords->firstWhere('id', $filters->work);
-
-            if ($selected) {
-                return $selected;
-            }
-
-            $row = $this->corpusQuery($project, $snapshot, $filters)
-                ->where('works.id', $filters->work)
-                ->first();
-
-            return $row ? $this->recordsForRows($project, $snapshot, collect([$row]))->first() : null;
+        if (! $filters->work) {
+            return null;
         }
 
-        return $pageRecords->first();
+        $row = $this->corpusQuery($project, $snapshot, $filters)
+            ->where('works.id', $filters->work)
+            ->first();
+
+        return $row ? $this->recordsForRows($project, $snapshot, collect([$row]), true)->first() : null;
     }
 
     /**
@@ -416,6 +432,53 @@ final class ProjectCorpusReadModel
             ->select('ids.namespace')
             ->get()
             ->pluck('namespace')
+            ->all();
+    }
+
+    /**
+     * @param  list<string>  $workIds
+     * @return array<string, int>
+     */
+    private function authorCountsByWork(array $workIds): array
+    {
+        return DB::table('work_authors')
+            ->whereIn('work_id', $workIds)
+            ->select('work_id')
+            ->selectRaw('count(*) as aggregate')
+            ->groupBy('work_id')
+            ->pluck('aggregate', 'work_id')
+            ->map(fn (mixed $count): int => (int) $count)
+            ->all();
+    }
+
+    /**
+     * @param  list<string>  $workIds
+     * @return array<string, int>
+     */
+    private function provenanceCountsByWork(Project $project, ?object $snapshot, array $workIds): array
+    {
+        if ($snapshot) {
+            return DB::table('corpus_snapshot_works')
+                ->where('snapshot_id', $snapshot->id)
+                ->whereIn('work_id', $workIds)
+                ->select(['work_id', 'provider_aliases', 'provenance'])
+                ->get()
+                ->mapWithKeys(fn (object $row): array => [
+                    $row->work_id => count($this->decodeList($row->provenance))
+                        ?: count($this->decodeList($row->provider_aliases)),
+                ])
+                ->all();
+        }
+
+        return DB::table('query_works')
+            ->join('search_queries', 'search_queries.id', '=', 'query_works.search_query_id')
+            ->where('search_queries.project_id', $project->id)
+            ->whereIn('query_works.work_id', $workIds)
+            ->select('query_works.work_id')
+            ->selectRaw('count(*) as aggregate')
+            ->groupBy('query_works.work_id')
+            ->pluck('aggregate', 'query_works.work_id')
+            ->map(fn (mixed $count): int => (int) $count)
             ->all();
     }
 
@@ -646,6 +709,8 @@ final class ProjectCorpusReadModel
         array $providers,
         array $provenance,
         ?array $duplicate,
+        bool $includeDetail,
+        array $countOverrides = [],
     ): array {
         $missingAbstract = blank($row->abstract);
         $missingIdentifier = $identifiers === [];
@@ -654,7 +719,7 @@ final class ProjectCorpusReadModel
         return [
             'id' => (string) $row->id,
             'title' => (string) $row->title,
-            'abstract' => $row->abstract ? (string) $row->abstract : null,
+            'abstract' => $includeDetail && $row->abstract ? (string) $row->abstract : null,
             'abstract_preview' => $row->abstract ? str($row->abstract)->limit(260)->toString() : null,
             'year' => $row->year === null ? null : (int) $row->year,
             'venue_name' => $row->venue_name ? (string) $row->venue_name : null,
@@ -684,10 +749,10 @@ final class ProjectCorpusReadModel
                 default => 'Ready',
             },
             'counts' => [
-                'authors' => count($authors),
+                'authors' => $countOverrides['authors'] ?? count($authors),
                 'identifiers' => count($identifiers),
                 'providers' => count($providers),
-                'provenance' => count($provenance),
+                'provenance' => $countOverrides['provenance'] ?? count($provenance),
             ],
         ];
     }

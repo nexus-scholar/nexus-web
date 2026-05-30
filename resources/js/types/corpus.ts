@@ -27,9 +27,19 @@ export type CorpusFilters = {
     missing_identifier: boolean;
     retracted: boolean;
     duplicate_status: 'all' | 'in_cluster' | 'not_clustered';
+    sort: CorpusSortKey;
+    direction: CorpusSortDirection;
     work: string | null;
     per_page: number;
 };
+
+export type CorpusSortKey =
+    | 'title'
+    | 'year'
+    | 'cited_by_count'
+    | 'retrieved_at';
+
+export type CorpusSortDirection = 'asc' | 'desc';
 
 export type CorpusFilterOptions = {
     providers: string[];

@@ -15,6 +15,13 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
+import {
+    Sheet,
+    SheetContent,
+    SheetDescription,
+    SheetHeader,
+    SheetTitle,
+} from '@/components/ui/sheet';
 import type {
     CorpusFilterOptions,
     CorpusFilters,
@@ -71,13 +78,29 @@ export default function ProjectCorpus({ corpus, project }: Props) {
     const selectedWorkId = corpus.selectedRecord?.id ?? null;
 
     const applyFilters = (filters: Partial<CorpusFilters>) => {
-        router.get(project.urls.corpus, cleanQuery(filters), {
-            preserveScroll: true,
-        });
+        router.get(
+            project.urls.corpus,
+            cleanQuery({
+                ...corpus.filters,
+                ...filters,
+            }),
+            { preserveScroll: true },
+        );
     };
 
     const resetFilters = () => {
         router.get(project.urls.corpus, {}, { preserveScroll: true });
+    };
+
+    const closeRecordDetail = () => {
+        router.get(
+            project.urls.corpus,
+            cleanQuery({
+                ...corpus.filters,
+                work: null,
+            }),
+            { preserveScroll: true },
+        );
     };
 
     const recordHref = (workId: string) =>
@@ -147,23 +170,56 @@ export default function ProjectCorpus({ corpus, project }: Props) {
                         searchPlanUrl={project.urls.search_plan}
                     />
                 ) : (
-                    <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_25rem]">
-                        <section className="space-y-3">
-                            <CorpusRecordTable
-                                records={corpus.records.data}
-                                selectedWorkId={selectedWorkId}
-                                recordHref={recordHref}
-                            />
-                            <Pagination records={corpus.records} />
-                        </section>
+                    <section className="space-y-3">
+                        <CorpusRecordTable
+                            direction={corpus.filters.direction}
+                            records={corpus.records.data}
+                            selectedWorkId={selectedWorkId}
+                            recordHref={recordHref}
+                            sort={corpus.filters.sort}
+                            onSort={applyFilters}
+                        />
+                        <Pagination
+                            baseUrl={project.urls.corpus}
+                            filters={corpus.filters}
+                            records={corpus.records}
+                            onPerPageChange={(perPage) => {
+                                applyFilters({
+                                    per_page: perPage,
+                                    work: null,
+                                });
+                            }}
+                        />
+                    </section>
+                )}
 
-                        <aside className="xl:sticky xl:top-5 xl:self-start">
+                <Sheet
+                    open={Boolean(corpus.selectedRecord)}
+                    onOpenChange={(open) => {
+                        if (!open) {
+                            closeRecordDetail();
+                        }
+                    }}
+                >
+                    <SheetContent
+                        side="right"
+                        className="w-[min(100vw,48rem)] gap-0 overflow-hidden p-0 sm:max-w-3xl"
+                    >
+                        <SheetHeader className="border-b px-5 py-4 pr-12">
+                            <SheetTitle>Work details</SheetTitle>
+                            <SheetDescription>
+                                Metadata, identifiers, provider sightings, and
+                                query provenance.
+                            </SheetDescription>
+                        </SheetHeader>
+                        <div className="overflow-y-auto px-5 py-5">
                             <CorpusRecordDetail
                                 record={corpus.selectedRecord}
+                                variant="panel"
                             />
-                        </aside>
-                    </div>
-                )}
+                        </div>
+                    </SheetContent>
+                </Sheet>
             </PageShell>
         </>
     );
@@ -195,43 +251,142 @@ function EmptyCorpusState({ searchPlanUrl }: { searchPlanUrl: string }) {
     );
 }
 
-function Pagination({ records }: { records: PaginatedCorpusRecords }) {
+function Pagination({
+    baseUrl,
+    filters,
+    onPerPageChange,
+    records,
+}: {
+    baseUrl: string;
+    filters: CorpusFilters;
+    records: PaginatedCorpusRecords;
+    onPerPageChange: (perPage: number) => void;
+}) {
     if (records.meta.total === 0) {
         return null;
     }
 
+    const pages = paginationWindow(
+        records.meta.current_page,
+        records.meta.last_page,
+    );
+
     return (
-        <div className="flex flex-col gap-3 rounded-lg border bg-card p-3 text-sm shadow-xs sm:flex-row sm:items-center sm:justify-between">
-            <div className="text-muted-foreground">
-                Showing {records.meta.from ?? 0}-{records.meta.to ?? 0} of{' '}
-                {records.meta.total}
+        <div className="flex flex-col gap-3 rounded-lg border bg-card p-3 text-sm shadow-xs xl:flex-row xl:items-center xl:justify-between">
+            <div className="flex flex-wrap items-center gap-3">
+                <div className="text-muted-foreground">
+                    Showing {records.meta.from ?? 0}-{records.meta.to ?? 0} of{' '}
+                    {records.meta.total}
+                </div>
+                <label className="flex items-center gap-2 text-muted-foreground">
+                    Rows
+                    <select
+                        className="h-8 rounded-md border border-input bg-background px-2 text-foreground shadow-xs"
+                        value={records.meta.per_page}
+                        onChange={(event) => {
+                            onPerPageChange(Number(event.target.value));
+                        }}
+                    >
+                        {[10, 20, 30, 50].map((size) => (
+                            <option key={size} value={size}>
+                                {size}
+                            </option>
+                        ))}
+                    </select>
+                </label>
             </div>
-            <div className="flex gap-2">
-                {records.links.prev ? (
-                    <Button variant="outline" size="sm" asChild>
-                        <Link href={records.links.prev} preserveScroll>
-                            Previous
-                        </Link>
-                    </Button>
-                ) : (
-                    <Button variant="outline" size="sm" disabled>
-                        Previous
-                    </Button>
-                )}
-                {records.links.next ? (
-                    <Button variant="outline" size="sm" asChild>
-                        <Link href={records.links.next} preserveScroll>
-                            Next
-                        </Link>
-                    </Button>
-                ) : (
-                    <Button variant="outline" size="sm" disabled>
-                        Next
-                    </Button>
-                )}
+
+            <div className="flex flex-wrap items-center gap-2">
+                <PaginationLink
+                    disabled={records.meta.current_page === 1}
+                    href={pageHref(baseUrl, filters, 1)}
+                    label="First"
+                />
+                <PaginationLink
+                    disabled={!records.links.prev}
+                    href={records.links.prev ?? '#'}
+                    label="Previous"
+                />
+                <div className="flex items-center gap-1">
+                    {pages.map((page) => (
+                        <Button
+                            key={page}
+                            variant={
+                                page === records.meta.current_page
+                                    ? 'default'
+                                    : 'outline'
+                            }
+                            size="sm"
+                            asChild
+                        >
+                            <Link
+                                href={pageHref(baseUrl, filters, page)}
+                                preserveScroll
+                            >
+                                {page}
+                            </Link>
+                        </Button>
+                    ))}
+                </div>
+                <PaginationLink
+                    disabled={!records.links.next}
+                    href={records.links.next ?? '#'}
+                    label="Next"
+                />
+                <PaginationLink
+                    disabled={
+                        records.meta.current_page === records.meta.last_page
+                    }
+                    href={pageHref(baseUrl, filters, records.meta.last_page)}
+                    label="Last"
+                />
             </div>
         </div>
     );
+}
+
+function PaginationLink({
+    disabled,
+    href,
+    label,
+}: {
+    disabled: boolean;
+    href: string;
+    label: string;
+}) {
+    if (disabled) {
+        return (
+            <Button variant="outline" size="sm" disabled>
+                {label}
+            </Button>
+        );
+    }
+
+    return (
+        <Button variant="outline" size="sm" asChild>
+            <Link href={href} preserveScroll>
+                {label}
+            </Link>
+        </Button>
+    );
+}
+
+function paginationWindow(current: number, last: number): number[] {
+    const start = Math.max(1, current - 1);
+    const end = Math.min(last, current + 1);
+
+    return Array.from({ length: end - start + 1 }, (_, index) => start + index);
+}
+
+function pageHref(
+    baseUrl: string,
+    filters: CorpusFilters,
+    page: number,
+): string {
+    return withQuery(baseUrl, {
+        ...cleanQuery(filters),
+        page,
+    });
 }
 
 function cleanQuery(
@@ -255,6 +410,14 @@ function cleanQuery(
             }
 
             if (key === 'duplicate_status' && value === 'all') {
+                return false;
+            }
+
+            if (key === 'sort' && value === 'year') {
+                return false;
+            }
+
+            if (key === 'direction' && value === 'desc') {
                 return false;
             }
 

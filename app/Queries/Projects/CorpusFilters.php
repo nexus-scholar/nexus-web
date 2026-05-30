@@ -18,6 +18,8 @@ final readonly class CorpusFilters
         public bool $missingIdentifier,
         public bool $retracted,
         public string $duplicateStatus,
+        public string $sort,
+        public string $direction,
         public ?string $work,
         public int $perPage,
     ) {}
@@ -37,6 +39,8 @@ final readonly class CorpusFilters
             'missing_identifier' => ['nullable', 'boolean'],
             'retracted' => ['nullable', 'boolean'],
             'duplicate_status' => ['nullable', Rule::in(['all', 'in_cluster', 'not_clustered'])],
+            'sort' => ['nullable', Rule::in(['title', 'year', 'cited_by_count', 'retrieved_at'])],
+            'direction' => ['nullable', Rule::in(['asc', 'desc'])],
             'work' => ['nullable', 'string', 'max:80'],
             'per_page' => ['nullable', 'integer', 'min:1', 'max:50'],
         ]);
@@ -59,6 +63,8 @@ final readonly class CorpusFilters
             missingIdentifier: $request->boolean('missing_identifier'),
             retracted: $request->boolean('retracted'),
             duplicateStatus: (string) ($data['duplicate_status'] ?? 'all'),
+            sort: (string) ($data['sort'] ?? 'year'),
+            direction: (string) ($data['direction'] ?? 'desc'),
             work: self::nullableString($data['work'] ?? null),
             perPage: (int) ($data['per_page'] ?? 10),
         );
@@ -80,6 +86,8 @@ final readonly class CorpusFilters
             'missing_identifier' => $this->missingIdentifier,
             'retracted' => $this->retracted,
             'duplicate_status' => $this->duplicateStatus,
+            'sort' => $this->sort,
+            'direction' => $this->direction,
             'work' => $this->work,
             'per_page' => $this->perPage,
         ];
@@ -95,6 +103,8 @@ final readonly class CorpusFilters
                 || $value === ''
                 || ($value === false && in_array($key, ['missing_abstract', 'missing_identifier', 'retracted'], true))
                 || ($key === 'duplicate_status' && $value === 'all')
+                || ($key === 'sort' && $value === 'year')
+                || ($key === 'direction' && $value === 'desc')
                 || ($key === 'per_page' && $value === 10))
             ->all();
     }

@@ -44,9 +44,16 @@ class ProjectCorpusWorkflowTest extends TestCase
             ->assertJsonPath('props.corpus.metrics.missing_identifiers', 1)
             ->assertJsonPath('props.corpus.metrics.retracted_records', 1)
             ->assertJsonPath('props.corpus.metrics.duplicate_clusters', 1)
-            ->assertJsonPath('props.corpus.selectedRecord.id', $ids['work_3'])
-            ->assertJsonPath('props.corpus.records.data.0.provenance.0.provider_alias', 'semantic_scholar')
+            ->assertJsonPath('props.corpus.selectedRecord', null)
+            ->assertJsonPath('props.corpus.records.data.0.provenance', [])
             ->assertJsonPath('props.can.view_corpus', true);
+
+        $this->actingAs($owner)
+            ->withHeaders($this->inertiaHeaders())
+            ->get(route('projects.corpus.index', [$project, 'work' => $ids['work_3']]))
+            ->assertOk()
+            ->assertJsonPath('props.corpus.selectedRecord.id', $ids['work_3'])
+            ->assertJsonPath('props.corpus.selectedRecord.provenance.0.provider_alias', 'semantic_scholar');
     }
 
     public function test_reviewer_and_viewer_can_read_corpus_but_unrelated_users_cannot(): void
@@ -193,6 +200,26 @@ class ProjectCorpusWorkflowTest extends TestCase
             ->get(route('projects.corpus.index', [$project, 'retracted' => 1]))
             ->assertJsonPath('props.corpus.records.meta.total', 1)
             ->assertJsonPath('props.corpus.records.data.0.id', $ids['work_3']);
+    }
+
+    public function test_sorting_is_server_owned_and_query_backed(): void
+    {
+        [$project, $owner] = $this->draftCorpusProject();
+        $ids = $this->seedDraftCorpus($project, $owner);
+
+        $this->actingAs($owner)
+            ->withHeaders($this->inertiaHeaders())
+            ->get(route('projects.corpus.index', [$project, 'sort' => 'title', 'direction' => 'asc']))
+            ->assertOk()
+            ->assertJsonPath('props.corpus.filters.sort', 'title')
+            ->assertJsonPath('props.corpus.filters.direction', 'asc')
+            ->assertJsonPath('props.corpus.records.data.0.id', $ids['work_1']);
+
+        $this->actingAs($owner)
+            ->withHeaders($this->inertiaHeaders())
+            ->get(route('projects.corpus.index', [$project, 'sort' => 'year', 'direction' => 'asc']))
+            ->assertOk()
+            ->assertJsonPath('props.corpus.records.data.0.id', $ids['work_2']);
     }
 
     public function test_pagination_preserves_filter_query_parameters(): void

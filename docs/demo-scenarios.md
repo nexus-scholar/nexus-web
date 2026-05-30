@@ -301,19 +301,25 @@ Expected signals:
   issues, and duplicate cluster count when clusters exist.
 - Corpus records are listed with year, provider badges, metadata quality, and
   query-link counts.
+- The table has a compact toolbar for row selection, read-only bulk actions,
+  column visibility, sortable headers, horizontal overflow, and rows-per-page
+  pagination.
 - The page is read-only in this slice; no include, exclude, merge, split,
   screen, export, or lock action is visible.
 
 ### Record Detail And Provenance
 
 1. As the owner, open the corpus review page.
-2. Select a record with multiple providers or query links.
+2. Open a record with multiple providers or query links from the table `View`
+   action.
 3. Capture `output/playwright/workflow-4-corpus-detail.png`.
 
 Expected signals:
 
-- Detail shows title, abstract preview, year, venue, identifiers, provider
-  sightings, query provenance, rank, and seen timestamp.
+- Detail opens in a right-side sliding panel rather than occupying permanent
+  page space.
+- Detail shows title, abstract, year, venue, identifiers, provider sightings,
+  query provenance, rank, and seen timestamp.
 - Missing abstract, missing identifier, and retracted flags are visible as
   metadata facts.
 - Provider aliases use core-normalized values such as `semantic_scholar`.
@@ -326,6 +332,9 @@ Expected signals:
 
 Expected signals:
 
+- The default table surface stays compact; advanced filters remain hidden until
+  opened.
+- Active filters appear as compact chips near the search toolbar.
 - Filters are reflected in the URL query string.
 - Pagination keeps filter parameters.
 - Reset returns to the full project corpus without leaving the project context.
