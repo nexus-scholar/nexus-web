@@ -6,6 +6,7 @@
 /public/fonts-manifest.dev.json
 /public/hot
 /public/storage
+/site
 /output/playwright
 /output/wireframes
 /.playwright-cli
