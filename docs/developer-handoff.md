@@ -1,6 +1,6 @@
 # Developer Handoff
 
-Last updated: 2026-05-30.
+Last updated: 2026-05-31.
 
 This document is the fastest route into Nexus Scholar Web for a developer taking
 over the project. It summarizes the current product state, local setup, demo
@@ -52,6 +52,10 @@ Start the full local stack:
 ```powershell
 composer run dev
 ```
+
+Native Windows PHP does not provide `pcntl`, so `composer run dev` skips
+Laravel Pail on Windows and starts the HTTP server, queue listener, and Vite.
+On runtimes with `pcntl`, the same command also starts Pail.
 
 The default app URL is:
 
