@@ -1,0 +1,63 @@
+site_name: Nexus Scholar User Guide
+site_description: Practical guide for research teams using Nexus Scholar with a real evidence-review walkthrough.
+site_url: https://nexus-scholar.github.io/nexus-web/
+repo_url: https://github.com/nexus-scholar/nexus-web
+repo_name: nexus-scholar/nexus-web
+edit_uri: edit/master/docs-site/docs/
+
+docs_dir: docs-site/docs
+site_dir: site
+
+theme:
+  name: material
+  language: en
+  logo: assets/brand/nexus-mark.svg
+  favicon: assets/brand/nexus-mark.svg
+  palette:
+    - scheme: default
+      primary: teal
+      accent: cyan
+  features:
+    - navigation.sections
+    - navigation.indexes
+    - navigation.top
+    - navigation.footer
+    - content.action.edit
+    - content.code.copy
+    - search.suggest
+    - search.highlight
+
+extra_css:
+  - assets/stylesheets/extra.css
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - def_list
+  - md_in_html
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+
+plugins:
+  - search
+
+nav:
+  - Start Here: index.md
+  - Real Evidence Example: demo-review.md
+  - Tutorial:
+      - tutorial/index.md
+      - 1. Sign In And Open The Lab: tutorial/01-sign-in-and-open-the-lab.md
+      - 2. Create The Protocol: tutorial/02-create-a-project-and-protocol.md
+      - 3. Run The Search: tutorial/03-plan-and-run-searches.md
+      - 4. Inspect The Corpus: tutorial/04-review-the-draft-corpus.md
+      - 5. Deduplicate And Lock: tutorial/05-deduplicate-and-lock-the-corpus.md
+      - 6. Screen Titles And Abstracts: tutorial/06-screen-titles-and-abstracts.md
+      - 7. Retrieve Full Text: tutorial/07-retrieve-full-text.md
+      - 8. Screen Full Text: tutorial/08-screen-full-text.md
+  - Team Roles: roles.md
+  - Glossary: glossary.md
+  - Troubleshooting: troubleshooting.md
+  - Method Notes: method-notes.md
+  - Publishing: publishing.md
