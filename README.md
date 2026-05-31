@@ -51,8 +51,11 @@ That starts:
 
 - Laravel HTTP server,
 - database-backed queue listener,
-- Laravel Pail logs,
+- Laravel Pail logs when the PHP runtime supports `pcntl`,
 - Vite dev server.
+
+On native Windows PHP, `pcntl` is not available, so the dev script skips Pail
+and keeps the server, queue, and Vite running.
 
 The default Laravel URL is:
 
