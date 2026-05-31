@@ -112,6 +112,9 @@ unless the protocol and ethics of the project explicitly justify otherwise.
 
 The lock reason should be useful months later.
 
+Use the [Before You Lock The Corpus](before-locking-corpus.md) checklist for a
+short pass/fail review before the lock is recorded.
+
 Good:
 
 `Corpus locked after search strategy review by Dr. A and librarian B on 2026-06-04. Queries, provider counts, anchor records, and deduplication output were reviewed.`
