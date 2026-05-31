@@ -93,6 +93,9 @@ Recommended calibration:
 Calibration is not about forcing agreement. It is about making sure reviewers
 understand the same criteria before the full batch begins.
 
+Use the [Screening Calibration Worksheet](screening-calibration-worksheet.md)
+to run and document this step.
+
 ## 6. Define AI Boundaries
 
 If AI assistance is used, record it before the model touches the review.
