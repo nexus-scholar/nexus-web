@@ -88,6 +88,30 @@ class ProjectScreeningWorkflowTest extends TestCase
         ]);
     }
 
+    public function test_owner_can_start_screening_batch_as_only_reviewer(): void
+    {
+        [$project, $owner, $workIds] = $this->lockedScreeningProject(workCount: 2);
+
+        $batch = app(StartProjectScreeningBatch::class)->handle(
+            $project,
+            $owner,
+            [$owner->id],
+            1,
+            'Owner screening',
+        );
+
+        $this->assertSame(ProjectScreeningBatchStatus::Active, $batch->status);
+        $this->assertSame(2, $batch->counts['assignments']['total']);
+
+        foreach ($workIds as $workId) {
+            $this->assertDatabaseHas('project_screening_assignments', [
+                'batch_id' => $batch->id,
+                'work_id' => $workId,
+                'assigned_to' => $owner->id,
+            ]);
+        }
+    }
+
     public function test_missing_or_non_representative_snapshot_blocks_start(): void
     {
         [$project, $owner] = $this->lockedScreeningProject(workCount: 0, createSnapshot: false);
@@ -440,7 +464,9 @@ class ProjectScreeningWorkflowTest extends TestCase
             ->assertJsonPath('component', 'projects/screening')
             ->assertJsonPath('props.screening.batch', null)
             ->assertJsonPath('props.screening.snapshot.work_count', 2)
-            ->assertJsonPath('props.screening.setup.available_reviewers.0.id', $reviewer->id)
+            ->assertJsonPath('props.screening.setup.available_reviewers.0.id', $owner->id)
+            ->assertJsonPath('props.screening.setup.available_reviewers.0.role', ProjectRole::Owner->value)
+            ->assertJsonPath('props.screening.setup.available_reviewers.1.id', $reviewer->id)
             ->assertJsonPath('props.can.manage_screening', true);
     }
 

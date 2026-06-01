@@ -74,7 +74,7 @@ class StartProjectFullTextScreeningBatch
             $reviewers = $this->eligibleReviewers($project, $reviewerIds);
             if ($reviewers->count() < $required) {
                 throw ValidationException::withMessages([
-                    'reviewers' => __('Select at least :count active project reviewers or adjudicators.', [
+                    'reviewers' => __('Select at least :count active project owners, reviewers, or adjudicators.', [
                         'count' => $required,
                     ]),
                 ]);
@@ -170,7 +170,11 @@ class StartProjectFullTextScreeningBatch
         $memberships = $project->activeMemberships()
             ->with('user')
             ->whereIn('user_id', $ids->all())
-            ->whereIn('role', [ProjectRole::Reviewer->value, ProjectRole::Adjudicator->value])
+            ->whereIn('role', [
+                ProjectRole::Owner->value,
+                ProjectRole::Reviewer->value,
+                ProjectRole::Adjudicator->value,
+            ])
             ->get()
             ->keyBy('user_id');
 

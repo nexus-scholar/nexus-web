@@ -97,7 +97,7 @@ export type ScreeningReviewer = {
     id: number;
     name: string;
     email: string;
-    role: 'reviewer' | 'adjudicator';
+    role: 'owner' | 'reviewer' | 'adjudicator';
     role_label: string;
 };
 

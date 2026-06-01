@@ -331,6 +331,29 @@ class ProjectFullTextWorkflowTest extends TestCase
         ]);
     }
 
+    public function test_owner_can_start_full_text_screening_as_only_reviewer(): void
+    {
+        [$project, $owner, , , $workIds] = $this->completedScreeningProject([
+            ScreeningDecision::INCLUDE,
+            ScreeningDecision::NEEDS_REVIEW,
+        ]);
+        $this->completedRetrievalBatch($project, $owner, [
+            $workIds[0] => ProjectFullTextItemStatus::Success,
+            $workIds[1] => ProjectFullTextItemStatus::Success,
+        ]);
+
+        $batch = app(StartProjectFullTextScreeningBatch::class)->handle(
+            $project,
+            $owner,
+            [$owner->id],
+            1,
+            'Owner full-text screening',
+        );
+
+        $this->assertSame(ProjectScreeningBatchStatus::Active, $batch->status);
+        $this->assertSame(2, $batch->assignments()->where('assigned_to', $owner->id)->count());
+    }
+
     public function test_full_text_screening_does_not_assign_failed_items_and_exclude_requires_basis(): void
     {
         [$project, $owner, $reviewer, , $workIds] = $this->completedScreeningProject([

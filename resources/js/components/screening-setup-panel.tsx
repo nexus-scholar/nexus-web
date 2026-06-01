@@ -42,12 +42,14 @@ export function ScreeningSetupPanel({
         required_reviewer_count: defaultRequiredReviewerCount,
         reviewer_ids: availableReviewers.map((reviewer) => reviewer.id),
     });
-    const blocked =
-        disabled ||
-        !snapshot ||
-        !snapshot.representative_snapshot ||
-        snapshot.work_count === 0 ||
-        availableReviewers.length === 0;
+    const blockerMessages = screeningSetupBlockers({
+        availableReviewerCount: availableReviewers.length,
+        canManage: !disabled,
+        requiredReviewerCount: form.data.required_reviewer_count,
+        selectedReviewerCount: form.data.reviewer_ids.length,
+        snapshot,
+    });
+    const blocked = blockerMessages.length > 0;
 
     const toggleReviewer = (id: number, checked: boolean) => {
         form.setData(
@@ -156,9 +158,16 @@ export function ScreeningSetupPanel({
                         <InputError message={form.errors.reviewer_ids} />
                     </div>
 
-                    {!snapshot && (
+                    {blocked && (
                         <div className="rounded-md border bg-status-pending-bg p-3 text-sm text-status-pending">
-                            Lock a representative corpus before screening.
+                            <div className="font-medium">
+                                Screening cannot start yet
+                            </div>
+                            <ul className="mt-2 list-disc space-y-1 pl-5">
+                                {blockerMessages.map((message) => (
+                                    <li key={message}>{message}</li>
+                                ))}
+                            </ul>
                         </div>
                     )}
 
@@ -170,4 +179,54 @@ export function ScreeningSetupPanel({
             </CardContent>
         </Card>
     );
+}
+
+function screeningSetupBlockers({
+    availableReviewerCount,
+    canManage,
+    requiredReviewerCount,
+    selectedReviewerCount,
+    snapshot,
+}: {
+    availableReviewerCount: number;
+    canManage: boolean;
+    requiredReviewerCount: number;
+    selectedReviewerCount: number;
+    snapshot: ScreeningSnapshot | null;
+}): string[] {
+    const messages: string[] = [];
+
+    if (!canManage) {
+        messages.push(
+            'You need project owner or workspace admin access to manage screening.',
+        );
+    }
+
+    if (!snapshot) {
+        messages.push('Lock a representative corpus before screening.');
+    } else {
+        if (!snapshot.representative_snapshot) {
+            messages.push(
+                'The latest locked corpus snapshot is not marked representative.',
+            );
+        }
+
+        if (snapshot.work_count === 0) {
+            messages.push(
+                'The locked corpus snapshot has no records to screen.',
+            );
+        }
+    }
+
+    if (availableReviewerCount === 0) {
+        messages.push(
+            'Add at least one active project owner, reviewer, or adjudicator.',
+        );
+    } else if (selectedReviewerCount < requiredReviewerCount) {
+        messages.push(
+            `Select at least ${requiredReviewerCount} active project owners, reviewers, or adjudicators.`,
+        );
+    }
+
+    return messages;
 }

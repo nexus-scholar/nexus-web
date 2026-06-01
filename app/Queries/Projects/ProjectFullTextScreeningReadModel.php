@@ -155,7 +155,11 @@ final class ProjectFullTextScreeningReadModel
     {
         return $project->activeMemberships()
             ->with('user')
-            ->whereIn('role', [ProjectRole::Reviewer->value, ProjectRole::Adjudicator->value])
+            ->whereIn('role', [
+                ProjectRole::Owner->value,
+                ProjectRole::Reviewer->value,
+                ProjectRole::Adjudicator->value,
+            ])
             ->orderBy('role')
             ->get()
             ->filter(fn ($membership): bool => $membership->user instanceof User
