@@ -320,7 +320,6 @@ final class ProjectCorpusReadModel
         $base = $this->baseCorpusQuery($project, $snapshot);
         $yearRange = (clone $base)
             ->whereNotNull('works.year')
-            ->getQuery()
             ->selectRaw('MIN(works.year) as min_year, MAX(works.year) as max_year')
             ->first();
 
