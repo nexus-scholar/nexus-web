@@ -50,7 +50,10 @@ return new class extends Migration
             $table->foreign('batch_id')->references('id')->on('project_screening_batches')->cascadeOnDelete();
             $table->foreign('work_id')->references('id')->on('scholarly_works')->restrictOnDelete();
             $table->foreign('screening_decision_id')->references('id')->on('screening_decisions')->nullOnDelete();
-            $table->unique(['batch_id', 'work_id', 'assigned_to']);
+            $table->unique(
+                ['batch_id', 'work_id', 'assigned_to'],
+                'spa_unique'
+            );
             $table->index(['project_id', 'stage', 'status']);
             $table->index(['batch_id', 'assigned_to', 'status']);
             $table->index(['batch_id', 'work_id']);

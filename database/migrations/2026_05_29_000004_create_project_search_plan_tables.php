@@ -42,8 +42,14 @@ return new class extends Migration
             $table->timestamps();
 
             $table->foreign('project_search_plan_id')->references('id')->on('project_search_plans')->cascadeOnDelete();
-            $table->unique(['project_search_plan_id', 'query_key']);
-            $table->index(['project_search_plan_id', 'sort_order']);
+            $table->unique(
+                ['project_search_plan_id', 'query_key'],
+                'pspq_unique'
+            );
+            $table->index(
+                ['project_search_plan_id', 'sort_order'],
+                'pspq_sort_idx'
+            );
         });
     }
 
