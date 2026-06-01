@@ -320,7 +320,9 @@ final class ProjectCorpusReadModel
         $base = $this->baseCorpusQuery($project, $snapshot);
         $yearRange = (clone $base)
             ->whereNotNull('works.year')
-            ->selectRaw('min(works.year) as min_year, max(works.year) as max_year')
+            ->reorder()
+            ->toBase()
+            ->selectRaw('MIN(works.year) as min_year, MAX(works.year) as max_year')
             ->first();
 
         $providers = $this->providerOptions($project, $snapshot);
@@ -348,7 +350,11 @@ final class ProjectCorpusReadModel
                         ->whereColumn('ids.work_id', 'works.id');
                 })
                 ->count(),
-            'retracted_records' => (clone $base)->where('works.is_retracted', true)->count(),
+
+            'retracted_records' => (clone $base)
+                ->where('works.is_retracted', true)
+                ->count(),
+
             'duplicate_clusters' => DB::table('dedup_clusters')
                 ->where('project_id', $project->id)
                 ->count(),
