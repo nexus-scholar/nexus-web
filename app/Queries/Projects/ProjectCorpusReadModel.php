@@ -318,7 +318,18 @@ final class ProjectCorpusReadModel
     private function metrics(Project $project, ?object $snapshot): array
     {
         $base = $this->baseCorpusQuery($project, $snapshot);
-        $yearRange = (clone $base)
+        $yearRange = DB::table('scholarly_works as works')
+            ->joinSub(
+                DB::table('query_works')
+                    ->select('query_works.work_id')
+                    ->distinct()
+                    ->join('search_queries', 'search_queries.id', '=', 'query_works.search_query_id')
+                    ->where('search_queries.project_id', $project->id),
+                'membership',
+                'membership.work_id',
+                '=',
+                'works.id'
+            )
             ->whereNotNull('works.year')
             ->selectRaw('MIN(works.year) as min_year, MAX(works.year) as max_year')
             ->first();
