@@ -2,10 +2,13 @@
 
 Nexus Scholar Web is the hosted Laravel application for the Nexus Scholar product. It is a separate host application that consumes `nexus-scholar/core` for scholarly workflow behavior while owning authentication, workspaces, projects, dashboards, SaaS limits, and product UI.
 
-The current MVP includes authentication, workspaces, project setup, protocol
-editing, search planning, draft corpus review, deduplication review, corpus
-lock, title-and-abstract screening, and full-text retrieval with artifact
-audit.
+The current MVP includes authentication, workspaces, project setup, protocol editing, search planning, draft corpus review, deduplication review, corpus lock, title-and-abstract screening, and full-text retrieval with artifact audit.
+
+## Product Position
+
+This repository is the public product shell for Nexus Scholar. It demonstrates how the reusable `core` package becomes an end-user research workflow: authenticated workspaces, project lifecycle screens, review steps, operator controls, and a Laravel/Inertia interface for repeatable literature-review work.
+
+Public code here should stay focused on integration, product behavior, and interface quality. Sensitive deployment settings, hosted-service operations, commercial roadmap details, and private research material belong outside the repository.
 
 For developer onboarding, start with [`docs/developer-handoff.md`](docs/developer-handoff.md).
 
@@ -35,9 +38,7 @@ php artisan storage:link
 npm run build
 ```
 
-The app consumes the published `nexus-scholar/core:^1.0` package from
-Packagist. Use a local path repository only for deliberate package development,
-not for the default web-app setup or CI.
+The app consumes the published `nexus-scholar/core:^1.0` package from Packagist. Use a local path repository only for deliberate package development, not for the default web-app setup or CI.
 
 ## Development Server
 
@@ -54,8 +55,7 @@ That starts:
 - Laravel Pail logs when the PHP runtime supports `pcntl`,
 - Vite dev server.
 
-On native Windows PHP, `pcntl` is not available, so the dev script skips Pail
-and keeps the server, queue, and Vite running.
+On native Windows PHP, `pcntl` is not available, so the dev script skips Pail and keeps the server, queue, and Vite running.
 
 The default Laravel URL is:
 
